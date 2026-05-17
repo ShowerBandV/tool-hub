@@ -78,42 +78,29 @@ function generateInitialPlatforms() {
 }
 
 function ensurePlatformsAbove() {
-  // 平台生成上限提高到玩家跳跃高度 (158px + 缓冲) 以上
-  var playerTop = S.player.y - 160;
-  var topY = S.cameraY - 80;
-  // 确保至少覆盖到玩家上方 160px（最大跳跃高度 + 余量）
-  var targetTop = Math.min(playerTop, topY);
-
-  // 计算需要多少个新平台（当前最高平台到目标顶部）
+  // 找到当前最高的平台（最小 y 值）
   var highestY = Infinity;
   for (var i = 0; i < S.platforms.length; i++) {
     if (!S.platforms[i].broken && S.platforms[i].y < highestY) {
       highestY = S.platforms[i].y;
     }
   }
-  if (!isFinite(highestY)) highestY = S.lastPlatformY;
+  if (!isFinite(highestY)) highestY = S.player.y;
 
-  // 计算需要多少平台来填补从最高平台到目标顶部的空隙
-  var gap = isFinite(highestY) ? (highestY - targetTop) : 0;
-  var needed = Math.min(50, Math.max(0, Math.ceil(gap / 38) + 2)); // 上限 50 防止无限生成
+  // 目标：在玩家上方至少 200px 要有平台（覆盖弹簧跳跃 260px 的大部分）
+  var targetTop = S.player.y - 200;
+  if (S.cameraY - 100 < targetTop) targetTop = S.cameraY - 100;
 
-  var y = isFinite(Math.min(highestY, S.lastPlatformY)) ? Math.min(highestY, S.lastPlatformY) : (S.player.y - 60);
-  if (!isFinite(y)) y = S.player.y - 60;
-  for (var i = 0; i < needed; i++) {
-    y -= 38 + Math.random() * 28;
-    if (y < targetTop - 80) break; // 允许超出一些
-    // 避免在已有平台的位置生成（简单去重）
-    var tooClose = false;
+  // 从最高平台向上生成，间距加大
+  var y = highestY;
+  var count = 0;
+  while (y > targetTop && count < 60) {
+    y -= 52 + Math.random() * 32; // 间距 52~84，比之前稀疏
+    if (y < targetTop - 120) break;
     var x = 30 + Math.random() * (S.WIDTH - 60);
-    for (var k = 0; k < S.platforms.length; k++) {
-      if (Math.abs(S.platforms[k].y - y) < 10 && Math.abs(S.platforms[k].x - x) < 20) {
-        tooClose = true; break;
-      }
-    }
-    if (tooClose) { y += 20; continue; }
-    var plat = createPlatform(x, y);
-    S.platforms.push(plat);
+    S.platforms.push(createPlatform(x, y));
     S.lastPlatformY = y;
+    count++;
   }
 
   // 移除屏幕下方很远的平台
@@ -121,18 +108,15 @@ function ensurePlatformsAbove() {
     return p.y < S.cameraY + S.HEIGHT + 100;
   });
 
-  // 安全地移除多余平台：优先移除最下方且远离玩家的
+  // 安全移除多余平台：优先移除最下方（y 最大）
   while (S.platforms.length > C.MAX_PLATFORMS) {
     var worstIdx = -1;
-    var worstScore = -Infinity;
+    var worstY = -Infinity;
     for (var j = 0; j < S.platforms.length; j++) {
-      var plat2 = S.platforms[j];
-      // 远离玩家的平台优先移除（y 值大 = 屏幕下方）
-      var distToPlayer = Math.abs(plat2.y - S.player.y);
-      // 下方平台得分高（优先移除），但保护玩家正下方最近的平台
-      var score = plat2.y - distToPlayer * 0.3;
-      if (score > worstScore) {
-        worstScore = score;
+      // 跳过玩家正站着的平台
+      if (S.platforms[j] === S.player.onPlatform) continue;
+      if (S.platforms[j].y > worstY) {
+        worstY = S.platforms[j].y;
         worstIdx = j;
       }
     }

@@ -141,7 +141,7 @@ var MAX_PLATFORMS = 45;
 var MAX_PARTICLES = 100;
 var COMBO_TIMEOUT = 1.2;
 var COMBO_BONUS = 5;
-var JETPACK_COOLDOWN = 30;
+var JETPACK_COOLDOWN = 20;
 
 var SHAKE = { light: 2, medium: 4, heavy: 6 };
 

@@ -97,6 +97,11 @@ function initInput(onStartGame, onRestartGame, onJetpack) {
       handleMenuClick(mx, my);
     } else if (S.gameState === C.STATE.GAMEOVER) {
       restartGameCallback();
+    } else if (S.gameState === C.STATE.PLAYING) {
+      var btnCX = S.WIDTH - 40, btnCY = S.HEIGHT - 40;
+      if (Math.abs(mx - btnCX) < 30 && Math.abs(my - btnCY) < 30) {
+        jetpackCallback();
+      }
     }
   });
 
