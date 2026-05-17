@@ -8,13 +8,46 @@
   <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
   <style>
     .marquee-container {
-      overflow: hidden; background: #f1f5f9; border-radius: 20px;
-      padding: 10px 0; white-space: nowrap; margin-top: 12px;
+      overflow: hidden; border-radius: 20px;
+      padding: 16px 0; white-space: nowrap; margin-top: 12px;
+      cursor: pointer; position: relative;
+      transition: background 0.3s;
+    }
+    .marquee-container.fullscreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 9999; border-radius: 0; display: flex; align-items: center;
+      padding: 0;
     }
     .marquee-text {
-      display: inline-block; font-size: 1.2rem; font-weight: 600;
-      color: var(--accent); padding-left: 100%;
+      display: inline-block; font-weight: 700; padding-left: 100%;
     }
+    .fullscreen-hint {
+      position: absolute; top: 6px; right: 12px;
+      font-size: 0.7rem; color: rgba(0,0,0,0.3); pointer-events: none;
+    }
+    .emoji-grid {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+    }
+    .emoji-btn {
+      width: 38px; height: 38px; border: 2px solid var(--border);
+      border-radius: 8px; background: #fff; cursor: pointer;
+      font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .emoji-btn:hover { border-color: var(--accent); transform: scale(1.1); }
+    .control-row {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 8px;
+    }
+    .control-row label {
+      font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .control-row input[type="color"] {
+      width: 32px; height: 28px; border: 2px solid var(--border);
+      border-radius: 6px; cursor: pointer; padding: 1px;
+    }
+    .control-row input[type="range"] { width: 100px; accent-color: var(--accent); }
+    .size-val { font-weight: 700; font-size: 0.8rem; min-width: 35px; text-align: center; }
   </style>
 </head>
 <body>
@@ -26,9 +59,45 @@
 
     <div class="card tool-panel">
       <h2 class="panel-title">🎠 跑马灯</h2>
-      <p class="panel-desc">滚动文字动画效果。</p>
-      <input type="text" class="form-input" id="mqText" value="欢迎使用工具盒子！">
-      <div class="marquee-container"><span class="marquee-text" id="mqDisplay"></span></div>
+      <p class="panel-desc">在线跑马灯工具，支持设置滚动内容、速度、字体大小、字体颜色和背景颜色，并支持全屏显示。</p>
+
+      <input type="text" class="form-input" id="mqText" value="欢迎使用工具盒子！🎉" placeholder="输入滚动文字...">
+
+      <div class="control-row">
+        <label>字体大小 <input type="range" id="mqSize" min="1" max="170" value="32"><span class="size-val" id="sizeVal">32</span></label>
+        <label>滚动速度 <input type="range" id="mqSpeed" min="2" max="30" value="10"><span class="size-val" id="speedVal">10</span>s</label>
+        <label>文字颜色 <input type="color" id="mqColor" value="#4f46e5"></label>
+        <label>背景颜色 <input type="color" id="mqBg" value="#f1f5f9"></label>
+      </div>
+
+      <div class="form-label" style="margin-top:8px;">🎉 庆祝场景表情包</div>
+      <div class="emoji-grid" id="emojiGrid">
+        <button class="emoji-btn" data-emoji="🎉">🎉</button>
+        <button class="emoji-btn" data-emoji="🎊">🎊</button>
+        <button class="emoji-btn" data-emoji="🥳">🥳</button>
+        <button class="emoji-btn" data-emoji="🎂">🎂</button>
+        <button class="emoji-btn" data-emoji="🎈">🎈</button>
+        <button class="emoji-btn" data-emoji="🎁">🎁</button>
+        <button class="emoji-btn" data-emoji="✨">✨</button>
+        <button class="emoji-btn" data-emoji="🌟">🌟</button>
+        <button class="emoji-btn" data-emoji="💫">💫</button>
+        <button class="emoji-btn" data-emoji="🔥">🔥</button>
+        <button class="emoji-btn" data-emoji="❤️">❤️</button>
+        <button class="emoji-btn" data-emoji="👍">👍</button>
+        <button class="emoji-btn" data-emoji="🫶">🫶</button>
+        <button class="emoji-btn" data-emoji="💪">💪</button>
+        <button class="emoji-btn" data-emoji="🏆">🏆</button>
+        <button class="emoji-btn" data-emoji="👏">👏</button>
+        <button class="emoji-btn" data-emoji="🙌">🙌</button>
+        <button class="emoji-btn" data-emoji="💃">💃</button>
+        <button class="emoji-btn" data-emoji="🕺">🕺</button>
+        <button class="emoji-btn" data-emoji="🎵">🎵</button>
+      </div>
+
+      <div class="marquee-container" id="mqContainer">
+        <span class="fullscreen-hint">🔲 点击全屏</span>
+        <span class="marquee-text" id="mqDisplay"></span>
+      </div>
     </div>
 
     <div class="ad-unit ad-leaderboard">
@@ -60,14 +129,106 @@
 
   <script src="../../assets/js/common.js"></script>
   <script>
-    const disp = document.getElementById('mqDisplay'), textIn = document.getElementById('mqText');
+    const container = document.getElementById('mqContainer');
+    const disp = document.getElementById('mqDisplay');
+    const textIn = document.getElementById('mqText');
+    const sizeIn = document.getElementById('mqSize');
+    const speedIn = document.getElementById('mqSpeed');
+    const colorIn = document.getElementById('mqColor');
+    const bgIn = document.getElementById('mqBg');
+    const sizeVal = document.getElementById('sizeVal');
+    const speedVal = document.getElementById('speedVal');
+
+    let animInstance = null;
+
+    function stopAnim() {
+      if (animInstance) { animInstance.pause(); animInstance = null; }
+      if (typeof anime !== 'undefined') anime.remove(disp);
+    }
+
     function start() {
-      disp.textContent = textIn.value || ' ';
-      if (typeof anime !== 'undefined') {
-        anime({ targets: disp, translateX: [-disp.offsetWidth, window.innerWidth], duration: 10000, loop: true, easing: 'linear' });
+      stopAnim();
+      const text = textIn.value || ' ';
+      const speed = parseInt(speedIn.value) || 10;
+      const size = parseInt(sizeIn.value) || 32;
+      const color = colorIn.value;
+      const bg = bgIn.value;
+
+      disp.textContent = text;
+      disp.style.fontSize = size + 'px';
+      disp.style.color = color;
+      container.style.background = bg;
+      sizeVal.textContent = size;
+      speedVal.textContent = speed;
+
+      if (typeof anime !== 'undefined' && text.trim()) {
+        // Reset position first
+        disp.style.transform = 'translateX(0)';
+        const textWidth = disp.offsetWidth;
+        const viewWidth = container.classList.contains('fullscreen')
+          ? window.innerWidth
+          : container.clientWidth;
+
+        animInstance = anime({
+          targets: disp,
+          translateX: [-textWidth, viewWidth],
+          duration: speed * 1000,
+          loop: true,
+          easing: 'linear'
+        });
       }
     }
+
     textIn.oninput = start;
+    sizeIn.oninput = start;
+    speedIn.oninput = start;
+    colorIn.oninput = start;
+    bgIn.oninput = start;
+
+    // Emoji buttons: append to text input
+    document.getElementById('emojiGrid').addEventListener('click', function(e) {
+      const btn = e.target.closest('.emoji-btn');
+      if (!btn) return;
+      const emoji = btn.dataset.emoji;
+      textIn.value = textIn.value + emoji;
+      start();
+    });
+
+    // Fullscreen
+    let isFullscreen = false;
+
+    container.addEventListener('click', function() {
+      if (isFullscreen) return;
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      }
+    });
+
+    function onFullscreenChange() {
+      isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      if (isFullscreen) {
+        container.classList.add('fullscreen');
+        container.querySelector('.fullscreen-hint').textContent = 'ESC 退出全屏';
+      } else {
+        container.classList.remove('fullscreen');
+        container.querySelector('.fullscreen-hint').textContent = '🔲 点击全屏';
+      }
+      // Restart animation to recalculate dimensions
+      setTimeout(start, 100);
+    }
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+    // ESC to exit fullscreen (handled natively, but ensure state is cleaned)
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && isFullscreen) {
+        // Browser handles exit, onFullscreenChange will fire
+      }
+    });
+
     start();
   </script>
 </body>

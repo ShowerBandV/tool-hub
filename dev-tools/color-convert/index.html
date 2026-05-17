@@ -77,8 +77,12 @@
       const r=parseInt(pick.value.slice(1,3),16),g=parseInt(pick.value.slice(3,5),16),b=parseInt(pick.value.slice(5,7),16);
       rSl.value=r;gSl.value=g;bSl.value=b; update();
     };
-    hexIn.onchange = () => {
-      const v = hexIn.value.trim();
+    hexIn.oninput = () => {
+      let v = hexIn.value.trim();
+      if (v.length === 4 && /^#[0-9a-fA-F]{3}$/.test(v)) {
+        v = '#' + v[1]+v[1] + v[2]+v[2] + v[3]+v[3];
+        hexIn.value = v;
+      }
       if(/^#[0-9a-fA-F]{6}$/.test(v)) {
         pick.value=v;
         rSl.value=parseInt(v.slice(1,3),16);gSl.value=parseInt(v.slice(3,5),16);bSl.value=parseInt(v.slice(5,7),16);

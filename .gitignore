@@ -1,3 +1,6 @@
+# Claude
+.claude/
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -8,6 +11,14 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Legacy
+calculator.html
+dev_tool.html
+
+# Drafts
+todo.md
+suggest_search.md
 
 # Temp
 *.tmp
