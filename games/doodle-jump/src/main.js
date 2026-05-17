@@ -148,12 +148,11 @@ function update() {
 
   if (S.gameState !== C.STATE.PLAYING) return;
 
-  // 防止 NaN 导致游戏永久卡死
+  // NaN 兜底：修正数值而非结束游戏
   var p = S.player;
-  if (!isFinite(p.x) || !isFinite(p.y)) {
-    endGame();
-    return;
-  }
+  if (!isFinite(p.x)) { p.x = S.WIDTH / 2; }
+  if (!isFinite(p.y)) { p.y = S.cameraY + S.HEIGHT * 0.35; }
+  if (!isFinite(p.vy)) { p.vy = 0; }
 
   P.updateSpeedBoost(dt);
   P.updateShake(dt);
