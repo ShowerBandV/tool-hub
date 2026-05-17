@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <meta name="description" content="在线列表全排列生成器，输入元素列表生成所有可能的排列组合，支持去重和限制数量。">
+  <title>列表全排列 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px;
+      max-height: 400px; overflow-y: auto; margin-top: 8px; }
+    .perm-item { padding: 6px 10px; background: #f0f4ff; border-radius: 6px;
+      font-family: var(--font-mono); font-size: 0.78rem; text-align: center;
+      border: 1px solid #e0e7ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 0.85rem; }
+    .stat-label { color: var(--text-muted); }
+    .stat-value { font-weight: 700; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 列表全排列
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔀 列表全排列</h2>
+      <p class="panel-desc">在线列表全排列生成器。输入元素（逗号或换行分隔），生成所有可能的排列组合。支持去重、限制最大排列数，可用于密码组合、排列组合教学等场景。</p>
+
+      <div class="form-label">元素列表（逗号/空格/换行分隔）</div>
+      <input type="text" class="form-input" id="elemInput" placeholder="例: A, B, C 或红色 蓝色 绿色" value="A, B, C, D">
+
+      <div class="op-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:0.82rem;">
+          <input type="checkbox" id="uniqueOnly" checked> 去重
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:0.82rem;">
+          最大显示：<input type="number" id="maxDisplay" value="500" min="1" max="5000" style="width:70px;padding:4px;border:1px solid var(--border);border-radius:4px;"> 条
+        </label>
+        <button class="btn btn-primary" id="generateBtn">生成排列</button>
+      </div>
+
+      <div class="stat-row" id="statRow" style="display:none;">
+        <span class="stat-label">元素数：</span><span class="stat-value" id="elemCount"></span>
+        <span class="stat-label">排列总数：</span><span class="stat-value" id="permCount"></span>
+        <span class="stat-label">显示：</span><span class="stat-value" id="shownCount"></span>
+      </div>
+
+      <div class="result-grid" id="resultGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+    <div class="card" style="margin-top:20px;"><h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div></div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function permute(arr) {
+      if (arr.length <= 1) return [arr.slice()];
+      var result = [];
+      for (var i = 0; i < arr.length; i++) {
+        var first = arr[i];
+        var rest = arr.slice(0, i).concat(arr.slice(i + 1));
+        var subPerms = permute(rest);
+        for (var j = 0; j < subPerms.length; j++) {
+          result.push([first].concat(subPerms[j]));
+        }
+      }
+      return result;
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', function() {
+      var raw = document.getElementById('elemInput').value;
+      var elems = raw.split(/[,，\s\n]+/).filter(function(s) { return s; });
+      if (elems.length === 0) { showToast('请输入至少一个元素'); return; }
+      if (elems.length > 8) { showToast('元素数量最好不超过8个（排列数会非常大！）'); return; }
+
+      var unique = document.getElementById('uniqueOnly').checked;
+      if (unique) elems = Array.from(new Set(elems));
+
+      var maxDisplay = parseInt(document.getElementById('maxDisplay').value) || 500;
+      var allPerms = permute(elems);
+      var factorial = 1;
+      for (var i = 2; i <= elems.length; i++) factorial *= i;
+
+      document.getElementById('elemCount').textContent = elems.length;
+      document.getElementById('permCount').textContent = allPerms.length + ' (' + elems.length + '! = ' + factorial + ')';
+      document.getElementById('shownCount').textContent = Math.min(allPerms.length, maxDisplay) + ' / ' + allPerms.length;
+      document.getElementById('statRow').style.display = 'flex';
+
+      var toShow = allPerms.slice(0, maxDisplay);
+      document.getElementById('resultGrid').innerHTML = toShow.map(function(p) {
+        return '<div class="perm-item">' + escapeHTML(p.join(', ')) + '</div>';
+      }).join('');
+
+      if (allPerms.length > maxDisplay) {
+        document.getElementById('resultGrid').innerHTML += '<div style="text-align:center;color:var(--text-muted);padding:10px;font-size:0.82rem;">... 仅显示前 ' + maxDisplay + ' 条，共 ' + allPerms.length + ' 条 ...</div>';
+      }
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'gcd-lcm', i: '🔢', n: '公因数/公倍数' },
+      { h: 'sequences', i: '📈', n: '数列计算器' },
+      { h: 'time-calc', i: '🕐', n: '时间加减' },
+      { h: 'factorial', i: '!', n: '阶乘计算器' },
+      { h: 'fraction-calc', i: '÷', n: '分数计算器' },
+      { h: 'text-set', i: '∩∪', n: '文本交集/差集' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(function(t) { return '<a href="../' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>'; }).join('');
+  </script>
+</body>
+</html>

@@ -1,3 +1,11 @@
+// 防 clickjacking: 检测 iframe 嵌入则清空页面
+(function() {
+  if (window.top !== window.self) {
+    document.documentElement.innerHTML = '';
+    return;
+  }
+})();
+
 // Common utilities for Tool Hub
 
 function preciseRound(num, decimals = 2) {

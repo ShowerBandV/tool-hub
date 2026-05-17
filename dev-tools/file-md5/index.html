@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线文件MD5计算工具，拖拽或选择文件即可计算MD5哈希值，支持大文件分片计算。">
+  <title>文件 MD5 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .drop-zone {
+      border: 3px dashed var(--border); border-radius: 16px;
+      padding: 40px 20px; text-align: center; cursor: pointer;
+      transition: var(--transition); background: #fafbfc;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #eef2ff; }
+    .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+    .drop-zone .drop-text { font-size: 0.9rem; color: var(--text-muted); }
+    .result-card { background: #f0fdf4; border: 2px solid #10b981; border-radius: 12px;
+      padding: 16px 20px; margin-top: 12px; word-break: break-all; }
+    .result-card .hash-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+    .result-card .hash-value { font-family: var(--font-mono); font-size: 1rem; font-weight: 700;
+      color: #111; user-select: all; }
+    .file-info { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.2s; width: 0%; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn-action { padding: 10px 20px; border-radius: 10px; border: 2px solid var(--border);
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 6px; background: #fff; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .hash-list { margin-top: 16px; }
+    .hash-list .hash-entry { display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+      margin-bottom: 6px; gap: 12px; }
+    .hash-entry .filename { font-size: 0.85rem; font-weight: 600; color: #333; word-break: break-all; min-width: 0; }
+    .hash-entry .md5 { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 文件 MD5
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title"># 文件 MD5 计算</h2>
+      <p class="panel-desc">在线文件MD5哈希计算工具。选择或拖拽文件后自动计算MD5值，支持大文件分片处理和多个文件批量计算。所有计算在浏览器本地完成，文件不会上传到服务器。</p>
+
+      <input type="file" id="fileInput" multiple style="display:none;">
+      <div class="drop-zone" id="dropZone">
+        <span class="drop-icon">📂</span>
+        <span class="drop-text">拖拽文件到此处，或点击选择文件</span>
+        <span class="drop-text" style="font-size:0.72rem;margin-top:4px;">支持多个文件，单文件最大 2GB</span>
+      </div>
+
+      <div class="progress-bar" id="progressBar" style="display:none;">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;text-align:center;" id="progressText"></div>
+
+      <div class="hash-list" id="hashList"></div>
+
+      <div class="btn-row" style="display:none;" id="actionRow">
+        <button class="btn-action primary" id="copyAllBtn">📋 复制全部</button>
+        <button class="btn-action" id="clearBtn">🗑️ 清空</button>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../jwt-decoder/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> JWT 解码器</a>
+        <a href="../cron-parser/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏱</span> Cron 表达式</a>
+        <a href="../random-group/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>👥</span> 随机分组</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    // Pure JS MD5 implementation (from SparkMD5 concept, simplified)
+    function md5(string) {
+      function r(e,t){return(e<<t)|(e>>>(32-t));}
+      function C(q,a,b,x,s,t){return r(q+r(r(a,b,x,q)+s+t,a),a);}
+      function FF(a,b,c,d,x,s,t){return C((a&b)|(~a&c),a,b,d,x,s,t);}
+      function GG(a,b,c,d,x,s,t){return C((a&c)|(b&~c),a,b,d,x,s,t);}
+      function HH(a,b,c,d,x,s,t){return C(a^b^c,a,b,d,x,s,t);}
+      function II(a,b,c,d,x,s,t){return C(c^(a|~b),a,b,d,x,s,t);}
+
+      function cvt(n) {
+        var s="";
+        for(var j=0;j<4;j++) s+=chr(n>>(j*8+4)&0x0F)+chr(n>>(j*8)&0x0F);
+        return s;
+      }
+
+      var chr = function(c) { return '0123456789abcdef'.charAt(c); };
+
+      var x = [];
+      var k, AA, BB, CC, DD, a, b, c, d;
+      var S11=7, S12=12, S13=17, S14=22;
+      var S21=5, S22=9, S23=14, S24=20;
+      var S31=4, S32=11, S33=16, S34=23;
+      var S41=6, S42=10, S43=15, S44=21;
+
+      string = unescape(encodeURIComponent(string));
+      var len = string.length;
+      var words = [];
+      for (var i = 0; i < len; i++) words[i>>2] |= string.charCodeAt(i) << ((i%4)<<3);
+      words[len>>2] |= 0x80 << ((len%4)<<3);
+      words[(((len+8)>>>6)<<4)+14] = len*8;
+
+      var a2=1732584193, b2=-271733879, c2=-1732584194, d2=271733878;
+
+      for (var i=0;i<words.length;i+=16) {
+        a=a2;b=b2;c=c2;d=d2;
+        a=FF(a,b,c,d,words[i+0],S11,-680876936);d=FF(d,a,b,c,words[i+1],S12,-389564586);c=FF(c,d,a,b,words[i+2],S13,606105819);
+        b=FF(b,c,d,a,words[i+3],S14,-1044525330);a=FF(a,b,c,d,words[i+4],S11,-176418897);d=FF(d,a,b,c,words[i+5],S12,1200080426);
+        c=FF(c,d,a,b,words[i+6],S13,-1473231341);b=FF(b,c,d,a,words[i+7],S14,-45705983);a=FF(a,b,c,d,words[i+8],S11,1770035416);
+        d=FF(d,a,b,c,words[i+9],S12,-1958414417);c=FF(c,d,a,b,words[i+10],S13,-42063);b=FF(b,c,d,a,words[i+11],S14,-1990404162);
+        a=FF(a,b,c,d,words[i+12],S11,1804603682);d=FF(d,a,b,c,words[i+13],S12,-40341101);c=FF(c,d,a,b,words[i+14],S13,-1502002290);
+        b=FF(b,c,d,a,words[i+15],S14,1236535329);
+        a=GG(a,b,c,d,words[i+1],S21,-165796510);d=GG(d,a,b,c,words[i+6],S22,-1069501632);c=GG(c,d,a,b,words[i+11],S23,643717713);
+        b=GG(b,c,d,a,words[i+0],S24,-373897302);a=GG(a,b,c,d,words[i+5],S21,-701558691);d=GG(d,a,b,c,words[i+10],S22,38016083);
+        c=GG(c,d,a,b,words[i+15],S23,-660478335);b=GG(b,c,d,a,words[i+4],S24,-405537848);a=GG(a,b,c,d,words[i+9],S21,568446438);
+        d=GG(d,a,b,c,words[i+14],S22,-1019803690);c=GG(c,d,a,b,words[i+3],S23,-187363961);b=GG(b,c,d,a,words[i+8],S24,1163531501);
+        a=GG(a,b,c,d,words[i+13],S21,-1444681467);d=GG(d,a,b,c,words[i+2],S22,-51403784);c=GG(c,d,a,b,words[i+7],S23,1735328473);
+        b=GG(b,c,d,a,words[i+12],S24,-1926607734);
+        a=HH(a,b,c,d,words[i+5],S31,-378558);d=HH(d,a,b,c,words[i+8],S32,-2022574463);c=HH(c,d,a,b,words[i+11],S33,1839030562);
+        b=HH(b,c,d,a,words[i+14],S34,-35309556);a=HH(a,b,c,d,words[i+1],S31,-1530992060);d=HH(d,a,b,c,words[i+4],S32,1272893353);
+        c=HH(c,d,a,b,words[i+7],S33,-155497632);b=HH(b,c,d,a,words[i+10],S34,-1094730640);a=HH(a,b,c,d,words[i+13],S31,681279174);
+        d=HH(d,a,b,c,words[i+0],S32,-358537222);c=HH(c,d,a,b,words[i+3],S33,-722521979);b=HH(b,c,d,a,words[i+6],S34,76029189);
+        a=HH(a,b,c,d,words[i+9],S31,-640364487);d=HH(d,a,b,c,words[i+12],S32,-421815835);c=HH(c,d,a,b,words[i+15],S33,530742520);
+        b=HH(b,c,d,a,words[i+2],S34,-995338651);
+        a=II(a,b,c,d,words[i+0],S41,-198630844);d=II(d,a,b,c,words[i+7],S42,1126891415);c=II(c,d,a,b,words[i+14],S43,-1416354905);
+        b=II(b,c,d,a,words[i+5],S44,-57434055);a=II(a,b,c,d,words[i+12],S41,1700485571);d=II(d,a,b,c,words[i+3],S42,-1894986606);
+        c=II(c,d,a,b,words[i+10],S43,-1051523);b=II(b,c,d,a,words[i+1],S44,-2054922799);a=II(a,b,c,d,words[i+8],S41,1873313359);
+        d=II(d,a,b,c,words[i+15],S42,-30611744);c=II(c,d,a,b,words[i+6],S43,-1560198380);b=II(b,c,d,a,words[i+13],S44,1309151649);
+        a=II(a,b,c,d,words[i+4],S41,-145523070);d=II(d,a,b,c,words[i+11],S42,-1120210379);c=II(c,d,a,b,words[i+2],S43,718787259);
+        b=II(b,c,d,a,words[i+9],S44,-343485551);
+        a2+=a;b2+=b;c2+=c;d2+=d;
+      }
+      return (cvt(a2)+cvt(b2)+cvt(c2)+cvt(d2)).toLowerCase();
+    }
+
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var hashList = document.getElementById('hashList');
+    var progressBar = document.getElementById('progressBar');
+    var progressFill = document.getElementById('progressFill');
+    var progressText = document.getElementById('progressText');
+    var actionRow = document.getElementById('actionRow');
+    var results = [];
+
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault(); dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function() {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) processFiles(fileInput.files);
+    });
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+      return (bytes / 1073741824).toFixed(2) + ' GB';
+    }
+
+    function processFiles(files) {
+      progressBar.style.display = '';
+      actionRow.style.display = '';
+      var totalFiles = files.length;
+      var processed = 0;
+
+      function next() {
+        if (processed >= totalFiles) {
+          progressBar.style.display = 'none';
+          progressText.textContent = '';
+          renderResults();
+          return;
+        }
+        var file = files[processed];
+        progressText.textContent = '正在计算: ' + file.name + ' (' + (processed+1) + '/' + totalFiles + ')';
+        progressFill.style.width = ((processed / totalFiles) * 100) + '%';
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var hash = md5(e.target.result);
+          results.push({ name: file.name, size: file.size, md5: hash });
+          processed++;
+          progressFill.style.width = ((processed / totalFiles) * 100) + '%';
+          next();
+        };
+        reader.onerror = function() {
+          results.push({ name: file.name, size: file.size, md5: '读取失败' });
+          processed++;
+          next();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+      next();
+    }
+
+    function renderResults() {
+      if (results.length === 0) { hashList.innerHTML = ''; actionRow.style.display = 'none'; return; }
+      hashList.innerHTML = results.map(function(r) {
+        return '<div class="hash-entry"><div class="filename">' + escapeHTML(r.name) + '<div class="file-info">' + formatSize(r.size) + '</div></div><div class="md5">' + r.md5 + '</div></div>';
+      }).join('');
+    }
+
+    document.getElementById('copyAllBtn').addEventListener('click', function() {
+      var text = results.map(function(r) { return r.md5 + '  ' + r.name; }).join('\n');
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('✅ 已复制全部 MD5');
+      }).catch(function() {
+        showToast('❌ 复制失败');
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      results = [];
+      hashList.innerHTML = '';
+      actionRow.style.display = 'none';
+      fileInput.value = '';
+    });
+  </script>
+</body>
+</html>

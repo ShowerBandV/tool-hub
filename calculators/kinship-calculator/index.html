@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
   <meta name="description" content="家庭称谓计算器，通过叠加关系路径自动计算亲属称呼。点击爸爸、妈妈、哥哥、姐姐等按钮构建关系链，系统自动推算最终称谓。">
   <title>家庭称谓计算器 · 计算器盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
@@ -198,15 +200,177 @@
         'younger_brother,wife': { title: '弟媳', sub: '弟弟的妻子，也叫"弟妹"', playful: null },
         'elder_sister,husband': { title: '姐夫', sub: '姐姐的丈夫', playful: null },
         'younger_sister,husband': { title: '妹夫', sub: '妹妹的丈夫', playful: null },
+        // Merged keys for sibling spouse
+        'brother,wife': { title: '嫂子/弟媳', sub: '兄弟的妻子', playful: null },
+        'sister,husband': { title: '姐夫/妹夫', sub: '姐妹的丈夫', playful: null },
 
-        // Reverse: parent's parent's other child
+        // Parent's sibling's spouse (3-hop)
+        'mother,elder_brother,wife': { title: '舅妈', sub: '舅舅的妻子', playful: null },
+        'mother,younger_brother,wife': { title: '舅妈', sub: '舅舅的妻子', playful: null },
+        'mother,brother,wife': { title: '舅妈', sub: '舅舅的妻子', playful: null },
+        'mother,elder_sister,husband': { title: '姨父', sub: '姨妈的丈夫', playful: null },
+        'mother,younger_sister,husband': { title: '姨父', sub: '姨妈的丈夫', playful: null },
+        'mother,sister,husband': { title: '姨父', sub: '姨妈的丈夫', playful: null },
+        'father,elder_brother,wife': { title: '伯母', sub: '伯父的妻子，也叫"大娘"', playful: null },
+        'father,younger_brother,wife': { title: '婶婶', sub: '叔叔的妻子', playful: null },
+        'father,brother,wife': { title: '伯母/婶婶', sub: '父亲兄弟的妻子', playful: null },
+        'father,elder_sister,husband': { title: '姑父', sub: '姑妈的丈夫', playful: null },
+        'father,younger_sister,husband': { title: '姑父', sub: '姑姑的丈夫', playful: null },
+        'father,sister,husband': { title: '姑父', sub: '父亲姐妹的丈夫', playful: null },
+
+        // My spouse's parents' siblings
+        'wife,father,elder_brother': { title: '伯岳父', sub: '岳父的哥哥', playful: null },
+        'wife,father,younger_brother': { title: '叔岳父', sub: '岳父的弟弟', playful: null },
+        'wife,father,elder_sister': { title: '姑岳母', sub: '岳父的姐姐', playful: null },
+        'wife,father,younger_sister': { title: '姑岳母', sub: '岳父的妹妹', playful: null },
+        'wife,mother,elder_brother': { title: '舅岳父', sub: '岳母的哥哥', playful: null },
+        'wife,mother,younger_brother': { title: '舅岳父', sub: '岳母的弟弟', playful: null },
+        'wife,mother,elder_sister': { title: '姨岳母', sub: '岳母的姐姐', playful: null },
+        'wife,mother,younger_sister': { title: '姨岳母', sub: '岳母的妹妹', playful: null },
+        'husband,father,elder_brother': { title: '伯公公', sub: '公公的哥哥', playful: null },
+        'husband,father,younger_brother': { title: '叔公公', sub: '公公的弟弟', playful: null },
+        'husband,mother,elder_sister': { title: '姨婆婆', sub: '婆婆的姐姐', playful: null },
+        'husband,mother,younger_sister': { title: '姨婆婆', sub: '婆婆的妹妹', playful: null },
+
+        // My child's spouse's family
+        'son,wife,father': { title: '亲家公', sub: '儿媳的父亲', playful: null },
+        'son,wife,mother': { title: '亲家母', sub: '儿媳的母亲', playful: null },
+        'daughter,husband,father': { title: '亲家公', sub: '女婿的父亲', playful: null },
+        'daughter,husband,mother': { title: '亲家母', sub: '女婿的母亲', playful: null },
+
+        // 4-hop: my sibling's child's child
+        'elder_brother,son,son': { title: '侄孙', sub: '侄子的儿子', playful: null },
+        'elder_brother,son,daughter': { title: '侄孙女', sub: '侄子的女儿', playful: null },
+        'younger_brother,son,son': { title: '侄孙', sub: '侄子的儿子', playful: null },
+        'elder_sister,son,son': { title: '外甥孙', sub: '外甥的儿子', playful: null },
+        'younger_sister,son,son': { title: '外甥孙', sub: '外甥的儿子', playful: null },
+
+        // More 3-hop: my grandparent's siblings → merged keys
+        'father,father,brother': { title: '伯/叔祖父', sub: '爷爷的兄弟', playful: null },
+        'father,father,sister': { title: '姑奶奶', sub: '爷爷的姐妹', playful: null },
+        'father,mother,brother': { title: '舅爷爷', sub: '奶奶的兄弟', playful: null },
+        'father,mother,sister': { title: '姨奶奶', sub: '奶奶的姐妹', playful: null },
+        'mother,father,brother': { title: '舅姥爷', sub: '外公的兄弟', playful: null },
+        'mother,father,sister': { title: '姨姥姥', sub: '外公的姐妹', playful: null },
+        'mother,mother,brother': { title: '舅姥爷', sub: '外婆的兄弟', playful: null },
+        'mother,mother,sister': { title: '姨姥姥', sub: '外婆的姐妹', playful: null },
+
+        // Spouse's siblings
+        'wife,elder_sister': { title: '大姨子', sub: '妻子的姐姐', playful: null },
+        'wife,younger_sister': { title: '小姨子', sub: '妻子的妹妹', playful: null },
+        'husband,elder_brother': { title: '大伯子', sub: '丈夫的哥哥', playful: null },
+        'husband,younger_brother': { title: '小叔子', sub: '丈夫的弟弟', playful: null },
+
+        // Grandparents' siblings
         'father,father,elder_brother': { title: '伯祖父', sub: '爷爷的哥哥', playful: null },
         'father,father,younger_brother': { title: '叔祖父', sub: '爷爷的弟弟', playful: null },
+        'father,father,elder_sister': { title: '姑奶奶', sub: '爷爷的姐姐', playful: null },
+        'father,father,younger_sister': { title: '姑奶奶', sub: '爷爷的妹妹', playful: null },
+        'father,mother,elder_brother': { title: '舅爷爷', sub: '奶奶的哥哥', playful: null },
+        'father,mother,younger_brother': { title: '舅爷爷', sub: '奶奶的弟弟', playful: null },
+        'father,mother,elder_sister': { title: '姨奶奶', sub: '奶奶的姐姐', playful: null },
+        'father,mother,younger_sister': { title: '姨奶奶', sub: '奶奶的妹妹', playful: null },
         'mother,father,elder_brother': { title: '舅姥爷', sub: '外公的哥哥', playful: null },
         'mother,father,younger_brother': { title: '舅姥爷', sub: '外公的弟弟', playful: null },
+        'mother,father,elder_sister': { title: '姨姥姥', sub: '外公的姐姐', playful: null },
+        'mother,father,younger_sister': { title: '姨姥姥', sub: '外公的妹妹', playful: null },
+        'mother,mother,elder_brother': { title: '舅姥爷', sub: '外婆的哥哥', playful: null },
+        'mother,mother,younger_brother': { title: '舅姥爷', sub: '外婆的弟弟', playful: null },
+        'mother,mother,elder_sister': { title: '姨姥姥', sub: '外婆的姐姐', playful: null },
+        'mother,mother,younger_sister': { title: '姨姥姥', sub: '外婆的妹妹', playful: null },
+
+        // Reverse: child's spouse
+        'son,wife': { title: '儿媳', sub: '儿子的妻子', playful: null },
+        'daughter,husband': { title: '女婿', sub: '女儿的丈夫', playful: null },
+
+        // Spouse's sibling's child
+        'wife,elder_brother,son': { title: '内侄', sub: '妻子哥哥的儿子', playful: null },
+        'wife,elder_brother,daughter': { title: '内侄女', sub: '妻子哥哥的女儿', playful: null },
+        'wife,younger_brother,son': { title: '内侄', sub: '妻子弟弟的儿子', playful: null },
+        'wife,younger_brother,daughter': { title: '内侄女', sub: '妻子弟弟的女儿', playful: null },
+        'wife,elder_sister,son': { title: '外甥', sub: '妻子姐姐的儿子', playful: null },
+        'wife,elder_sister,daughter': { title: '外甥女', sub: '妻子姐姐的女儿', playful: null },
+        'wife,younger_sister,son': { title: '外甥', sub: '妻子妹妹的儿子', playful: null },
+        'wife,younger_sister,daughter': { title: '外甥女', sub: '妻子妹妹的女儿', playful: null },
+        'husband,elder_brother,son': { title: '侄子', sub: '丈夫哥哥的儿子', playful: null },
+        'husband,elder_brother,daughter': { title: '侄女', sub: '丈夫哥哥的女儿', playful: null },
+        'husband,younger_brother,son': { title: '侄子', sub: '丈夫弟弟的儿子', playful: null },
+        'husband,younger_brother,daughter': { title: '侄女', sub: '丈夫弟弟的女儿', playful: null },
+        'husband,elder_sister,son': { title: '外甥', sub: '丈夫姐姐的儿子', playful: null },
+        'husband,elder_sister,daughter': { title: '外甥女', sub: '丈夫姐姐的女儿', playful: null },
+        'husband,younger_sister,son': { title: '外甥', sub: '丈夫妹妹的儿子', playful: null },
+        'husband,younger_sister,daughter': { title: '外甥女', sub: '丈夫妹妹的女儿', playful: null },
+
+        // My spouse's sibling's spouse
+        'wife,elder_brother,wife': { title: '舅嫂', sub: '妻子哥哥的妻子', playful: null },
+        'wife,younger_brother,wife': { title: '舅弟媳', sub: '妻子弟弟的妻子', playful: null },
+        'wife,elder_sister,husband': { title: '连襟', sub: '妻子姐姐的丈夫', playful: null },
+        'wife,younger_sister,husband': { title: '连襟', sub: '妻子妹妹的丈夫', playful: null },
+        'husband,elder_brother,wife': { title: '妯娌', sub: '丈夫哥哥的妻子', playful: null },
+        'husband,younger_brother,wife': { title: '妯娌', sub: '丈夫弟弟的妻子', playful: null },
+        'husband,elder_sister,husband': { title: '姐/妹夫', sub: '丈夫姐妹的丈夫', playful: null },
+
+        // 4-hop: cousin's child (merged keys)
+        'father,brother,son,son': { title: '堂侄', sub: '堂哥/弟的儿子', playful: null },
+        'father,brother,son,daughter': { title: '堂侄女', sub: '堂哥/弟的女儿', playful: null },
+        'father,brother,daughter,son': { title: '堂侄', sub: '堂姐/妹的儿子', playful: null },
+        'father,brother,daughter,daughter': { title: '堂侄女', sub: '堂姐/妹的女儿', playful: null },
+        'father,sister,son,son': { title: '表侄', sub: '姑表哥/弟的儿子', playful: null },
+        'father,sister,daughter,son': { title: '表侄', sub: '姑表姐/妹的儿子', playful: null },
+        'mother,brother,son,son': { title: '表侄', sub: '舅表哥/弟的儿子', playful: null },
+        'mother,brother,daughter,son': { title: '表侄', sub: '舅表姐/妹的儿子', playful: null },
+        'mother,sister,son,son': { title: '表侄', sub: '姨表哥/弟的儿子', playful: null },
+        'mother,sister,daughter,son': { title: '表侄', sub: '姨表姐/妹的儿子', playful: null },
+
+        // Original 4-hop specific keys
+        'father,elder_brother,son,son': { title: '堂侄', sub: '堂哥/弟的儿子', playful: null },
+        'father,younger_brother,son,son': { title: '堂侄', sub: '堂哥/弟的儿子', playful: null },
+        'mother,elder_brother,son,son': { title: '表侄', sub: '表哥/弟的儿子', playful: null },
+        'mother,younger_brother,son,son': { title: '表侄', sub: '表哥/弟的儿子', playful: null },
+
+        // My parent's cousin = my "表叔/表姑" (parent's cousin)
+        'father,father,brother,son': { title: '堂叔/伯', sub: '爷爷兄弟的儿子（父亲的堂兄弟）', playful: null },
+        'father,father,sister,son': { title: '表叔/伯', sub: '爷爷姐妹的儿子（父亲的表兄弟）', playful: null },
+        'father,mother,brother,son': { title: '表叔/伯', sub: '奶奶兄弟的儿子（父亲的表兄弟）', playful: null },
+        'father,mother,sister,son': { title: '表叔/伯', sub: '奶奶姐妹的儿子（父亲的表兄弟）', playful: null },
+
+        // Reverse: from parent perspective
+        'son,son,son': { title: '曾孙', sub: '孙子的儿子', playful: null },
+        'son,son,daughter': { title: '曾孙女', sub: '孙子的女儿', playful: null },
+        'son,daughter,son': { title: '曾外孙', sub: '孙女/外孙女的儿子', playful: null },
+        'daughter,son,son': { title: '曾外孙', sub: '外孙的儿子', playful: null },
+        'daughter,daughter,son': { title: '曾外孙', sub: '外孙女的儿子', playful: null },
+
+        // Mixed 3-hop: my parent + my spouse (parent-in-law chain)
+        'husband,father,father': { title: '太公公', sub: '公公的父亲', playful: null },
+        'husband,father,mother': { title: '太婆婆', sub: '公公的母亲', playful: null },
+        'husband,mother,father': { title: '太公公', sub: '婆婆的父亲', playful: null },
+        'husband,mother,mother': { title: '太婆婆', sub: '婆婆的母亲', playful: null },
+        'wife,father,father': { title: '太岳父', sub: '岳父的父亲', playful: null },
+        'wife,father,mother': { title: '太岳母', sub: '岳父的母亲', playful: null },
+        'wife,mother,father': { title: '太岳父', sub: '岳母的父亲', playful: null },
+        'wife,mother,mother': { title: '太岳母', sub: '岳母的母亲', playful: null },
       };
 
       if (lookup[key]) return lookup[key];
+
+      // Try gender-merged keys for siblings (elder/younger → any)
+      var mergedKey = relPath.map(function(r) {
+        if (r === 'elder_brother' || r === 'younger_brother') return 'brother';
+        if (r === 'elder_sister' || r === 'younger_sister') return 'sister';
+        return r;
+      }).join(',');
+      if (mergedKey !== key && lookup[mergedKey]) return lookup[mergedKey];
+
+      // Try swapping elder/younger variants
+      var swappedKey = relPath.map(function(r) {
+        if (r === 'elder_brother') return 'younger_brother';
+        if (r === 'younger_brother') return 'elder_brother';
+        if (r === 'elder_sister') return 'younger_sister';
+        if (r === 'younger_sister') return 'elder_sister';
+        return r;
+      }).join(',');
+      if (swappedKey !== key && lookup[swappedKey]) return lookup[swappedKey];
 
       // For unsupported paths, try to give a reasonable guess
       const playfulMessages = [

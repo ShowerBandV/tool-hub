@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线Cron表达式工具，支持解析、生成人类可读描述、预览未来执行时间，内置常用预设。">
+  <title>Cron 表达式 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .cron-field-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .cron-field { width: 70px; text-align: center; font-family: var(--font-mono); font-size: 1rem;
+      padding: 8px 4px; border: 2px solid var(--border); border-radius: 8px; }
+    .cron-field:focus { border-color: var(--accent); outline: none; }
+    .cron-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+    .cron-field-wrap { display: flex; flex-direction: column; align-items: center; }
+    .cron-sep { font-weight: 700; font-size: 1.2rem; color: var(--text-muted); }
+    .explain-box { background: #f0fdf4; border: 2px solid #10b981; border-radius: 12px;
+      padding: 14px 18px; margin-top: 12px; font-size: 0.95rem; line-height: 1.6; }
+    .explain-box.error { background: #fef2f2; border-color: #ef4444; color: #dc2626; }
+    .next-times { margin-top: 12px; }
+    .next-times table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .next-times th { background: #f1f5f9; padding: 8px 12px; text-align: left; font-weight: 600; }
+    .next-times td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
+    .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; margin-top: 12px; }
+    .preset-btn { padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px;
+      background: #fff; cursor: pointer; font-size: 0.78rem; text-align: left; transition: var(--transition); }
+    .preset-btn:hover { border-color: var(--accent); background: #eef2ff; }
+    .preset-btn .preset-expr { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> Cron 表达式
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">⏱ Cron 表达式工具</h2>
+      <p class="panel-desc">在线Cron表达式解析工具。输入5段式Cron表达式，自动生成人类可读的执行时间描述，并预览未来N次执行时刻。内置常用预设，支持秒级快速上手。</p>
+
+      <label class="form-label">Cron 表达式（分 时 日 月 周）</label>
+      <div class="cron-field-row" id="cronFields">
+        <div class="cron-field-wrap"><input class="cron-field" id="fMin" value="*" maxlength="12"><span class="cron-label">分钟 (0-59)</span></div>
+        <span class="cron-sep">:</span>
+        <div class="cron-field-wrap"><input class="cron-field" id="fHour" value="*" maxlength="12"><span class="cron-label">小时 (0-23)</span></div>
+        <span class="cron-sep">:</span>
+        <div class="cron-field-wrap"><input class="cron-field" id="fDom" value="*" maxlength="12"><span class="cron-label">日 (1-31)</span></div>
+        <span class="cron-sep">:</span>
+        <div class="cron-field-wrap"><input class="cron-field" id="fMon" value="*" maxlength="12"><span class="cron-label">月 (1-12)</span></div>
+        <span class="cron-sep">:</span>
+        <div class="cron-field-wrap"><input class="cron-field" id="fDow" value="*" maxlength="12"><span class="cron-label">周 (0-6)</span></div>
+      </div>
+
+      <div class="explain-box" id="explainBox"></div>
+
+      <div class="next-times" id="nextTimes" style="display:none;">
+        <h4 style="margin-bottom:8px;">📅 未来 10 次执行时间</h4>
+        <table><thead><tr><th>#</th><th>执行时间</th><th>星期</th></tr></thead><tbody id="nextTimesBody"></tbody></table>
+      </div>
+
+      <h4 style="margin-top:16px;margin-bottom:4px;">📋 常用预设</h4>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../url-encode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔗</span> URL 编解码</a>
+        <a href="../word-count/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 字数统计</a>
+        <a href="../qrcode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📱</span> 二维码工具</a>
+        <a href="../countdown/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏳</span> 倒计时</a>
+        <a href="../random-number/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎲</span> 随机数生成</a>
+        <a href="../marquee/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎠</span> 跑马灯</a>
+        <a href="../http-status/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📡</span> HTTP 状态码</a>
+        <a href="../color-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎨</span> 颜色转换</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var fields = ['fMin','fHour','fDom','fMon','fDow'];
+    var fieldNames = ['分钟','小时','日','月','星期'];
+    var monthNames = ['','一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+    var dowNames = ['日','一','二','三','四','五','六'];
+
+    function getExpr() {
+      return fields.map(function(id) { return document.getElementById(id).value.trim() || '*'; }).join(' ');
+    }
+
+    function setExpr(expr) {
+      var parts = expr.split(/\s+/);
+      fields.forEach(function(id, i) {
+        document.getElementById(id).value = parts[i] || '*';
+      });
+      update();
+    }
+
+    function parseField(val, min, max, nameMap) {
+      if (!val || val === '*') return { type: 'all', desc: '每' + (nameMap ? '' : '') };
+      var vals = val.split(',');
+      var results = [];
+      for (var i = 0; i < vals.length; i++) {
+        var v = vals[i].trim();
+        if (v === '*') return { type: 'all', desc: '每' };
+        var stepMatch = v.match(/^(\*|\d+(-\d+)?)\/(\d+)$/);
+        if (stepMatch) {
+          var step = parseInt(stepMatch[3]);
+          if (stepMatch[1] === '*') {
+            return { type: 'step', step: step, desc: '每隔 ' + step + ' ' };
+          }
+          var rangeParts = stepMatch[1].split('-');
+          var rStart = parseInt(rangeParts[0]);
+          var rEnd = parseInt(rangeParts[1]);
+          var desc = rStart + '-' + rEnd + ' 内每隔 ' + step + ' ';
+          return { type: 'step_range', step: step, rangeStart: rStart, rangeEnd: rEnd, desc: desc };
+        }
+        if (v.indexOf('-') > -1) {
+          var rangeParts = v.split('-');
+          var rStart = parseInt(rangeParts[0]);
+          var rEnd = parseInt(rangeParts[1]);
+          results.push({ type: 'range', start: rStart, end: rEnd,
+            desc: nameMap ? (nameMap[rStart] + ' 到 ' + nameMap[rEnd]) : (rStart + ' 到 ' + rEnd) });
+        } else {
+          var num = parseInt(v);
+          results.push({ type: 'single', value: num,
+            desc: nameMap ? nameMap[num] : String(num) });
+        }
+      }
+      return { type: 'list', items: results, desc: results.map(function(r) { return r.desc; }).join('、') };
+    }
+
+    function explain() {
+      var expr = getExpr();
+      var parts = expr.split(/\s+/);
+      if (parts.length !== 5) return { error: 'Cron 表达式需要 5 个字段，当前有 ' + parts.length + ' 个' };
+
+      var parsed = [
+        parseField(parts[0], 0, 59),
+        parseField(parts[1], 0, 23),
+        parseField(parts[2], 1, 31),
+        parseField(parts[3], 1, 12, monthNames),
+        parseField(parts[4], 0, 6, dowNames)
+      ];
+
+      // Build human-readable description
+      var minDesc = parsed[0].desc || '每分钟';
+      var hourDesc = parsed[1].desc || '每小时';
+      var domDesc = parsed[2].desc || '每天';
+      var monDesc = parsed[3].desc || '每月';
+      var dowDesc = parsed[4].desc || '';
+
+      var desc = '';
+      if (parts[0] !== '*' && parts[1] === '*' && parts[2] === '*' && parts[3] === '*' && parts[4] === '*') {
+        desc = '每隔 ' + parts[0] + ' 分钟执行';
+      } else if (parts[1] !== '*' && parts[0] !== '*' && parts[2] === '*' && parts[3] === '*' && parts[4] === '*') {
+        desc = '每天 ' + parts[1] + ':' + (parts[0].length === 2 ? parts[0] : '0' + parts[0]) + ' 执行';
+      } else if (parts[1] !== '*' && parts[2] === '*' && parts[3] === '*' && parts[4] === '*') {
+        desc = '每天 ' + parts[1] + ' 点的第 ' + (parts[0] === '*' ? '0' : parts[0]) + ' 分执行';
+      } else if (parts[2] !== '*' && parts[3] === '*' && parts[4] === '*') {
+        desc = '每月 ' + domDesc + ' 日执行';
+      } else if (parts[3] !== '*' && parts[2] !== '*') {
+        desc = '每年 ' + monDesc + ' ' + domDesc + ' 日执行';
+      } else if (parts[4] !== '*' && parts[2] === '*') {
+        desc = '每周 ' + dowDesc + ' 执行';
+      } else {
+        desc = '在 ' + minDesc + '，' + hourDesc + '，' + domDesc + '日，' + monDesc + '月，' + dowDesc + ' 执行';
+      }
+
+      if (parts[1] !== '*' && parts[0] !== '*') {
+        desc += '（' + parts[1].replace(/\*/g,'0') + ':' + (parts[0].length === 2 || parts[0] === '*' ? parts[0].replace(/\*/g,'00') : '0'+parts[0]) + '）';
+      }
+
+      return { parsed: parsed, desc: desc, error: null };
+    }
+
+    function getNextTimes(expr, count) {
+      count = count || 10;
+      var parts = expr.split(/\s+/);
+      if (parts.length !== 5) return [];
+
+      var now = new Date();
+      now.setSeconds(0, 0);
+      now.setMinutes(now.getMinutes() + 1);
+
+      var times = [];
+      var maxIter = 525600; // 1 year of minutes
+      var iter = 0;
+      var cursor = new Date(now);
+
+      function match(val, actual, min, max) {
+        if (!val || val === '*') return true;
+        var vals = val.split(',');
+        for (var i = 0; i < vals.length; i++) {
+          var v = vals[i].trim();
+          var stepMatch = v.match(/^(\*|\d+(-\d+)?)\/(\d+)$/);
+          if (stepMatch) {
+            var step = parseInt(stepMatch[3]);
+            var rangeStart = stepMatch[1] === '*' ? min : parseInt(stepMatch[1].split('-')[0]);
+            var rangeEnd = stepMatch[1] === '*' ? max : (stepMatch[1].indexOf('-') > -1 ? parseInt(stepMatch[1].split('-')[1]) : max);
+            if (actual >= rangeStart && actual <= rangeEnd && (actual - rangeStart) % step === 0) return true;
+          } else if (v.indexOf('-') > -1) {
+            var parts = v.split('-');
+            if (actual >= parseInt(parts[0]) && actual <= parseInt(parts[1])) return true;
+          } else if (parseInt(v) === actual) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      while (times.length < count && iter < maxIter) {
+        var m = match(parts[0], cursor.getMinutes(), 0, 59);
+        var h = match(parts[1], cursor.getHours(), 0, 23);
+        var dom = match(parts[2], cursor.getDate(), 1, 31);
+        var mon = match(parts[3], cursor.getMonth() + 1, 1, 12);
+        var dow = match(parts[4], cursor.getDay(), 0, 6);
+
+        if (m && h && dom && mon && dow) {
+          times.push(new Date(cursor));
+        }
+        cursor.setMinutes(cursor.getMinutes() + 1);
+        iter++;
+      }
+      return times;
+    }
+
+    function formatDateTime(d) {
+      var y = d.getFullYear();
+      var M = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      var h = String(d.getHours()).padStart(2, '0');
+      var m = String(d.getMinutes()).padStart(2, '0');
+      return y + '-' + M + '-' + day + ' ' + h + ':' + m;
+    }
+
+    function update() {
+      var result = explain();
+      var box = document.getElementById('explainBox');
+      if (result.error) {
+        box.className = 'explain-box error';
+        box.textContent = '❌ ' + result.error;
+        document.getElementById('nextTimes').style.display = 'none';
+      } else {
+        box.className = 'explain-box';
+        box.textContent = '📝 ' + result.desc;
+        var times = getNextTimes(getExpr(), 10);
+        var tbody = document.getElementById('nextTimesBody');
+        if (times.length > 0) {
+          document.getElementById('nextTimes').style.display = '';
+          tbody.innerHTML = times.map(function(t, i) {
+            return '<tr><td>' + (i + 1) + '</td><td>' + formatDateTime(t) + '</td><td>星期' + dowNames[t.getDay()] + '</td></tr>';
+          }).join('');
+        } else {
+          document.getElementById('nextTimes').style.display = 'none';
+        }
+      }
+    }
+
+    // Bind input events
+    fields.forEach(function(id) {
+      document.getElementById(id).addEventListener('input', update);
+    });
+
+    // Presets
+    var presets = [
+      { label: '每分钟', expr: '* * * * *' },
+      { label: '每5分钟', expr: '*/5 * * * *' },
+      { label: '每小时', expr: '0 * * * *' },
+      { label: '每6小时', expr: '0 */6 * * *' },
+      { label: '每天午夜', expr: '0 0 * * *' },
+      { label: '每天早上9点', expr: '0 9 * * *' },
+      { label: '工作日早上9点', expr: '0 9 * * 1-5' },
+      { label: '每周一早上8点', expr: '0 8 * * 1' },
+      { label: '每月1号凌晨', expr: '0 0 1 * *' },
+      { label: '每15分钟', expr: '*/15 * * * *' },
+      { label: '每小时的第30分', expr: '30 * * * *' },
+      { label: '每天下午6点', expr: '0 18 * * *' },
+    ];
+
+    document.getElementById('presetGrid').innerHTML = presets.map(function(p) {
+      return '<button class="preset-btn" data-expr="' + p.expr + '"><div>' + p.label + '</div><div class="preset-expr">' + p.expr + '</div></button>';
+    }).join('');
+
+    document.querySelectorAll('.preset-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setExpr(btn.dataset.expr);
+      });
+    });
+
+    // Init
+    update();
+  </script>
+</body>
+</html>

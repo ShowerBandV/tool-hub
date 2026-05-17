@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <meta name="description" content="在线等差数列和等比数列计算器，支持生成数列、计算通项、求和。">
+  <title>数列计算器 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 12px; }
+    .tab-btn { padding: 8px 18px; border: 2px solid var(--border); border-radius: 8px;
+      background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: var(--transition); }
+    .tab-btn:hover { border-color: var(--accent); }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width:500px) { .config-grid { grid-template-columns: 1fr; } }
+    .result-area { background: #f8fafc; border-radius: 12px; padding: 14px; margin-top: 12px; max-height: 200px; overflow-y: auto; }
+    .result-area .seq { font-family: var(--font-mono); font-size: 0.82rem; word-break: break-all; line-height: 1.6; }
+    .sum-value { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 数列计算器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">📈 数列计算器</h2>
+      <p class="panel-desc">在线等差数列和等比数列计算器。可生成数列前N项、计算第N项的通项值、计算前N项之和。</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="arithmetic">等差数列</button>
+        <button class="tab-btn" data-tab="geometric">等比数列</button>
+      </div>
+
+      <div class="config-grid">
+        <div><label class="form-label">首项 a₁</label><input type="number" class="form-input" id="a1" value="1"></div>
+        <div><label class="form-label" id="dLabel">公差 d</label><input type="number" class="form-input" id="d" value="2"></div>
+        <div><label class="form-label">项数 n</label><input type="number" class="form-input" id="n" value="10" min="1" max="100"></div>
+        <div style="display:flex;align-items:flex-end;"><button class="btn btn-primary" id="calcBtn" style="width:100%;">计算</button></div>
+      </div>
+
+      <div class="result-area" id="resultArea" style="display:none;">
+        <div><span style="font-weight:600;">第N项：</span><span id="anResult" style="font-family:var(--font-mono);">—</span></div>
+        <div style="margin-top:4px;"><span style="font-weight:600;">前N项和：</span><span class="sum-value" id="sumResult">—</span></div>
+        <div style="margin-top:6px;"><span style="font-weight:600;">数列：</span></div>
+        <div class="seq" id="seqResult"></div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+    <div class="card" style="margin-top:20px;"><h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div></div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var currentTab = 'arithmetic';
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        currentTab = this.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('dLabel').textContent = currentTab === 'arithmetic' ? '公差 d' : '公比 r';
+      });
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      var a1 = parseFloat(document.getElementById('a1').value);
+      var d = parseFloat(document.getElementById('d').value);
+      var n = parseInt(document.getElementById('n').value);
+      if (isNaN(a1) || isNaN(d) || isNaN(n) || n < 1) { showToast('请输入有效参数'); return; }
+      if (n > 100) { showToast('项数最多100'); return; }
+
+      var seq = [], an, sum;
+      if (currentTab === 'arithmetic') {
+        an = a1 + (n - 1) * d;
+        sum = (n / 2) * (2 * a1 + (n - 1) * d);
+        for (var i = 0; i < n; i++) seq.push(a1 + i * d);
+      } else {
+        if (a1 === 0 && d === 0) { showToast('请输入有效参数'); return; }
+        an = a1 * Math.pow(d, n - 1);
+        if (d === 1) sum = a1 * n;
+        else sum = a1 * (1 - Math.pow(d, n)) / (1 - d);
+        for (var i = 0; i < n; i++) seq.push(a1 * Math.pow(d, i));
+      }
+
+      document.getElementById('anResult').textContent = an;
+      document.getElementById('sumResult').textContent = sum;
+      document.getElementById('seqResult').textContent = seq.join(', ');
+      document.getElementById('resultArea').style.display = '';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'gcd-lcm', i: '🔢', n: '公因数/公倍数' },
+      { h: 'time-calc', i: '🕐', n: '时间加减' },
+      { h: 'factorial', i: '!', n: '阶乘计算器' },
+      { h: 'fraction-calc', i: '÷', n: '分数计算器' },
+      { h: 'text-set', i: '∩∪', n: '文本交集/差集' },
+      { h: 'permutations', i: '🔀', n: '列表全排列' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(function(t) { return '<a href="../' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>'; }).join('');
+  </script>
+</body>
+</html>

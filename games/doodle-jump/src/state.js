@@ -14,8 +14,6 @@ var state = {
   gameState: C.STATE.MENU,
   score: 0,
   bestScore: 0,
-  coins: 0,
-  skinShards: 0,
   cameraY: 0,
   highestReachedY: 0,
 
@@ -23,7 +21,7 @@ var state = {
   fallTimer: 0,
   activeSpeedBoost: false,
   speedBoostTimer: 0,
-  nextRewardTime: 0,
+  jetpackCooldown: 0,
 
   inputDirection: 0,
   selectedCharacter: C.CHARACTERS[0],
@@ -41,12 +39,11 @@ var state = {
   collectibles: [],
 
   lastPlatform: null,
+  lastPlatformId: 0,
+  lastScoredY: undefined,
   lastPlatformY: 0,
 
   difficultyBase: 0,
-  reviveCount: 0,
-
-  adCooldown: 0,
   gamesPlayed: 0,
   shakeAmount: 0,
   floatingTexts: [],

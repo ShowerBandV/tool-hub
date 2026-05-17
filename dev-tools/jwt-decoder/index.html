@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线JWT解码工具，解析JWT Token的Header、Payload、Signature，检查过期状态，纯前端无数据传输。">
+  <title>JWT 解码器 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .section-card { background: #f8fafc; border: 2px solid var(--border); border-radius: 12px;
+      margin-bottom: 10px; overflow: hidden; }
+    .section-header { padding: 10px 16px; font-weight: 700; font-size: 0.85rem;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .section-header.hdr { background: #fef3c7; color: #92400e; }
+    .section-header.pld { background: #dbeafe; color: #1e40af; }
+    .section-header.sig { background: #fce7f3; color: #9d174d; }
+    .section-body { padding: 12px 16px; font-family: var(--font-mono); font-size: 0.82rem;
+      white-space: pre-wrap; word-break: break-all; line-height: 1.5; display: none; }
+    .section-card.open .section-body { display: block; }
+    .json-key { color: #b91c1c; }
+    .json-string { color: #0d7a3f; }
+    .json-number { color: #b45309; }
+    .json-boolean { color: #7c3aed; }
+    .json-null { color: #6b7280; }
+    .exp-badge { display: inline-block; padding: 4px 10px; border-radius: 12px;
+      font-size: 0.78rem; font-weight: 600; }
+    .exp-badge.valid { background: #f0fdf4; color: #16a34a; }
+    .exp-badge.expired { background: #fef2f2; color: #dc2626; }
+    .exp-badge.noexp { background: #f1f5f9; color: #64748b; }
+    textarea.form-input { font-family: var(--font-mono); font-size: 0.82rem; height: 80px; }
+    .quick-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> JWT 解码器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔐 JWT 解码器</h2>
+      <p class="panel-desc">在线JWT Token解码工具。粘贴JWT字符串即可解析Header和Payload，支持过期时间检查。所有解码操作在浏览器本地完成，Token不会发送到服务器。</p>
+
+      <label class="form-label">JWT Token</label>
+      <textarea class="form-input" id="jwtInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"></textarea>
+
+      <div class="quick-actions">
+        <button class="btn btn-primary" id="decodeBtn">🔍 解码</button>
+        <button class="btn btn-outline" id="clearBtn">🗑️ 清空</button>
+      </div>
+
+      <div id="resultArea" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../url-encode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔗</span> URL 编解码</a>
+        <a href="../word-count/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 字数统计</a>
+        <a href="../qrcode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📱</span> 二维码工具</a>
+        <a href="../cron-parser/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏱</span> Cron 表达式</a>
+        <a href="../countdown/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏳</span> 倒计时</a>
+        <a href="../random-number/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎲</span> 随机数生成</a>
+        <a href="../marquee/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎠</span> 跑马灯</a>
+        <a href="../http-status/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📡</span> HTTP 状态码</a>
+        <a href="../color-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎨</span> 颜色转换</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var jwtInput = document.getElementById('jwtInput');
+    var resultArea = document.getElementById('resultArea');
+
+    function base64UrlDecode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      try {
+        return decodeURIComponent(atob(str).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+      } catch(e) {
+        return null;
+      }
+    }
+
+    function tryFormatJSON(str) {
+      try {
+        var obj = JSON.parse(str);
+        return JSON.stringify(obj, null, 2);
+      } catch(e) {
+        return str;
+      }
+    }
+
+    function highlightJSON(json) {
+      return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(m) {
+          var cls = 'json-number';
+          if (/^"/.test(m)) { cls = /:$/.test(m) ? 'json-key' : 'json-string'; }
+          else if (/true|false/.test(m)) { cls = 'json-boolean'; }
+          else if (/null/.test(m)) { cls = 'json-null'; }
+          return '<span class="'+cls+'">'+m+'</span>';
+        });
+    }
+
+    function decode() {
+      var token = jwtInput.value.trim();
+      if (!token) { resultArea.innerHTML = ''; return; }
+
+      var parts = token.split('.');
+      if (parts.length !== 3) {
+        resultArea.innerHTML = '<div style="color:#dc2626;padding:12px;">❌ 无效的 JWT Token：应包含 3 个以 "." 分隔的部分（Header.Payload.Signature），当前有 ' + parts.length + ' 个部分</div>';
+        return;
+      }
+
+      var headerDecoded = base64UrlDecode(parts[0]);
+      var payloadDecoded = base64UrlDecode(parts[1]);
+
+      if (!headerDecoded) {
+        resultArea.innerHTML = '<div style="color:#dc2626;padding:12px;">❌ 无法解码 Header（第一部分）</div>';
+        return;
+      }
+      if (!payloadDecoded) {
+        resultArea.innerHTML = '<div style="color:#dc2626;padding:12px;">❌ 无法解码 Payload（第二部分）</div>';
+        return;
+      }
+
+      var headerFormatted = tryFormatJSON(headerDecoded);
+      var payloadFormatted = tryFormatJSON(payloadDecoded);
+
+      // Parse exp
+      var expBadge = '';
+      try {
+        var payload = JSON.parse(payloadDecoded);
+        if (payload.exp) {
+          var expDate = new Date(payload.exp * 1000);
+          var now = new Date();
+          var expired = expDate < now;
+          expBadge = '<div style="margin-top:8px;">⏰ 过期时间: <strong>' + expDate.toLocaleString('zh-CN') + '</strong> ';
+          expBadge += '<span class="exp-badge ' + (expired ? 'expired' : 'valid') + '">' + (expired ? '已过期' : '有效') + '</span></div>';
+        } else {
+          expBadge = '<div style="margin-top:8px;"><span class="exp-badge noexp">无过期时间 (exp)</span></div>';
+        }
+      } catch(e) {}
+
+      var html = '';
+      // Header section
+      html += '<div class="section-card open">';
+      html += '<div class="section-header hdr" onclick="this.parentElement.classList.toggle(\'open\')">📋 Header（算法与类型） <span style="font-size:0.75rem;">点击折叠</span></div>';
+      html += '<div class="section-body json-highlight">' + highlightJSON(headerFormatted) + '</div>';
+      html += '</div>';
+
+      // Payload section
+      html += '<div class="section-card open">';
+      html += '<div class="section-header pld" onclick="this.parentElement.classList.toggle(\'open\')">📦 Payload（数据载荷） <span style="font-size:0.75rem;">点击折叠</span></div>';
+      html += '<div class="section-body json-highlight">' + highlightJSON(payloadFormatted) + '</div>';
+      html += expBadge + '</div>';
+
+      // Signature section
+      html += '<div class="section-card">';
+      html += '<div class="section-header sig" onclick="this.parentElement.classList.toggle(\'open\')">🔏 Signature（签名） <span style="font-size:0.75rem;">点击展开</span></div>';
+      html += '<div class="section-body" style="font-size:0.75rem;word-break:break-all;">' + escapeHTML(parts[2]) + '</div>';
+      html += '</div>';
+
+      // Raw parts
+      html += '<div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted);">';
+      html += '<div>Header (Base64URL): <code style="word-break:break-all;">' + escapeHTML(parts[0]) + '</code></div>';
+      html += '<div style="margin-top:4px;">Payload (Base64URL): <code style="word-break:break-all;">' + escapeHTML(parts[1]) + '</code></div>';
+      html += '</div>';
+
+      resultArea.innerHTML = html;
+    }
+
+    document.getElementById('decodeBtn').addEventListener('click', decode);
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      jwtInput.value = '';
+      resultArea.innerHTML = '';
+    });
+
+    // Auto-decode on paste
+    jwtInput.addEventListener('paste', function() {
+      setTimeout(decode, 100);
+    });
+  </script>
+</body>
+</html>

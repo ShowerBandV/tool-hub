@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线随机分组工具，将名单随机分成N组或指定每组人数，支持一键复制导出分组结果。">
+  <title>随机分组 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .panel-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .panel-col { flex: 1; min-width: 240px; }
+    .panel-col textarea { min-height: 220px; font-size: 0.85rem; }
+    .mode-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .mode-row label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .mode-row input[type="radio"] { accent-color: var(--accent); }
+    .mode-row input[type="number"] { width: 60px; padding: 6px 8px; border: 2px solid var(--border); border-radius: 8px;
+      text-align: center; font-size: 0.9rem; }
+    .group-card { background: #f8fafc; border: 2px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 8px; }
+    .group-card .group-title { font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .group-card .group-members { font-size: 0.85rem; line-height: 1.7; color: #333; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn-action { padding: 10px 20px; border-radius: 10px; border: 2px solid var(--border);
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 6px; background: #fff; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-action.primary:hover { background: #4338ca; }
+    .empty-hint { color: var(--text-muted); text-align: center; padding: 30px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 随机分组
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎯 名单随机分组</h2>
+      <p class="panel-desc">在线随机分组工具。粘贴或输入名单（每行一个），选择分组方式后一键随机打乱分组。支持按组数或每组人数两种模式，结果可复制导出。</p>
+
+      <div class="panel-row">
+        <div class="panel-col">
+          <label class="form-label">名单列表（每行一个）</label>
+          <textarea class="form-input" id="nameInput" placeholder="张三&#10;李四&#10;王五&#10;赵六&#10;钱七&#10;孙八&#10;周九&#10;吴十"></textarea>
+          <div style="margin-top:4px;font-size:0.75rem;color:var(--text-muted);">已输入 <strong id="nameCount">0</strong> 个名单</div>
+        </div>
+        <div class="panel-col">
+          <label class="form-label">分组结果</label>
+          <div id="resultArea" style="min-height:220px;">
+            <div class="empty-hint">👆 输入名单后点击「随机分组」</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-row">
+        <span style="font-weight:600;font-size:0.85rem;">分组方式：</span>
+        <label><input type="radio" name="groupMode" value="groups" checked> 分成</label>
+        <input type="number" id="groupCount" value="2" min="1" max="100">
+        <span style="font-size:0.85rem;">组</span>
+        <label style="margin-left:12px;"><input type="radio" name="groupMode" value="members"> 每组</label>
+        <input type="number" id="memberCount" value="3" min="1" max="100" disabled>
+        <span style="font-size:0.85rem;">人</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-action primary" id="shuffleBtn">🎲 随机分组</button>
+        <button class="btn-action" id="copyGroupBtn">📋 复制结果</button>
+        <button class="btn-action" id="clearBtn">🗑️ 清空</button>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../url-encode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔗</span> URL 编解码</a>
+        <a href="../word-count/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 字数统计</a>
+        <a href="../qrcode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📱</span> 二维码工具</a>
+        <a href="../cron-parser/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏱</span> Cron 表达式</a>
+        <a href="../countdown/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏳</span> 倒计时</a>
+        <a href="../random-number/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎲</span> 随机数生成</a>
+        <a href="../marquee/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎠</span> 跑马灯</a>
+        <a href="../http-status/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📡</span> HTTP 状态码</a>
+        <a href="../color-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎨</span> 颜色转换</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var nameInput = document.getElementById('nameInput');
+    var resultArea = document.getElementById('resultArea');
+    var nameCount = document.getElementById('nameCount');
+    var lastGroups = [];
+
+    // Track name count
+    nameInput.addEventListener('input', function() {
+      var names = getNames();
+      nameCount.textContent = names.length;
+    });
+
+    function getNames() {
+      return nameInput.value.split(/[\n,，、]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+    }
+
+    // Mode switching
+    document.querySelectorAll('input[name="groupMode"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        document.getElementById('groupCount').disabled = this.value === 'members';
+        document.getElementById('memberCount').disabled = this.value === 'groups';
+      });
+    });
+
+    function shuffle(arr) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      }
+      return a;
+    }
+
+    function doShuffle() {
+      var names = getNames();
+      if (names.length === 0) {
+        resultArea.innerHTML = '<div class="empty-hint">⚠️ 请先输入名单</div>';
+        lastGroups = [];
+        return;
+      }
+
+      var mode = document.querySelector('input[name="groupMode"]:checked').value;
+      var shuffled = shuffle(names);
+      var groups = [];
+
+      if (mode === 'groups') {
+        var groupCount = Math.max(1, Math.min(names.length, parseInt(document.getElementById('groupCount').value) || 2));
+        var baseSize = Math.floor(shuffled.length / groupCount);
+        var remainder = shuffled.length % groupCount;
+        var idx = 0;
+        for (var g = 0; g < groupCount; g++) {
+          var size = baseSize + (g < remainder ? 1 : 0);
+          groups.push(shuffled.slice(idx, idx + size));
+          idx += size;
+        }
+      } else {
+        var perGroup = Math.max(1, parseInt(document.getElementById('memberCount').value) || 3);
+        for (var i = 0; i < shuffled.length; i += perGroup) {
+          groups.push(shuffled.slice(i, i + perGroup));
+        }
+      }
+
+      lastGroups = groups;
+      renderGroups(groups);
+    }
+
+    function renderGroups(groups) {
+      var colors = ['#4f46e5','#0d7a3f','#b45309','#7c3aed','#db2777','#0891b2','#ca8a04','#2563eb'];
+      var html = '';
+      groups.forEach(function(members, i) {
+        html += '<div class="group-card" style="border-left:4px solid ' + colors[i % colors.length] + ';">';
+        html += '<div class="group-title">第 ' + (i + 1) + ' 组（' + members.length + '人）</div>';
+        html += '<div class="group-members">' + members.map(function(m, j) { return (j + 1) + '. ' + escapeHTML(m); }).join('<br>') + '</div>';
+        html += '</div>';
+      });
+      resultArea.innerHTML = html;
+    }
+
+    function getGroupText() {
+      return lastGroups.map(function(members, i) {
+        return '第 ' + (i + 1) + ' 组（' + members.length + '人）\n' + members.map(function(m, j) { return (j + 1) + '. ' + m; }).join('\n');
+      }).join('\n\n');
+    }
+
+    document.getElementById('shuffleBtn').addEventListener('click', doShuffle);
+
+    document.getElementById('copyGroupBtn').addEventListener('click', function() {
+      if (lastGroups.length === 0) { showToast('⚠️ 请先执行随机分组'); return; }
+      navigator.clipboard.writeText(getGroupText()).then(function() {
+        showToast('✅ 已复制分组结果');
+      }).catch(function() {
+        showToast('❌ 复制失败');
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      nameInput.value = '';
+      resultArea.innerHTML = '<div class="empty-hint">👆 输入名单后点击「随机分组」</div>';
+      nameCount.textContent = '0';
+      lastGroups = [];
+    });
+
+    // Initial count
+    nameCount.textContent = getNames().length;
+  </script>
+</body>
+</html>

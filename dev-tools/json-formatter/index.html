@@ -3,15 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="在线JSON格式化工具，支持JSON数据的美化、压缩、校验与语法高亮，方便开发者调试API数据。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线JSON格式化工具，支持JSON美化、压缩、校验，实时处理，一键复制导出。">
   <title>JSON 格式化 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .json-highlight .json-key { color: #b91c1c; }
     .json-highlight .json-string { color: #0d7a3f; }
     .json-highlight .json-number { color: #b45309; }
-    .panel-row { display: flex; gap: 18px; flex-wrap: wrap; }
-    .panel-col { flex: 1; min-width: 250px; }
+    .json-highlight .json-boolean { color: #7c3aed; }
+    .json-highlight .json-null { color: #6b7280; }
+    .tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 12px; }
+    .tab-btn { padding: 10px 24px; border: none; background: transparent; cursor: pointer;
+      font-size: 0.9rem; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: var(--transition); }
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .panel-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .panel-col { flex: 1; min-width: 260px; display: flex; flex-direction: column; }
+    .panel-col textarea { flex: 1; min-height: 280px; font-family: var(--font-mono); font-size: 0.85rem; }
+    .output-area { flex: 1; min-height: 280px; background: #f8fafc; border: 2px solid var(--border);
+      border-radius: 12px; padding: 12px; overflow: auto; font-family: var(--font-mono); font-size: 0.85rem;
+      white-space: pre-wrap; word-break: break-all; }
+    .output-area.error { color: var(--danger); border-color: #ef4444; background: #fef2f2; }
+    .output-area.success { color: var(--success); border-color: #10b981; background: #f0fdf4; }
+    .btn-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .btn-action { padding: 10px 20px; border-radius: 10px; border: 2px solid var(--border);
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 6px; background: #fff; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-action.primary:hover { background: #4338ca; }
+    .btn-action.danger { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .btn-action.danger:hover { background: #dc2626; }
   </style>
 </head>
 <body>
@@ -23,15 +48,28 @@
 
     <div class="card tool-panel">
       <h2 class="panel-title">{ } JSON 格式化 / 校验</h2>
-      <p class="panel-desc">在线JSON格式化工具。粘贴或输入JSON数据后自动美化排版与语法高亮，支持一键压缩、校验语法错误、导出格式化结果。适合开发者调试API返回数据或配置文件。</p>
-      <div class="panel-row">
-        <div class="panel-col"><label class="form-label">输入</label><textarea class="form-input" id="jsonInput" placeholder='{"key":"value"}'></textarea></div>
-        <div class="panel-col"><label class="form-label">输出</label><div class="result-box" id="jsonOutput" style="max-height:300px;overflow-y:auto;"><button class="copy-btn">📋</button><button class="export-btn">⬇️</button></div></div>
+      <p class="panel-desc">在线JSON格式化工具。粘贴或输入JSON数据，选择对应标签页即可实时查看结果。支持美化排版与语法高亮、压缩、校验语法错误，一键复制或导出。</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="format">✨ 格式化</button>
+        <button class="tab-btn" data-tab="compress">🗜️ 压缩</button>
+        <button class="tab-btn" data-tab="validate">✅ 校验</button>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px;">
-        <button class="btn btn-primary" id="jsonFormat">✨ 格式化</button>
-        <button class="btn" id="jsonCompress">🗜️ 压缩</button>
-        <button class="btn" id="jsonValidate">✅ 校验</button>
+
+      <div class="panel-row">
+        <div class="panel-col">
+          <label class="form-label">输入 JSON</label>
+          <textarea class="form-input" id="jsonInput" placeholder='粘贴 JSON 数据，例如：&#10;{"name":"张三","age":25,"items":["书","笔"]}'></textarea>
+        </div>
+        <div class="panel-col">
+          <label class="form-label">输出结果</label>
+          <div class="output-area" id="jsonOutput"></div>
+          <div class="btn-row">
+            <button class="btn-action primary" id="copyBtn">📋 复制结果</button>
+            <button class="btn-action" id="exportBtn">💾 导出文件</button>
+            <button class="btn-action danger" id="clearBtn">🗑️ 清空</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -64,33 +102,121 @@
 
   <script src="../../assets/js/common.js"></script>
   <script>
-    const input = document.getElementById('jsonInput'), output = document.getElementById('jsonOutput');
-    function highlight(json) {
+    const input = document.getElementById('jsonInput');
+    const output = document.getElementById('jsonOutput');
+    let currentTab = 'format';
+    let lastResult = '';
+
+    function highlightJSON(json) {
       return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
-          let cls = 'json-number';
-          if (/^"/.test(m)) cls = /:$/.test(m) ? 'json-key' : 'json-string';
-          else if (/true|false/.test(m)) cls = 'json-boolean';
-          else if (/null/.test(m)) cls = 'json-null';
+        .replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(m) {
+          var cls = 'json-number';
+          if (/^"/.test(m)) { cls = /:$/.test(m) ? 'json-key' : 'json-string'; }
+          else if (/true|false/.test(m)) { cls = 'json-boolean'; }
+          else if (/null/.test(m)) { cls = 'json-null'; }
           return '<span class="'+cls+'">'+m+'</span>';
         });
     }
-    document.getElementById('jsonFormat').onclick = () => {
-      try { const obj = JSON.parse(input.value); output.className='result-box json-highlight show'; output.innerHTML=highlight(JSON.stringify(obj,null,2))+'<button class="copy-btn">📋</button><button class="export-btn">⬇️</button>'; bindBtns(output, ()=>JSON.stringify(obj,null,2), 'formatted.json'); }
-      catch(e) { output.className='result-box show'; output.innerHTML='<span style="color:var(--danger)">'+e.message+'</span>'; }
-    };
-    document.getElementById('jsonCompress').onclick = () => {
-      try { const txt = JSON.stringify(JSON.parse(input.value)); output.className='result-box show'; output.textContent = txt; output.innerHTML += '<button class="copy-btn">📋</button><button class="export-btn">⬇️</button>'; bindBtns(output, ()=>txt, 'compressed.json'); }
-      catch(e) { output.className='result-box show'; output.textContent = e.message; }
-    };
-    document.getElementById('jsonValidate').onclick = () => {
-      try { const o = JSON.parse(input.value); output.className='result-box show'; output.innerHTML='<span style="color:var(--success)">✅ 有效 ('+(Array.isArray(o)?'Array':typeof o)+')</span>'; }
-      catch(e) { output.className='result-box show'; output.innerHTML='<span style="color:var(--danger)">❌ '+e.message+'</span>'; }
-    };
-    function bindBtns(el, getContent, filename) {
-      el.querySelector('.copy-btn')?.addEventListener('click', () => navigator.clipboard.writeText(getContent()));
-      el.querySelector('.export-btn')?.addEventListener('click', () => downloadText(getContent(), filename));
+
+    function process() {
+      var val = input.value.trim();
+      if (!val) { output.className = 'output-area'; output.innerHTML = ''; lastResult = ''; return; }
+
+      if (currentTab === 'format') {
+        try {
+          var obj = JSON.parse(val);
+          var formatted = JSON.stringify(obj, null, 2);
+          lastResult = formatted;
+          output.className = 'output-area json-highlight';
+          output.innerHTML = highlightJSON(formatted);
+        } catch(e) {
+          output.className = 'output-area error';
+          output.textContent = '❌ ' + e.message;
+          lastResult = '';
+        }
+      } else if (currentTab === 'compress') {
+        try {
+          var compressed = JSON.stringify(JSON.parse(val));
+          lastResult = compressed;
+          output.className = 'output-area';
+          output.textContent = compressed;
+        } catch(e) {
+          output.className = 'output-area error';
+          output.textContent = '❌ ' + e.message;
+          lastResult = '';
+        }
+      } else if (currentTab === 'validate') {
+        try {
+          var o = JSON.parse(val);
+          var type = Array.isArray(o) ? 'Array' : typeof o;
+          var count = Array.isArray(o) ? o.length : Object.keys(o).length;
+          lastResult = '';
+          output.className = 'output-area success';
+          output.innerHTML = '<span style="font-weight:700;">✅ JSON 有效</span>\n类型: ' + type + '\n' + (Array.isArray(o) ? '元素数: ' : '键数: ') + count;
+        } catch(e) {
+          output.className = 'output-area error';
+          output.textContent = '❌ ' + e.message;
+          lastResult = '';
+        }
+      }
     }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentTab = btn.dataset.tab;
+        process();
+      });
+    });
+
+    // Auto-process on input
+    var debounceTimer;
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(process, 200);
+    });
+
+    // Copy button
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      if (!lastResult && currentTab === 'validate') {
+        lastResult = output.textContent;
+      }
+      if (lastResult) {
+        navigator.clipboard.writeText(lastResult).then(function() {
+          showToast('✅ 已复制到剪贴板');
+        }).catch(function() {
+          showToast('❌ 复制失败');
+        });
+      } else {
+        showToast('⚠️ 没有可复制的结果');
+      }
+    });
+
+    // Export button
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      if (!lastResult && currentTab === 'validate') {
+        lastResult = output.textContent;
+      }
+      if (lastResult) {
+        var ext = currentTab === 'compress' ? 'compressed.json' : 'formatted.json';
+        downloadText(lastResult, ext);
+      } else {
+        showToast('⚠️ 没有可导出的结果');
+      }
+    });
+
+    // Clear button
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      input.value = '';
+      output.className = 'output-area';
+      output.innerHTML = '';
+      lastResult = '';
+    });
+
+    // Initial process if there's pre-filled content
+    process();
   </script>
 </body>
 </html>

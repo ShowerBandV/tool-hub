@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线图片裁剪与缩放工具，支持拖拽选择裁剪区域、指定宽高缩放、导出PNG/JPG/WebP格式。">
+  <title>图片裁剪缩放 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .editor-wrap { position: relative; display: inline-block; border: 2px solid var(--border);
+      border-radius: 12px; overflow: hidden; background: #f0f0f0; max-width: 100%; }
+    .editor-wrap canvas { display: block; max-width: 100%; cursor: crosshair; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-action { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+      background: #fff; display: flex; align-items: center; gap: 4px; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .size-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .size-row input { width: 80px; padding: 6px 8px; border: 2px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+    .info-bar { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+    .drop-zone { border: 3px dashed var(--border); border-radius: 16px; padding: 30px 20px;
+      text-align: center; cursor: pointer; transition: var(--transition); background: #fafbfc; margin-bottom: 10px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #eef2ff; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 图片裁剪缩放
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">✂️ 图片裁剪与缩放</h2>
+      <p class="panel-desc">在线图片裁剪与缩放工具。拖拽选择裁剪区域，或指定宽高进行缩放。支持导出PNG/JPG/WebP格式。</p>
+
+      <div class="drop-zone" id="dropZone">
+        <span style="font-size:2rem;display:block;margin-bottom:4px;">📷</span>
+        <span style="font-size:0.9rem;">拖拽图片到此处，或点击上传</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+      <div id="editorArea" style="display:none;">
+        <div class="editor-wrap">
+          <canvas id="editorCanvas"></canvas>
+        </div>
+        <div class="info-bar" id="infoBar"></div>
+
+        <div class="size-row">
+          <label style="font-size:0.78rem;">裁剪区域：</label>
+          <span style="font-size:0.78rem;">X</span><input type="number" id="cropX" value="0" min="0">
+          <span style="font-size:0.78rem;">Y</span><input type="number" id="cropY" value="0" min="0">
+          <span style="font-size:0.78rem;">W</span><input type="number" id="cropW" value="200" min="1">
+          <span style="font-size:0.78rem;">H</span><input type="number" id="cropH" value="200" min="1">
+        </div>
+
+        <div class="size-row">
+          <label style="font-size:0.78rem;">输出尺寸（缩放到）：</label>
+          <input type="number" id="outW" value="200" min="1" max="4000">
+          <span style="font-size:0.78rem;">×</span>
+          <input type="number" id="outH" value="200" min="1" max="4000">
+          <span style="font-size:0.78rem;">px</span>
+          <input type="checkbox" id="keepRatio" checked>
+          <label style="font-size:0.78rem;">保持比例</label>
+        </div>
+
+        <div class="btn-row">
+          <select id="exportFmt" style="padding:6px 8px;border:2px solid var(--border);border-radius:6px;font-size:0.82rem;">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/webp">WebP</option>
+          </select>
+          <button class="btn-action primary" id="cropBtn">✂️ 裁剪并导出</button>
+          <button class="btn-action" id="resizeBtn">📐 仅缩放导出</button>
+          <button class="btn-action" id="resetBtn">🔄 重置</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var editorArea = document.getElementById('editorArea');
+    var editorCanvas = document.getElementById('editorCanvas');
+    var ctx = editorCanvas.getContext('2d');
+    var img = new Image();
+    var cropRect = { x:0, y:0, w:200, h:200 };
+    var dragging = false, dragCorner = '', dragStart = {};
+
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) loadImage(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) loadImage(fileInput.files[0]);
+      fileInput.value = '';
+    });
+
+    function loadImage(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        img.onload = function() {
+          var maxW = Math.min(img.width, 600);
+          var scale = maxW / img.width;
+          editorCanvas.width = img.width;
+          editorCanvas.height = img.height;
+          editorCanvas.style.width = maxW + 'px';
+          editorCanvas.style.height = (img.height * scale) + 'px';
+          cropRect = { x: Math.round(img.width * 0.1), y: Math.round(img.height * 0.1),
+                       w: Math.round(img.width * 0.4), h: Math.round(img.height * 0.4) };
+          syncInputs();
+          draw();
+          dropZone.style.display = 'none';
+          editorArea.style.display = '';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function syncInputs() {
+      document.getElementById('cropX').value = cropRect.x;
+      document.getElementById('cropY').value = cropRect.y;
+      document.getElementById('cropW').value = cropRect.w;
+      document.getElementById('cropH').value = cropRect.h;
+      document.getElementById('outW').value = cropRect.w;
+      document.getElementById('outH').value = cropRect.h;
+      document.getElementById('infoBar').textContent =
+        '原图: ' + img.width + '×' + img.height + ' | 裁剪: ' + cropRect.w + '×' + cropRect.h;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      // Overlay
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(0, 0, editorCanvas.width, editorCanvas.height);
+      ctx.clearRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+      ctx.drawImage(img, cropRect.x, cropRect.y, cropRect.w, cropRect.h, cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+
+      // Border
+      ctx.strokeStyle = '#4f46e5'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 3]);
+      ctx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+      ctx.setLineDash([]);
+    }
+
+    // Mouse drag to move/resize crop
+    editorCanvas.addEventListener('mousedown', function(e) {
+      var rect = editorCanvas.getBoundingClientRect();
+      var scaleX = editorCanvas.width / rect.width;
+      var scaleY = editorCanvas.height / rect.height;
+      var mx = (e.clientX - rect.left) * scaleX;
+      var my = (e.clientY - rect.top) * scaleY;
+      var margin = 15;
+
+      if (Math.abs(mx - cropRect.x) < margin && Math.abs(my - cropRect.y) < margin)
+        dragCorner = 'tl';
+      else if (Math.abs(mx - (cropRect.x + cropRect.w)) < margin && Math.abs(my - cropRect.y) < margin)
+        dragCorner = 'tr';
+      else if (Math.abs(mx - (cropRect.x + cropRect.w)) < margin && Math.abs(my - (cropRect.y + cropRect.h)) < margin)
+        dragCorner = 'br';
+      else if (Math.abs(mx - cropRect.x) < margin && Math.abs(my - (cropRect.y + cropRect.h)) < margin)
+        dragCorner = 'bl';
+      else if (mx > cropRect.x && mx < cropRect.x + cropRect.w && my > cropRect.y && my < cropRect.y + cropRect.h)
+        dragCorner = 'move';
+      else return;
+
+      dragging = true;
+      dragStart = { x: mx, y: my, cx: cropRect.x, cy: cropRect.y, cw: cropRect.w, ch: cropRect.h };
+    });
+
+    editorCanvas.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      var rect = editorCanvas.getBoundingClientRect();
+      var scaleX = editorCanvas.width / rect.width;
+      var scaleY = editorCanvas.height / rect.height;
+      var mx = (e.clientX - rect.left) * scaleX;
+      var my = (e.clientY - rect.top) * scaleY;
+      var dx = mx - dragStart.x, dy = my - dragStart.y;
+
+      if (dragCorner === 'move') {
+        cropRect.x = Math.max(0, Math.min(img.width - cropRect.w, dragStart.cx + dx));
+        cropRect.y = Math.max(0, Math.min(img.height - cropRect.h, dragStart.cy + dy));
+      } else {
+        if (dragCorner[0] === 't') { cropRect.y = Math.max(0, Math.min(dragStart.cy + dragStart.ch - 10, dragStart.cy + dy)); cropRect.h = dragStart.cy + dragStart.ch - cropRect.y; }
+        if (dragCorner[1] === 'l') { cropRect.x = Math.max(0, Math.min(dragStart.cx + dragStart.cw - 10, dragStart.cx + dx)); cropRect.w = dragStart.cx + dragStart.cw - cropRect.x; }
+        if (dragCorner[0] === 'b') { cropRect.h = Math.max(10, Math.min(img.height - dragStart.cy, dragStart.ch + dy)); }
+        if (dragCorner[1] === 'r') { cropRect.w = Math.max(10, Math.min(img.width - dragStart.cx, dragStart.cw + dx)); }
+      }
+      cropRect.x = Math.round(cropRect.x); cropRect.y = Math.round(cropRect.y);
+      cropRect.w = Math.round(cropRect.w); cropRect.h = Math.round(cropRect.h);
+      syncInputs();
+      draw();
+    });
+
+    window.addEventListener('mouseup', function() { dragging = false; });
+
+    // Input sync
+    ['cropX','cropY','cropW','cropH'].forEach(function(id) {
+      document.getElementById(id).addEventListener('change', function() {
+        cropRect.x = parseInt(document.getElementById('cropX').value) || 0;
+        cropRect.y = parseInt(document.getElementById('cropY').value) || 0;
+        cropRect.w = parseInt(document.getElementById('cropW').value) || 200;
+        cropRect.h = parseInt(document.getElementById('cropH').value) || 200;
+        cropRect.x = Math.max(0, Math.min(img.width - 1, cropRect.x));
+        cropRect.y = Math.max(0, Math.min(img.height - 1, cropRect.y));
+        cropRect.w = Math.max(10, Math.min(img.width - cropRect.x, cropRect.w));
+        cropRect.h = Math.max(10, Math.min(img.height - cropRect.y, cropRect.h));
+        document.getElementById('outW').value = cropRect.w;
+        document.getElementById('outH').value = cropRect.h;
+        draw();
+      });
+    });
+
+    document.getElementById('keepRatio').addEventListener('change', function() {
+      if (this.checked) {
+        document.getElementById('outH').value = Math.round(cropRect.h * (parseInt(document.getElementById('outW').value) / cropRect.w));
+      }
+    });
+    document.getElementById('outW').addEventListener('input', function() {
+      if (document.getElementById('keepRatio').checked)
+        document.getElementById('outH').value = Math.round(cropRect.h * (parseInt(this.value) / cropRect.w));
+    });
+
+    function doExport(crop) {
+      if (!img.src) { showToast('请先上传图片'); return; }
+      var fmt = document.getElementById('exportFmt').value;
+      var outW = parseInt(document.getElementById('outW').value) || 200;
+      var outH = parseInt(document.getElementById('outH').value) || 200;
+
+      var canvas = document.createElement('canvas');
+      canvas.width = outW; canvas.height = outH;
+      var c = canvas.getContext('2d');
+      c.fillStyle = '#fff'; c.fillRect(0, 0, outW, outH);
+
+      if (crop) {
+        c.drawImage(img, cropRect.x, cropRect.y, cropRect.w, cropRect.h, 0, 0, outW, outH);
+      } else {
+        c.drawImage(img, 0, 0, outW, outH);
+      }
+
+      canvas.toBlob(function(blob) {
+        var ext = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/webp' ? 'webp' : 'png';
+        downloadImageFromUrl(URL.createObjectURL(blob), 'image.' + ext);
+        showToast('✅ 已导出: image.' + ext);
+      }, fmt, 0.92);
+    }
+
+    document.getElementById('cropBtn').addEventListener('click', function() { doExport(true); });
+    document.getElementById('resizeBtn').addEventListener('click', function() { doExport(false); });
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (!img.src) return;
+      cropRect = { x: 0, y: 0, w: img.width, h: img.height };
+      syncInputs();
+      draw();
+    });
+
+    function downloadImageFromUrl(url, filename) {
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../color-picker', i: '🎨', n: '图片颜色拾取' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>

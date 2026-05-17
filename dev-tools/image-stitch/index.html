@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线图片拼长图工具，将多张图片横向或纵向拼接成一张长图，支持自定义间距、背景色等。">
+  <title>图片拼长图 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; margin: 10px 0; }
+    .file-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 2px solid var(--border);
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #f0f0f0; }
+    .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .file-thumb .remove-btn { position: absolute; top: 2px; right: 2px;
+      width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #fff;
+      border: none; cursor: pointer; font-size: 0.7rem; font-weight: 700; line-height: 1; }
+    .drop-zone { border: 3px dashed var(--border); border-radius: 16px; padding: 30px 20px;
+      text-align: center; cursor: pointer; transition: var(--transition); background: #fafbfc; margin-bottom: 10px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #eef2ff; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-action { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+      background: #fff; display: flex; align-items: center; gap: 4px; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .preview-wrap { margin-top: 10px; text-align: center; max-height: 500px; overflow-y: auto; }
+    .preview-wrap img { max-width: 100%; border-radius: 8px; border: 2px solid var(--border); }
+    .config-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+    .config-row label { font-size: 0.78rem; color: var(--text-muted); }
+    .config-row input, .config-row select { padding: 6px 8px; border: 2px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 图片拼长图
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🖼️ 图片拼长图</h2>
+      <p class="panel-desc">在线图片拼长图工具。选择多张图片，横向或纵向拼接成一张长图。支持自定义间距、背景色、排列方向，导出为PNG高清图片。</p>
+
+      <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
+      <div class="drop-zone" id="dropZone">
+        <span style="font-size:2rem;display:block;margin-bottom:4px;">📸</span>
+        <span style="font-size:0.9rem;">拖拽多张图片到此处，或点击选择</span>
+      </div>
+
+      <div class="file-list" id="fileList"></div>
+      <div id="summaryBar" style="display:none;font-size:0.82rem;color:var(--text-muted);margin-bottom:6px;" id="summaryBar"></div>
+
+      <div class="config-row">
+        <label>方向：</label>
+        <select id="direction">
+          <option value="vertical">纵向拼接 ↓</option>
+          <option value="horizontal">横向拼接 →</option>
+        </select>
+        <label style="margin-left:8px;">间距：</label>
+        <input type="number" id="gap" value="4" min="0" max="100" style="width:60px;"> <span style="font-size:0.78rem;">px</span>
+        <label style="margin-left:8px;">背景色：</label>
+        <input type="color" id="bgColor" value="#ffffff">
+        <label style="margin-left:8px;">对齐宽度：</label>
+        <select id="alignMode">
+          <option value="max">最大宽度</option>
+          <option value="min">最小宽度</option>
+          <option value="first">第一张宽度</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-action primary" id="previewBtn">👁 预览长图</button>
+        <button class="btn-action primary" id="exportBtn">📥 导出长图 (PNG)</button>
+        <button class="btn-action" id="clearBtn">🗑 清空列表</button>
+        <button class="btn-action" id="addBtn">➕ 添加图片</button>
+      </div>
+
+      <div class="preview-wrap" id="previewWrap"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var images = []; // { img, name, w, h }
+
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) addImages(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) addImages(fileInput.files);
+      fileInput.value = '';
+    });
+
+    function addImages(files) {
+      var remaining = files.length;
+      Array.from(files).forEach(function(file) {
+        if (!file.type.match(/image\//)) { remaining--; return; }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = new Image();
+          img.onload = function() {
+            images.push({ img: img, name: file.name, w: img.width, h: img.height });
+            remaining--;
+            if (remaining === 0) renderList();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      if (remaining === 0 && files.length === 0) renderList();
+    }
+
+    function renderList() {
+      document.getElementById('fileList').innerHTML = images.map(function(im, i) {
+        return '<div class="file-thumb" title="' + escapeHTML(im.name) + ' (' + im.w + '×' + im.h + ')"><img src="' + im.img.src + '"><button class="remove-btn" data-idx="' + i + '">✕</button></div>';
+      }).join('');
+
+      document.getElementById('summaryBar').textContent = images.length + ' 张图片';
+      document.getElementById('summaryBar').style.display = images.length ? '' : 'none';
+
+      document.querySelectorAll('.file-list .remove-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          images.splice(parseInt(btn.dataset.idx), 1);
+          renderList();
+        });
+      });
+    }
+
+    document.getElementById('clearBtn').addEventListener('click', function() { images = []; renderList(); });
+    document.getElementById('addBtn').addEventListener('click', function() { fileInput.click(); });
+
+    function stitch() {
+      if (images.length === 0) { showToast('请先添加图片'); return null; }
+      var dir = document.getElementById('direction').value;
+      var gap = parseInt(document.getElementById('gap').value) || 0;
+      var bgColor = document.getElementById('bgColor').value;
+      var alignMode = document.getElementById('alignMode').value;
+
+      var refW;
+      if (alignMode === 'max') refW = Math.max.apply(null, images.map(function(im) { return im.w; }));
+      else if (alignMode === 'min') refW = Math.min.apply(null, images.map(function(im) { return im.w; }));
+      else refW = images[0].w;
+
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+
+      if (dir === 'vertical') {
+        var totalH = images.reduce(function(s, im) { return s + Math.round(refW * im.h / im.w); }, 0) + gap * (images.length - 1);
+        canvas.width = refW;
+        canvas.height = totalH;
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        var y = 0;
+        images.forEach(function(im) {
+          var h = Math.round(refW * im.h / im.w);
+          ctx.drawImage(im.img, 0, y, refW, h);
+          y += h + gap;
+        });
+      } else {
+        var totalW = images.reduce(function(s, im) { return s + Math.round(refW * im.w / im.h); }, 0) + gap * (images.length - 1);
+        canvas.width = totalW;
+        canvas.height = refW;
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        var x = 0;
+        images.forEach(function(im) {
+          var w = Math.round(refW * im.w / im.h);
+          ctx.drawImage(im.img, x, 0, w, refW);
+          x += w + gap;
+        });
+      }
+
+      return canvas;
+    }
+
+    document.getElementById('previewBtn').addEventListener('click', function() {
+      var canvas = stitch();
+      if (!canvas) return;
+      var img = document.createElement('img');
+      img.src = canvas.toDataURL();
+      document.getElementById('previewWrap').innerHTML = '';
+      document.getElementById('previewWrap').appendChild(img);
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      var canvas = stitch();
+      if (!canvas) return;
+      canvas.toBlob(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'stitched.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('✅ 已导出: stitched.png');
+      }, 'image/png');
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../color-picker', i: '🎨', n: '图片颜色拾取' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>

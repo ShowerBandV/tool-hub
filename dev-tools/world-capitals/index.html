@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="世界各国首都大全速查表，按大洲分类浏览全球国家及其首都信息。">
+  <title>世界各国首都大全 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .search-input { margin-bottom: 12px; }
+    .category-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-tab { padding: 6px 14px; border: 2px solid var(--border); border-radius: 20px;
+      background: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 500;
+      transition: var(--transition); white-space: nowrap; }
+    .cat-tab:hover { border-color: var(--accent); }
+    .cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .country-table { width: 100%; border-collapse: collapse; }
+    .country-table th { text-align: left; padding: 8px 12px; font-size: 0.72rem;
+      color: var(--text-muted); font-weight: 600; border-bottom: 2px solid var(--border); background: #f8fafc; }
+    .country-table td { padding: 6px 12px; font-size: 0.82rem; border-bottom: 1px solid #f1f5f9; }
+    .country-table tr { cursor: pointer; transition: var(--transition); }
+    .country-table tr:hover { background: #eef2ff; }
+    .country-table .flag { font-size: 1.2rem; width: 30px; text-align: center; }
+    .country-table .country { font-weight: 600; }
+    .country-table .capital { color: var(--accent); font-weight: 500; }
+    .country-table .continent-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px;
+      background: #eef2ff; color: var(--accent); white-space: nowrap; }
+    .count-badge { font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; }
+    .table-wrap { max-height: 70vh; overflow-y: auto; border-radius: 10px; border: 1px solid var(--border); }
+    .table-wrap thead { position: sticky; top: 0; z-index: 1; }
+    .toast-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast-hint.show { opacity: 1; }
+    @media (max-width:600px) {
+      .country-table td, .country-table th { padding: 4px 6px; font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 世界各国首都大全
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🏛️ 世界各国首都大全</h2>
+      <p class="panel-desc">全球国家及其首都速查表，按大洲分类浏览。点击任意行即可复制"国家-首都"信息，支持关键词搜索筛选。</p>
+
+      <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 搜索国家或首都...">
+
+      <div class="category-tabs" id="categoryTabs"></div>
+      <div class="table-wrap">
+        <table class="country-table">
+          <thead>
+            <tr><th class="flag"></th><th>国家</th><th>首都</th></tr>
+          </thead>
+          <tbody id="countryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <div class="toast-hint" id="toastHint"></div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var categories = {
+      '🌏 亚洲': [
+        ['🇨🇳','中国','北京'],['🇯🇵','日本','东京'],['🇰🇷','韩国','首尔'],['🇰🇵','朝鲜','平壤'],
+        ['🇲🇳','蒙古','乌兰巴托'],['🇮🇳','印度','新德里'],['🇵🇰','巴基斯坦','伊斯兰堡'],
+        ['🇧🇩','孟加拉国','达卡'],['🇱🇰','斯里兰卡','科伦坡'],['🇳🇵','尼泊尔','加德满都'],
+        ['🇧🇹','不丹','廷布'],['🇲🇲','缅甸','内比都'],['🇹🇭','泰国','曼谷'],
+        ['🇻🇳','越南','河内'],['🇱🇦','老挝','万象'],['🇰🇭','柬埔寨','金边'],
+        ['🇲🇾','马来西亚','吉隆坡'],['🇸🇬','新加坡','新加坡'],['🇮🇩','印度尼西亚','雅加达'],
+        ['🇧🇳','文莱','斯里巴加湾'],['🇵🇭','菲律宾','马尼拉'],['🇹🇱','东帝汶','帝力'],
+        ['🇰🇿','哈萨克斯坦','阿斯塔纳'],['🇰🇬','吉尔吉斯斯坦','比什凯克'],
+        ['🇹🇯','塔吉克斯坦','杜尚别'],['🇺🇿','乌兹别克斯坦','塔什干'],
+        ['🇹🇲','土库曼斯坦','阿什哈巴德'],['🇦🇫','阿富汗','喀布尔'],['🇮🇷','伊朗','德黑兰'],
+        ['🇮🇶','伊拉克','巴格达'],['🇸🇾','叙利亚','大马士革'],['🇯🇴','约旦','安曼'],
+        ['🇱🇧','黎巴嫩','贝鲁特'],['🇮🇱','以色列','耶路撒冷'],['🇵🇸','巴勒斯坦','拉马拉'],
+        ['🇸🇦','沙特阿拉伯','利雅得'],['🇾🇪','也门','萨那'],['🇴🇲','阿曼','马斯喀特'],
+        ['🇦🇪','阿联酋','阿布扎比'],['🇶🇦','卡塔尔','多哈'],['🇧🇭','巴林','麦纳麦'],
+        ['🇰🇼','科威特','科威特城'],['🇹🇷','土耳其','安卡拉'],['🇨🇾','塞浦路斯','尼科西亚'],
+        ['🇬🇪','格鲁吉亚','第比利斯'],['🇦🇲','亚美尼亚','埃里温'],['🇦🇿','阿塞拜疆','巴库'],
+        ['🇲🇻','马尔代夫','马累']
+      ],
+      '🌍 欧洲': [
+        ['🇬🇧','英国','伦敦'],['🇫🇷','法国','巴黎'],['🇩🇪','德国','柏林'],
+        ['🇮🇹','意大利','罗马'],['🇪🇸','西班牙','马德里'],['🇵🇹','葡萄牙','里斯本'],
+        ['🇳🇱','荷兰','阿姆斯特丹'],['🇧🇪','比利时','布鲁塞尔'],['🇨🇭','瑞士','伯尔尼'],
+        ['🇦🇹','奥地利','维也纳'],['🇸🇪','瑞典','斯德哥尔摩'],['🇳🇴','挪威','奥斯陆'],
+        ['🇫🇮','芬兰','赫尔辛基'],['🇩🇰','丹麦','哥本哈根'],['🇮🇸','冰岛','雷克雅未克'],
+        ['🇮🇪','爱尔兰','都柏林'],['🇵🇱','波兰','华沙'],['🇨🇿','捷克','布拉格'],
+        ['🇸🇰','斯洛伐克','布拉迪斯拉发'],['🇭🇺','匈牙利','布达佩斯'],
+        ['🇷🇴','罗马尼亚','布加勒斯特'],['🇧🇬','保加利亚','索非亚'],
+        ['🇭🇷','克罗地亚','萨格勒布'],['🇸🇮','斯洛文尼亚','卢布尔雅那'],
+        ['🇷🇸','塞尔维亚','贝尔格莱德'],['🇧🇦','波黑','萨拉热窝'],
+        ['🇲🇪','黑山','波德戈里察'],['🇲🇰','北马其顿','斯科普里'],
+        ['🇦🇱','阿尔巴尼亚','地拉那'],['🇬🇷','希腊','雅典'],['🇲🇹','马耳他','瓦莱塔'],
+        ['🇺🇦','乌克兰','基辅'],['🇧🇾','白俄罗斯','明斯克'],['🇲🇩','摩尔多瓦','基希讷乌'],
+        ['🇱🇹','立陶宛','维尔纽斯'],['🇱🇻','拉脱维亚','里加'],['🇪🇪','爱沙尼亚','塔林'],
+        ['🇷🇺','俄罗斯','莫斯科'],['🇱🇺','卢森堡','卢森堡市'],['🇲🇨','摩纳哥','摩纳哥'],
+        ['🇱🇮','列支敦士登','瓦杜兹'],['🇦🇩','安道尔','安道尔城'],['🇸🇲','圣马力诺','圣马力诺'],
+        ['🇻🇦','梵蒂冈','梵蒂冈城']
+      ],
+      '🌎 北美洲': [
+        ['🇺🇸','美国','华盛顿'],['🇨🇦','加拿大','渥太华'],['🇲🇽','墨西哥','墨西哥城'],
+        ['🇨🇺','古巴','哈瓦那'],['🇯🇲','牙买加','金斯敦'],['🇭🇹','海地','太子港'],
+        ['🇩🇴','多米尼加','圣多明各'],['🇧🇸','巴哈马','拿骚'],
+        ['🇧🇧','巴巴多斯','布里奇敦'],['🇹🇹','特立尼达和多巴哥','西班牙港'],
+        ['🇬🇹','危地马拉','危地马拉城'],['🇧🇿','伯利兹','贝尔莫潘'],
+        ['🇸🇻','萨尔瓦多','圣萨尔瓦多'],['🇭🇳','洪都拉斯','特古西加尔巴'],
+        ['🇳🇮','尼加拉瓜','马那瓜'],['🇨🇷','哥斯达黎加','圣何塞'],
+        ['🇵🇦','巴拿马','巴拿马城'],['🇵🇷','波多黎各','圣胡安']
+      ],
+      '🌎 南美洲': [
+        ['🇧🇷','巴西','巴西利亚'],['🇦🇷','阿根廷','布宜诺斯艾利斯'],
+        ['🇨🇱','智利','圣地亚哥'],['🇵🇪','秘鲁','利马'],
+        ['🇨🇴','哥伦比亚','波哥大'],['🇻🇪','委内瑞拉','加拉加斯'],
+        ['🇪🇨','厄瓜多尔','基多'],['🇧🇴','玻利维亚','苏克雷'],
+        ['🇵🇾','巴拉圭','亚松森'],['🇺🇾','乌拉圭','蒙得维的亚'],
+        ['🇬🇾','圭亚那','乔治敦'],['🇸🇷','苏里南','帕拉马里博']
+      ],
+      '🌍 非洲': [
+        ['🇪🇬','埃及','开罗'],['🇿🇦','南非','比勒陀利亚'],['🇳🇬','尼日利亚','阿布贾'],
+        ['🇰🇪','肯尼亚','内罗毕'],['🇪🇹','埃塞俄比亚','亚的斯亚贝巴'],
+        ['🇹🇿','坦桑尼亚','多多马'],['🇺🇬','乌干达','坎帕拉'],
+        ['🇬🇭','加纳','阿克拉'],['🇲🇦','摩洛哥','拉巴特'],['🇩🇿','阿尔及利亚','阿尔及尔'],
+        ['🇹🇳','突尼斯','突尼斯市'],['🇱🇾','利比亚','的黎波里'],
+        ['🇸🇩','苏丹','喀土穆'],['🇸🇸','南苏丹','朱巴'],
+        ['🇨🇲','喀麦隆','雅温得'],['🇸🇳','塞内加尔','达喀尔'],
+        ['🇲🇱','马里','巴马科'],['🇨🇮','科特迪瓦','亚穆苏克罗'],
+        ['🇿🇲','赞比亚','卢萨卡'],['🇿🇼','津巴布韦','哈拉雷'],
+        ['🇦🇴','安哥拉','罗安达'],['🇲🇿','莫桑比克','马普托'],
+        ['🇲🇬','马达加斯加','塔那那利佛'],['🇲🇺','毛里求斯','路易港'],
+        ['🇳🇦','纳米比亚','温得和克'],['🇧🇼','博茨瓦纳','哈博罗内'],
+        ['🇷🇼','卢旺达','基加利'],['🇧🇮','布隆迪','布琼布拉'],
+        ['🇸🇴','索马里','摩加迪沙'],['🇨🇩','刚果(金)','金沙萨'],
+        ['🇨🇬','刚果(布)','布拉柴维尔'],['🇬🇦','加蓬','利伯维尔']
+      ],
+      '🌏 大洋洲': [
+        ['🇦🇺','澳大利亚','堪培拉'],['🇳🇿','新西兰','惠灵顿'],
+        ['🇫🇯','斐济','苏瓦'],['🇵🇬','巴布亚新几内亚','莫尔兹比港'],
+        ['🇸🇧','所罗门群岛','霍尼亚拉'],['🇻🇺','瓦努阿图','维拉港'],
+        ['🇼🇸','萨摩亚','阿皮亚'],['🇹🇴','汤加','努库阿洛法'],
+        ['🇫🇲','密克罗尼西亚','帕利基尔'],['🇲🇭','马绍尔群岛','马朱罗'],
+        ['🇰🇮','基里巴斯','塔拉瓦'],['🇵🇼','帕劳','梅莱凯奥克']
+      ]
+    };
+
+    var allCountries = [];
+    var catKeys = Object.keys(categories);
+
+    catKeys.forEach(function(cat) {
+      categories[cat].forEach(function(c) {
+        allCountries.push({ flag: c[0], country: c[1], capital: c[2], continent: cat });
+      });
+    });
+
+    var currentCat = 'all';
+    var searchQuery = '';
+
+    var searchInput = document.getElementById('searchInput');
+    var categoryTabs = document.getElementById('categoryTabs');
+    var countryBody = document.getElementById('countryBody');
+    var toastHint = document.getElementById('toastHint');
+
+    function renderCategoryTabs() {
+      var html = '<span class="cat-tab active" data-cat="all">全部 <span class="count-badge">(' + allCountries.length + ')</span></span>';
+      catKeys.forEach(function(cat) {
+        html += '<span class="cat-tab" data-cat="' + cat + '">' + cat + ' <span class="count-badge">(' + categories[cat].length + ')</span></span>';
+      });
+      categoryTabs.innerHTML = html;
+
+      categoryTabs.querySelectorAll('.cat-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          categoryTabs.querySelectorAll('.cat-tab').forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          currentCat = tab.dataset.cat;
+          renderTable();
+        });
+      });
+    }
+
+    function renderTable() {
+      var filtered = allCountries.filter(function(c) {
+        var matchCat = currentCat === 'all' || c.continent === currentCat;
+        var matchSearch = !searchQuery || c.country.indexOf(searchQuery) !== -1 || c.capital.indexOf(searchQuery) !== -1;
+        return matchCat && matchSearch;
+      });
+
+      countryBody.innerHTML = filtered.map(function(c) {
+        return '<tr title="点击复制: ' + c.country + ' - ' + c.capital + '" data-text="' + escapeHTML(c.country + ' - ' + c.capital) + '"><td class="flag">' + c.flag + '</td><td class="country">' + c.country + '</td><td class="capital">' + c.capital + '</td></tr>';
+      }).join('');
+
+      countryBody.querySelectorAll('tr').forEach(function(row) {
+        row.addEventListener('click', function() {
+          navigator.clipboard.writeText(this.dataset.text).then(function() {
+            toastHint.textContent = '✅ 已复制: ' + this.dataset.text;
+            toastHint.classList.add('show');
+            clearTimeout(toastHint._t);
+            toastHint._t = setTimeout(function() { toastHint.classList.remove('show'); }, 1500);
+          }.bind(this));
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderTable();
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../regex-tester', i: '.*', n: '正则测试器' },
+      { h: '../emoji-list', i: '😀', n: 'Emoji 大全' },
+      { h: '../domain-tld', i: '🌐', n: '域名后缀大全' },
+      { h: '../license-plate', i: '🚗', n: '车牌归属地' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+
+    renderCategoryTabs();
+    renderTable();
+  </script>
+</body>
+</html>

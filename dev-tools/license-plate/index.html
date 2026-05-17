@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="中国车牌号码简称及归属地速查表，包含各省市车牌代码及主要城市对应的号牌字母。">
+  <title>车牌归属地速查 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .search-input { margin-bottom: 12px; }
+    .plate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px; }
+    .province-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .province-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .province-header .abbr { font-size: 1.4rem; font-weight: 900; }
+    .city-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 2px; padding: 6px; }
+    .city-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px;
+      cursor: pointer; font-size: 0.78rem; transition: var(--transition); border: 1px solid transparent; }
+    .city-item:hover { border-color: var(--accent); background: #eef2ff; }
+    .city-item .code { font-family: var(--font-mono); font-weight: 700; color: var(--accent);
+      background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap; }
+    .city-item .name { color: var(--text); white-space: nowrap; }
+    .toast-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast-hint.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 车牌归属地速查
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🚗 车牌归属地速查</h2>
+      <p class="panel-desc">中国各省市车牌代码及归属地速查表。点击任意车牌代码即可复制，支持按省份或城市搜索筛选。</p>
+
+      <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 搜索省份简称或城市...">
+
+      <div class="plate-grid" id="plateGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <div class="toast-hint" id="toastHint"></div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var data = [
+      { abbr:'京', name:'北京', cities:[
+        ['京A','北京市'],['京B','北京市'],['京C','北京市'],['京D','北京市'],
+        ['京E','北京市'],['京F','北京市'],['京G','北京市'],['京H','北京市'],
+        ['京J','北京市'],['京K','北京市'],['京L','北京市'],['京M','北京市'],
+        ['京N','北京市'],['京P','北京市'],['京Q','北京市'],['京Y','北京市郊']
+      ]},
+      { abbr:'津', name:'天津', cities:[
+        ['津A','天津市'],['津B','天津市'],['津C','天津市'],['津D','天津市'],
+        ['津E','天津市'],['津F','天津市'],['津G','天津市'],['津H','天津市']
+      ]},
+      { abbr:'沪', name:'上海', cities:[
+        ['沪A','上海市'],['沪B','上海市'],['沪C','上海市郊'],['沪D','上海市'],
+        ['沪E','上海市'],['沪F','上海市'],['沪G','上海市'],['沪H','上海市']
+      ]},
+      { abbr:'渝', name:'重庆', cities:[
+        ['渝A','重庆市'],['渝B','重庆市'],['渝C','重庆市'],['渝D','重庆市'],
+        ['渝F','万州区'],['渝G','涪陵区'],['渝H','黔江区']
+      ]},
+      { abbr:'冀', name:'河北', cities:[
+        ['冀A','石家庄'],['冀B','唐山'],['冀C','秦皇岛'],['冀D','邯郸'],
+        ['冀E','邢台'],['冀F','保定'],['冀G','张家口'],['冀H','承德'],
+        ['冀J','沧州'],['冀R','廊坊'],['冀T','衡水']
+      ]},
+      { abbr:'豫', name:'河南', cities:[
+        ['豫A','郑州'],['豫B','开封'],['豫C','洛阳'],['豫D','平顶山'],
+        ['豫E','安阳'],['豫F','鹤壁'],['豫G','新乡'],['豫H','焦作'],
+        ['豫J','濮阳'],['豫K','许昌'],['豫L','漯河'],['豫M','三门峡'],
+        ['豫N','商丘'],['豫P','周口'],['豫Q','驻马店'],['豫R','南阳'],
+        ['豫S','信阳'],['豫U','济源']
+      ]},
+      { abbr:'云', name:'云南', cities:[
+        ['云A','昆明'],['云C','昭通'],['云D','曲靖'],['云E','楚雄'],
+        ['云F','玉溪'],['云G','红河'],['云H','文山'],['云J','普洱'],
+        ['云K','西双版纳'],['云L','大理'],['云M','保山'],['云N','德宏'],
+        ['云P','丽江'],['云Q','怒江'],['云R','迪庆'],['云S','临沧']
+      ]},
+      { abbr:'辽', name:'辽宁', cities:[
+        ['辽A','沈阳'],['辽B','大连'],['辽C','鞍山'],['辽D','抚顺'],
+        ['辽E','本溪'],['辽F','丹东'],['辽G','锦州'],['辽H','营口'],
+        ['辽J','阜新'],['辽K','辽阳'],['辽L','盘锦'],['辽M','铁岭'],
+        ['辽N','朝阳'],['辽P','葫芦岛']
+      ]},
+      { abbr:'黑', name:'黑龙江', cities:[
+        ['黑A','哈尔滨'],['黑B','齐齐哈尔'],['黑C','牡丹江'],['黑D','佳木斯'],
+        ['黑E','大庆'],['黑F','伊春'],['黑G','鸡西'],['黑H','鹤岗'],
+        ['黑J','双鸭山'],['黑K','七台河'],['黑L','松花江地区'],['黑M','绥化'],
+        ['黑N','黑河'],['黑P','大兴安岭']
+      ]},
+      { abbr:'湘', name:'湖南', cities:[
+        ['湘A','长沙'],['湘B','株洲'],['湘C','湘潭'],['湘D','衡阳'],
+        ['湘E','邵阳'],['湘F','岳阳'],['湘G','张家界'],['湘H','益阳'],
+        ['湘J','常德'],['湘K','娄底'],['湘L','郴州'],['湘M','永州'],
+        ['湘N','怀化'],['湘U','湘西州']
+      ]},
+      { abbr:'皖', name:'安徽', cities:[
+        ['皖A','合肥'],['皖B','芜湖'],['皖C','蚌埠'],['皖D','淮南'],
+        ['皖E','马鞍山'],['皖F','淮北'],['皖G','铜陵'],['皖H','安庆'],
+        ['皖J','黄山'],['皖K','阜阳'],['皖L','宿州'],['皖M','滁州'],
+        ['皖N','六安'],['皖P','宣城'],['皖R','池州'],['皖S','亳州']
+      ]},
+      { abbr:'鲁', name:'山东', cities:[
+        ['鲁A','济南'],['鲁B','青岛'],['鲁C','淄博'],['鲁D','枣庄'],
+        ['鲁E','东营'],['鲁F','烟台'],['鲁G','潍坊'],['鲁H','济宁'],
+        ['鲁J','泰安'],['鲁K','威海'],['鲁L','日照'],['鲁M','滨州'],
+        ['鲁N','德州'],['鲁P','聊城'],['鲁Q','临沂'],['鲁R','菏泽'],
+        ['鲁S','莱芜']
+      ]},
+      { abbr:'苏', name:'江苏', cities:[
+        ['苏A','南京'],['苏B','无锡'],['苏C','徐州'],['苏D','常州'],
+        ['苏E','苏州'],['苏F','南通'],['苏G','连云港'],['苏H','淮安'],
+        ['苏J','盐城'],['苏K','扬州'],['苏L','镇江'],['苏M','泰州'],
+        ['苏N','宿迁']
+      ]},
+      { abbr:'浙', name:'浙江', cities:[
+        ['浙A','杭州'],['浙B','宁波'],['浙C','温州'],['浙D','绍兴'],
+        ['浙E','湖州'],['浙F','嘉兴'],['浙G','金华'],['浙H','衢州'],
+        ['浙J','台州'],['浙K','丽水'],['浙L','舟山']
+      ]},
+      { abbr:'赣', name:'江西', cities:[
+        ['赣A','南昌'],['赣B','赣州'],['赣C','宜春'],['赣D','吉安'],
+        ['赣E','上饶'],['赣F','抚州'],['赣G','九江'],['赣H','景德镇'],
+        ['赣J','萍乡'],['赣K','新余'],['赣L','鹰潭']
+      ]},
+      { abbr:'鄂', name:'湖北', cities:[
+        ['鄂A','武汉'],['鄂B','黄石'],['鄂C','十堰'],['鄂D','荆州'],
+        ['鄂E','宜昌'],['鄂F','襄阳'],['鄂G','鄂州'],['鄂H','荆门'],
+        ['鄂J','黄冈'],['鄂K','孝感'],['鄂L','咸宁'],['鄂M','仙桃'],
+        ['鄂N','潜江'],['鄂P','神农架'],['鄂Q','恩施'],['鄂R','天门'],
+        ['鄂S','随州']
+      ]},
+      { abbr:'桂', name:'广西', cities:[
+        ['桂A','南宁'],['桂B','柳州'],['桂C','桂林'],['桂D','梧州'],
+        ['桂E','北海'],['桂F','崇左'],['桂G','来宾'],['桂H','桂林地区'],
+        ['桂J','贺州'],['桂K','玉林'],['桂L','百色'],['桂M','河池'],
+        ['桂N','钦州'],['桂P','防城港'],['桂R','贵港']
+      ]},
+      { abbr:'甘', name:'甘肃', cities:[
+        ['甘A','兰州'],['甘B','嘉峪关'],['甘C','金昌'],['甘D','白银'],
+        ['甘E','天水'],['甘F','酒泉'],['甘G','张掖'],['甘H','武威'],
+        ['甘J','定西'],['甘K','陇南'],['甘L','平凉'],['甘M','庆阳'],
+        ['甘N','临夏'],['甘P','甘南']
+      ]},
+      { abbr:'晋', name:'山西', cities:[
+        ['晋A','太原'],['晋B','大同'],['晋C','阳泉'],['晋D','长治'],
+        ['晋E','晋城'],['晋F','朔州'],['晋H','忻州'],['晋J','吕梁'],
+        ['晋K','晋中'],['晋L','临汾'],['晋M','运城']
+      ]},
+      { abbr:'蒙', name:'内蒙古', cities:[
+        ['蒙A','呼和浩特'],['蒙B','包头'],['蒙C','乌海'],['蒙D','赤峰'],
+        ['蒙E','呼伦贝尔'],['蒙F','兴安盟'],['蒙G','通辽'],['蒙H','锡林郭勒'],
+        ['蒙J','乌兰察布'],['蒙K','鄂尔多斯'],['蒙L','巴彦淖尔'],['蒙M','阿拉善']
+      ]},
+      { abbr:'陕', name:'陕西', cities:[
+        ['陕A','西安'],['陕B','铜川'],['陕C','宝鸡'],['陕D','咸阳'],
+        ['陕E','渭南'],['陕F','汉中'],['陕G','安康'],['陕H','商洛'],
+        ['陕J','延安'],['陕K','榆林'],['陕U','西安(增补)'],['陕V','杨凌']
+      ]},
+      { abbr:'吉', name:'吉林', cities:[
+        ['吉A','长春'],['吉B','吉林'],['吉C','四平'],['吉D','辽源'],
+        ['吉E','通化'],['吉F','白山'],['吉G','白城'],['吉H','延边'],
+        ['吉J','松原']
+      ]},
+      { abbr:'闽', name:'福建', cities:[
+        ['闽A','福州'],['闽B','莆田'],['闽C','泉州'],['闽D','厦门'],
+        ['闽E','漳州'],['闽F','龙岩'],['闽G','三明'],['闽H','南平'],
+        ['闽J','宁德']
+      ]},
+      { abbr:'贵', name:'贵州', cities:[
+        ['贵A','贵阳'],['贵B','六盘水'],['贵C','遵义'],['贵D','铜仁'],
+        ['贵E','黔西南'],['贵F','毕节'],['贵G','安顺'],['贵H','黔东南'],
+        ['贵J','黔南']
+      ]},
+      { abbr:'粤', name:'广东', cities:[
+        ['粤A','广州'],['粤B','深圳'],['粤C','珠海'],['粤D','汕头'],
+        ['粤E','佛山'],['粤F','韶关'],['粤G','湛江'],['粤H','肇庆'],
+        ['粤J','江门'],['粤K','茂名'],['粤L','惠州'],['粤M','梅州'],
+        ['粤N','汕尾'],['粤P','河源'],['粤Q','阳江'],['粤R','清远'],
+        ['粤S','东莞'],['粤T','中山'],['粤U','潮州'],['粤V','揭阳'],
+        ['粤W','云浮'],['粤X','佛山顺德'],['粤Y','佛山南海'],['粤Z','港澳入出']
+      ]},
+      { abbr:'青', name:'青海', cities:[
+        ['青A','西宁'],['青B','海东'],['青C','海北'],['青D','黄南'],
+        ['青E','海南州'],['青F','果洛'],['青G','玉树'],['青H','海西']
+      ]},
+      { abbr:'藏', name:'西藏', cities:[
+        ['藏A','拉萨'],['藏B','昌都'],['藏C','山南'],['藏D','日喀则'],
+        ['藏E','那曲'],['藏F','阿里'],['藏G','林芝']
+      ]},
+      { abbr:'川', name:'四川', cities:[
+        ['川A','成都'],['川B','绵阳'],['川C','自贡'],['川D','攀枝花'],
+        ['川E','泸州'],['川F','德阳'],['川H','广元'],['川J','遂宁'],
+        ['川K','内江'],['川L','乐山'],['川M','资阳'],['川Q','宜宾'],
+        ['川R','南充'],['川S','达州'],['川T','雅安'],['川U','阿坝'],
+        ['川V','甘孜'],['川W','凉山'],['川X','广安'],['川Y','巴中'],
+        ['川Z','眉山']
+      ]},
+      { abbr:'宁', name:'宁夏', cities:[
+        ['宁A','银川'],['宁B','石嘴山'],['宁C','吴忠'],['宁D','固原'],
+        ['宁E','中卫']
+      ]},
+      { abbr:'琼', name:'海南', cities:[
+        ['琼A','海口'],['琼B','三亚'],['琼C','琼海'],['琼D','五指山'],
+        ['琼E','洋浦'],['琼F','儋州']
+      ]},
+      { abbr:'新', name:'新疆', cities:[
+        ['新A','乌鲁木齐'],['新B','昌吉'],['新C','石河子'],['新D','奎屯'],
+        ['新E','博尔塔拉'],['新F','伊犁'],['新G','塔城'],['新H','阿勒泰'],
+        ['新J','克拉玛依'],['新K','吐鲁番'],['新L','哈密'],['新M','巴音郭楞'],
+        ['新N','阿克苏'],['新P','克孜勒苏'],['新Q','喀什'],['新R','和田']
+      ]}
+    ];
+
+    var searchInput = document.getElementById('searchInput');
+    var plateGrid = document.getElementById('plateGrid');
+    var toastHint = document.getElementById('toastHint');
+
+    function renderPlates() {
+      var query = (searchInput.value || '').trim().toLowerCase();
+
+      var filtered = data.filter(function(p) {
+        if (!query) return true;
+        if (p.abbr.indexOf(query) !== -1 || p.name.indexOf(query) !== -1) return true;
+        return p.cities.some(function(c) {
+          return c[0].toLowerCase().indexOf(query) !== -1 || c[1].indexOf(query) !== -1;
+        });
+      });
+
+      plateGrid.innerHTML = filtered.map(function(p) {
+        var cityHtml = p.cities.map(function(c) {
+          return '<div class="city-item" title="点击复制 ' + c[0] + '" data-code="' + c[0] + '"><span class="code">' + c[0] + '</span><span class="name">' + c[1] + '</span></div>';
+        }).join('');
+        return '<div class="province-card"><div class="province-header"><span class="abbr">' + p.abbr + '</span>' + p.name + '省/市/自治区</div><div class="city-list">' + cityHtml + '</div></div>';
+      }).join('');
+
+      plateGrid.querySelectorAll('.city-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+          navigator.clipboard.writeText(this.dataset.code).then(function() {
+            toastHint.textContent = '✅ 已复制: ' + this.dataset.code;
+            toastHint.classList.add('show');
+            clearTimeout(toastHint._t);
+            toastHint._t = setTimeout(function() { toastHint.classList.remove('show'); }, 1500);
+          }.bind(this));
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', renderPlates);
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../regex-tester', i: '.*', n: '正则测试器' },
+      { h: '../emoji-list', i: '😀', n: 'Emoji 大全' },
+      { h: '../domain-tld', i: '🌐', n: '域名后缀大全' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+      { h: '../jwt-decoder', i: '🔐', n: 'JWT 解码器' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+
+    renderPlates();
+  </script>
+</body>
+</html>

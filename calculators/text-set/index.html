@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <meta name="description" content="在线文本集合运算工具，计算两个文本列表的交集(相同项)、差集(不同项)、并集，支持按行或分隔符解析。">
+  <title>文本交集差集 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .split-pane { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width:600px) { .split-pane { grid-template-columns: 1fr; } }
+    textarea { font-family: var(--font-mono); min-height: 140px; font-size: 0.82rem; }
+    .result-box { background: #f8fafc; border-radius: 10px; padding: 12px; margin-top: 8px;
+      max-height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6; }
+    .stat-badge { display: inline-block; padding: 4px 10px; border-radius: 12px;
+      font-size: 0.78rem; font-weight: 600; margin: 2px; }
+    .badge-inter { background: #dcfce7; color: #166534; }
+    .badge-diffA { background: #fef2f2; color: #dc2626; }
+    .badge-diffB { background: #fef2f2; color: #dc2626; }
+    .badge-union { background: #eef2ff; color: #4f46e5; }
+    .op-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 文本交集/差集
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">∩∪ 文本交集与差集</h2>
+      <p class="panel-desc">在线文本集合运算工具。输入两个文本列表（每行一项），计算交集(共同项)、差集(A有B无 / B有A无)、并集。</p>
+
+      <div class="split-pane">
+        <div>
+          <div class="form-label">列表 A</div>
+          <textarea class="form-input" id="listA" placeholder="每行一个元素">apple
+banana
+cherry
+date
+grape</textarea>
+        </div>
+        <div>
+          <div class="form-label">列表 B</div>
+          <textarea class="form-input" id="listB" placeholder="每行一个元素">banana
+cherry
+elderberry
+fig
+grape</textarea>
+        </div>
+      </div>
+
+      <div class="op-row">
+        <button class="btn btn-primary" id="calcBtn">计算所有集合</button>
+        <button class="btn btn-outline" id="swapBtn">⇄ 交换 A/B</button>
+        <button class="btn btn-outline" id="clearBtn">清空</button>
+      </div>
+
+      <div id="results" style="display:none;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          <span class="stat-badge badge-inter" id="interBadge"></span>
+          <span class="stat-badge badge-diffA" id="diffABadge"></span>
+          <span class="stat-badge badge-diffB" id="diffBBadge"></span>
+          <span class="stat-badge badge-union" id="unionBadge"></span>
+        </div>
+        <div class="form-label" style="margin-top:8px;">交集 (A ∩ B)</div>
+        <div class="result-box" id="interResult"></div>
+        <div class="form-label" style="margin-top:8px;">A有B无 (A − B)</div>
+        <div class="result-box" id="diffAResult"></div>
+        <div class="form-label" style="margin-top:8px;">B有A无 (B − A)</div>
+        <div class="result-box" id="diffBResult"></div>
+        <div class="form-label" style="margin-top:8px;">并集 (A ∪ B)</div>
+        <div class="result-box" id="unionResult"></div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+    <div class="card" style="margin-top:20px;"><h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div></div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function parseList(str) {
+      return str.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      var a = parseList(document.getElementById('listA').value);
+      var b = parseList(document.getElementById('listB').value);
+      if (a.length === 0 && b.length === 0) { showToast('请输入至少一个列表'); return; }
+
+      var setA = new Set(a), setB = new Set(b);
+      var inter = a.filter(function(x) { return setB.has(x); });
+      var diffA = a.filter(function(x) { return !setB.has(x); });
+      var diffB = b.filter(function(x) { return !setA.has(x); });
+      var union = Array.from(new Set(a.concat(b)));
+
+      document.getElementById('interBadge').textContent = '交集: ' + inter.length + '项';
+      document.getElementById('diffABadge').textContent = 'A有B无: ' + diffA.length + '项';
+      document.getElementById('diffBBadge').textContent = 'B有A无: ' + diffB.length + '项';
+      document.getElementById('unionBadge').textContent = '并集: ' + union.length + '项';
+      document.getElementById('interResult').textContent = inter.join(', ') || '(空)';
+      document.getElementById('diffAResult').textContent = diffA.join(', ') || '(空)';
+      document.getElementById('diffBResult').textContent = diffB.join(', ') || '(空)';
+      document.getElementById('unionResult').textContent = union.join(', ');
+      document.getElementById('results').style.display = '';
+    });
+
+    document.getElementById('swapBtn').addEventListener('click', function() {
+      var a = document.getElementById('listA'), b = document.getElementById('listB');
+      var tmp = a.value; a.value = b.value; b.value = tmp;
+    });
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('listA').value = '';
+      document.getElementById('listB').value = '';
+      document.getElementById('results').style.display = 'none';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'gcd-lcm', i: '🔢', n: '公因数/公倍数' },
+      { h: 'sequences', i: '📈', n: '数列计算器' },
+      { h: 'time-calc', i: '🕐', n: '时间加减' },
+      { h: 'factorial', i: '!', n: '阶乘计算器' },
+      { h: 'fraction-calc', i: '÷', n: '分数计算器' },
+      { h: 'permutations', i: '🔀', n: '列表全排列' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(function(t) { return '<a href="../' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>'; }).join('');
+  </script>
+</body>
+</html>

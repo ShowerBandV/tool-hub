@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="域名后缀大全，按分类浏览和复制常用域名后缀，包含通用顶级域、国别域名、新通用顶级域等。">
+  <title>域名后缀大全 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .search-input { margin-bottom: 12px; }
+    .category-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-tab { padding: 6px 14px; border: 2px solid var(--border); border-radius: 20px;
+      background: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 500;
+      transition: var(--transition); white-space: nowrap; }
+    .cat-tab:hover { border-color: var(--accent); }
+    .cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tld-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px; }
+    .tld-cell { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      border-radius: 10px; cursor: pointer; transition: var(--transition);
+      border: 2px solid transparent; background: #f8fafc; }
+    .tld-cell:hover { border-color: var(--accent); background: #eef2ff; }
+    .tld-cell .domain { font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem;
+      color: var(--accent); white-space: nowrap; }
+    .tld-cell .desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.3;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .count-badge { font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; }
+    .toast-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast-hint.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 域名后缀大全
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🌐 域名后缀大全</h2>
+      <p class="panel-desc">域名后缀（TLD）速查表，按分类浏览常见顶级域名。点击任意条目即可复制域名后缀到剪贴板，支持关键词搜索筛选。</p>
+
+      <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 搜索域名后缀...">
+
+      <div class="category-tabs" id="categoryTabs"></div>
+      <div class="tld-grid" id="tldGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <div class="toast-hint" id="toastHint"></div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var categories = {
+      '🌍 通用顶级域': [
+        ['.com','商业机构'],['.org','非营利组织'],['.net','网络服务'],['.info','信息服务'],
+        ['.biz','商业用途'],['.name','个人网站'],['.pro','专业人士'],['.mobi','移动设备'],
+        ['.tel','联系方式'],['.xxx','成人内容'],['.aero','航空运输'],['.asia','亚洲地区'],
+        ['.cat','加泰罗尼亚'],['.coop','合作社'],['.jobs','招聘求职'],['.museum','博物馆'],
+        ['.travel','旅游行业'],['.int','国际组织'],['.post','邮政服务']
+      ],
+      '🌏 国别域名': [
+        ['.cn','中国'],['.hk','中国香港'],['.mo','中国澳门'],['.tw','中国台湾'],
+        ['.us','美国'],['.uk','英国'],['.jp','日本'],['.kr','韩国'],
+        ['.de','德国'],['.fr','法国'],['.ru','俄罗斯'],['.in','印度'],
+        ['.br','巴西'],['.ca','加拿大'],['.au','澳大利亚'],['.it','意大利'],
+        ['.es','西班牙'],['.nl','荷兰'],['.se','瑞典'],['.no','挪威'],
+        ['.dk','丹麦'],['.fi','芬兰'],['.pt','葡萄牙'],['.gr','希腊'],
+        ['.pl','波兰'],['.cz','捷克'],['.at','奥地利'],['.ch','瑞士'],
+        ['.be','比利时'],['.ie','爱尔兰'],['.sg','新加坡'],['.my','马来西亚'],
+        ['.th','泰国'],['.vn','越南'],['.ph','菲律宾'],['.id','印度尼西亚'],
+        ['.nz','新西兰'],['.mx','墨西哥'],['.ar','阿根廷'],['.cl','智利'],
+        ['.za','南非'],['.eg','埃及'],['.ae','阿联酋'],['.sa','沙特阿拉伯'],
+        ['.il','以色列'],['.tr','土耳其'],['.ua','乌克兰'],['.hu','匈牙利'],
+        ['.ro','罗马尼亚'],['.bg','保加利亚'],['.hr','克罗地亚'],['.sk','斯洛伐克'],
+        ['.si','斯洛文尼亚'],['.ee','爱沙尼亚'],['.lv','拉脱维亚'],['.lt','立陶宛'],
+        ['.is','冰岛'],['.lu','卢森堡'],['.mt','马耳他'],['.cy','塞浦路斯'],
+        ['.co','哥伦比亚'],['.pe','秘鲁'],['.ve','委内瑞拉'],['.ec','厄瓜多尔'],
+        ['.uy','乌拉圭'],['.py','巴拉圭'],['.bo','玻利维亚'],['.cr','哥斯达黎加'],
+        ['.pa','巴拿马'],['.do','多米尼加'],['.pr','波多黎各'],['.ma','摩洛哥'],
+        ['.tn','突尼斯'],['.dz','阿尔及利亚'],['.ng','尼日利亚'],['.ke','肯尼亚'],
+        ['.gh','加纳'],['.ci','科特迪瓦'],['.cm','喀麦隆'],['.sn','塞内加尔'],
+        ['.pk','巴基斯坦'],['.bd','孟加拉国'],['.lk','斯里兰卡'],['.np','尼泊尔'],
+        ['.mm','缅甸'],['.kh','柬埔寨'],['.la','老挝'],['.mn','蒙古'],
+        ['.kz','哈萨克斯坦'],['.uz','乌兹别克斯坦'],['.az','阿塞拜疆'],['.ge','格鲁吉亚'],
+        ['.am','亚美尼亚'],['.by','白俄罗斯'],['.md','摩尔多瓦'],['.al','阿尔巴尼亚'],
+        ['.mk','北马其顿'],['.ba','波黑'],['.rs','塞尔维亚'],['.me','黑山'],
+        ['.li','列支敦士登'],['.mc','摩纳哥'],['.sm','圣马力诺'],
+        ['.va','梵蒂冈'],['.ad','安道尔'],['.ir','伊朗'],['.iq','伊拉克'],
+        ['.sy','叙利亚'],['.jo','约旦'],['.lb','黎巴嫩'],['.kw','科威特'],
+        ['.qa','卡塔尔'],['.om','阿曼'],['.bh','巴林'],['.ye','也门'],
+        ['.ps','巴勒斯坦'],['.ly','利比亚'],['.sd','苏丹'],['.et','埃塞俄比亚'],
+        ['.tz','坦桑尼亚'],['.ug','乌干达'],['.zm','赞比亚'],['.zw','津巴布韦'],
+        ['.mu','毛里求斯'],['.sc','塞舌尔'],['.mv','马尔代夫'],['.bt','不丹'],
+        ['.af','阿富汗'],['.cu','古巴'],['.jm','牙买加'],['.tt','特立尼达和多巴哥'],
+        ['.bb','巴巴多斯'],['.bs','巴哈马'],['.bm','百慕大'],['.ky','开曼群岛'],
+        ['.vg','英属维尔京'],['.tc','特克斯和凯科斯'],['.ai','安圭拉'],['.ms','蒙特塞拉特'],
+        ['.fj','斐济'],['.pg','巴布亚新几内亚'],['.to','汤加'],['.ws','萨摩亚'],
+        ['.ck','库克群岛'],['.pw','帕劳'],['.fm','密克罗尼西亚'],['.mh','马绍尔群岛'],
+        ['.ki','基里巴斯'],['.nr','瑙鲁'],['.tv','图瓦卢'],['.vu','瓦努阿图'],
+        ['.sb','所罗门群岛'],['.tl','东帝汶'],['.bn','文莱'],['.kp','朝鲜'],
+        ['.kg','吉尔吉斯斯坦'],['.tj','塔吉克斯坦'],['.tm','土库曼斯坦']
+      ],
+      '🏷️ 新通用顶级域': [
+        ['.app','应用程序'],['.dev','开发者'],['.tech','科技'],['.online','在线'],
+        ['.site','网站'],['.store','商店'],['.shop','购物'],['.blog','博客'],
+        ['.news','新闻'],['.media','媒体'],['.design','设计'],['.art','艺术'],
+        ['.photo','摄影'],['.photos','照片'],['.gallery','画廊'],['.studio','工作室'],
+        ['.agency','代理机构'],['.company','公司'],['.business','商务'],['.solutions','解决方案'],
+        ['.services','服务'],['.consulting','咨询'],['.digital','数字'],['.software','软件'],
+        ['.cloud','云服务'],['.host','主机'],['.network','网络'],['.email','邮箱'],
+        ['.club','俱乐部'],['.center','中心'],['.world','世界'],['.global','全球'],
+        ['.international','国际'],['.today','今日'],['.life','生活'],['.live','直播'],
+        ['.zone','区域'],['.space','空间'],['.work','工作'],['.works','作品'],
+        ['.careers','职业'],['.training','培训'],['.education','教育'],['.academy','学院'],
+        ['.school','学校'],['.university','大学'],['.science','科学'],['.research','研究'],
+        ['.health','健康'],['.healthcare','医疗'],['.fitness','健身'],['.doctor','医生'],
+        ['.law','法律'],['.legal','法律'],['.tax','税务'],['.finance','金融'],
+        ['.fund','基金'],['.capital','资本'],['.money','金钱'],['.cash','现金'],
+        ['.gold','黄金'],['.diamonds','钻石'],['.guru','大师'],['.expert','专家'],
+        ['.ventures','风险投资'],['.partners','合伙人'],['.deal','交易'],['.deals','交易'],
+        ['.energy','能源'],['.green','绿色'],['.eco','生态'],['.farm','农场'],
+        ['.food','食品'],['.kitchen','厨房'],['.coffee','咖啡'],['.pizza','披萨'],
+        ['.restaurant','餐厅'],['.bar','酒吧'],['.beer','啤酒'],['.wine','红酒'],
+        ['.fashion','时尚'],['.style','风格'],['.beauty','美容'],['.makeup','化妆'],
+        ['.hair','美发'],['.skin','护肤'],['.watch','手表'],['.jewelry','珠宝'],
+        ['.car','汽车'],['.auto','汽车'],['.bike','自行车'],['.boats','船艇'],
+        ['.motorcycles','摩托车'],['.racing','赛车'],['.game','游戏'],['.games','游戏'],
+        ['.play','娱乐'],['.fun','趣味'],['.party','派对'],['.social','社交'],
+        ['.chat','聊天'],['.video','视频'],['.film','电影'],['.movie','电影'],
+        ['.music','音乐'],['.band','乐队'],['.tickets','票务'],['.show','演出'],
+        ['.events','活动'],['.sport','体育'],['.tennis','网球'],['.golf','高尔夫'],
+        ['.football','足球'],['.hockey','曲棍球'],['.run','跑步'],['.yoga','瑜伽'],
+        ['.travel','旅游'],['.hotels','酒店'],['.vacations','度假'],['.city','城市'],
+        ['.town','城镇'],['.house','房屋'],['.property','房产'],['.rent','租赁'],
+        ['.lease','租赁'],['.build','建筑'],['.construction','建筑'],['.contractors','承包商'],
+        ['.industries','工业'],['.supply','供应链'],['.parts','零件'],['.tools','工具'],
+        ['.equipment','设备'],['.engineering','工程'],['.systems','系统'],['.security','安全'],
+        ['.protection','防护'],['.community','社区'],['.family','家庭'],['.kids','儿童'],
+        ['.baby','婴儿'],['.dog','狗'],['.cat','猫'],['.pet','宠物'],
+        ['.flowers','花卉'],['.garden','花园'],['.organic','有机'],['.bio','生物'],
+        ['.camera','相机'],['.pictures','图片'],['.audio','音频'],['.direct','直接']
+      ],
+      '🏛️ 受限/赞助顶级域': [
+        ['.gov','政府机构'],['.gov.cn','中国政府'],['.edu','教育机构'],['.edu.cn','中国教育'],
+        ['.mil','军事机构'],['.ac','学术机构'],['.museum','博物馆'],['.aero','航空'],
+        ['.coop','合作社'],['.travel','旅游'],['.jobs','招聘'],['.post','邮政'],
+        ['.int','国际组织'],['.arpa','网络基础设施'],['.example','示例保留'],['.test','测试保留'],
+        ['.localhost','本地保留'],['.invalid','无效保留'],['.onion','Tor网络']
+      ]
+    };
+
+    var allTlds = [];
+    var catKeys = Object.keys(categories);
+
+    catKeys.forEach(function(cat) {
+      categories[cat].forEach(function(e) {
+        allTlds.push({ domain: e[0], desc: e[1], category: cat });
+      });
+    });
+
+    var currentCat = 'all';
+    var searchQuery = '';
+
+    var searchInput = document.getElementById('searchInput');
+    var categoryTabs = document.getElementById('categoryTabs');
+    var tldGrid = document.getElementById('tldGrid');
+    var toastHint = document.getElementById('toastHint');
+
+    function renderCategoryTabs() {
+      var html = '<span class="cat-tab active" data-cat="all">全部 <span class="count-badge">(' + allTlds.length + ')</span></span>';
+      catKeys.forEach(function(cat) {
+        html += '<span class="cat-tab" data-cat="' + cat + '">' + cat + ' <span class="count-badge">(' + categories[cat].length + ')</span></span>';
+      });
+      categoryTabs.innerHTML = html;
+
+      categoryTabs.querySelectorAll('.cat-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          categoryTabs.querySelectorAll('.cat-tab').forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          currentCat = tab.dataset.cat;
+          renderTlds();
+        });
+      });
+    }
+
+    function renderTlds() {
+      var filtered = allTlds.filter(function(t) {
+        var matchCat = currentCat === 'all' || t.category === currentCat;
+        var matchSearch = !searchQuery || t.domain.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1 || t.desc.indexOf(searchQuery) !== -1;
+        return matchCat && matchSearch;
+      });
+
+      tldGrid.innerHTML = filtered.map(function(t) {
+        return '<div class="tld-cell" title="点击复制 ' + escapeHTML(t.domain) + '" data-domain="' + escapeHTML(t.domain) + '"><span class="domain">' + escapeHTML(t.domain) + '</span><span class="desc">' + escapeHTML(t.desc) + '</span></div>';
+      }).join('');
+
+      tldGrid.querySelectorAll('.tld-cell').forEach(function(cell) {
+        cell.addEventListener('click', function() {
+          navigator.clipboard.writeText(cell.dataset.domain).then(function() {
+            toastHint.textContent = '✅ 已复制: ' + cell.dataset.domain;
+            toastHint.classList.add('show');
+            clearTimeout(toastHint._t);
+            toastHint._t = setTimeout(function() { toastHint.classList.remove('show'); }, 1500);
+          });
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderTlds();
+    });
+
+    // More tools
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../regex-tester', i: '.*', n: '正则测试器' },
+      { h: '../emoji-list', i: '😀', n: 'Emoji 大全' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../file-md5', i: '#', n: '文件 MD5' },
+      { h: '../file-compress', i: '📦', n: '文件压缩打包' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+
+    renderCategoryTabs();
+    renderTlds();
+  </script>
+</body>
+</html>

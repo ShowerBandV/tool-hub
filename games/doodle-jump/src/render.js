@@ -110,21 +110,6 @@ function drawPlayer() {
   ctx.restore();
 }
 
-function drawCollectibles() {
-  var ctx = S.ctx;
-  for (var i = 0; i < S.collectibles.length; i++) {
-    var c = S.collectibles[i];
-    var sy = c.y - S.cameraY; if (sy < -40 || sy > S.HEIGHT + 40) continue;
-    ctx.save(); ctx.translate(c.x, sy);
-    var sc = c.animScale || 1; ctx.scale(sc, sc);
-    ctx.fillStyle = '#222'; ctx.strokeStyle = '#111'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = '16px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.icon, 0, 1);
-    ctx.restore();
-  }
-}
-
 function drawParticles() {
   var ctx = S.ctx;
   for (var i = 0; i < S.particles.length; i++) {
@@ -150,10 +135,6 @@ function drawHUD() {
 
   ctx.fillStyle = '#222'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
   ctx.fillText('🏆 ' + S.score, 16, 31);
-  var coinText = '🪙 ' + S.coins;
-  var coinW = ctx.measureText(coinText).width;
-  ctx.fillText(coinText, S.WIDTH / 2 - coinW / 2 - 30, 31);
-  ctx.fillText('💎 ' + S.skinShards, S.WIDTH / 2 + 5, 31);
   ctx.textAlign = 'right';
   ctx.fillText('👑 ' + S.bestScore, S.WIDTH - 16, 31);
   ctx.textAlign = 'left';
@@ -173,12 +154,6 @@ function drawHUD() {
 
 function drawUI() {
   var ctx = S.ctx;
-
-  if (S.gameState === C.STATE.INTERSTITIAL) {
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, S.WIDTH, S.HEIGHT);
-    ctx.textAlign = 'left';
-    return;
-  }
 
   if (S.gameState === C.STATE.MENU) {
     ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, S.WIDTH, S.HEIGHT);
@@ -207,57 +182,20 @@ function drawUI() {
     ctx.textAlign = 'left';
   }
 
-  if (S.gameState === C.STATE.REVIVE) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, S.WIDTH, S.HEIGHT);
-
-    ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 26px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('💀 你摔下去了!', S.WIDTH / 2, S.HEIGHT * 0.15);
-    ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif';
-    ctx.fillText('得分: ' + S.score + '   🪙' + S.coins + '   💎' + S.skinShards, S.WIDTH / 2, S.HEIGHT * 0.23);
-    if (S.maxCombo > 3) {
-      ctx.fillStyle = '#ffd700'; ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('最高连击: ' + S.maxCombo + 'x', S.WIDTH / 2, S.HEIGHT * 0.29);
-    }
-
-    var btnW = 200, btnH = 54, btnX = S.WIDTH / 2, btnY1 = S.HEIGHT * 0.40, btnY2 = S.HEIGHT * 0.53;
-
-    var glow = 1 + Math.sin(Date.now() / 250) * 0.08;
-    ctx.fillStyle = 'rgba(255,215,0,0.25)';
-    ctx.beginPath(); ctx.roundRect(btnX - btnW / 2 * glow - 5, btnY1 - btnH / 2 * glow - 5,
-      btnW * glow + 10, btnH * glow + 10, 16); ctx.fill();
-
-    var revGrad = ctx.createLinearGradient(btnX, btnY1 - btnH / 2, btnX, btnY1 + btnH / 2);
-    revGrad.addColorStop(0, '#f7c948'); revGrad.addColorStop(1, '#e67e22');
-    ctx.fillStyle = revGrad;
-    ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.roundRect(btnX - btnW / 2, btnY1 - btnH / 2, btnW, btnH, 14); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('🔥 看广告复活 (' + (3 - S.reviveCount) + '/3)', btnX, btnY1 + 4);
-
-    ctx.fillStyle = '#555'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(btnX - btnW / 2, btnY2 - btnH / 2, btnW, btnH, 14); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#aaa'; ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('放弃', btnX, btnY2 + 4);
-
-    ctx.fillStyle = '#ccc'; ctx.font = '12px sans-serif';
-    ctx.fillText('复活保留分数, 难度从零开始', S.WIDTH / 2, btnY2 + 42);
-    ctx.textAlign = 'left';
-  }
-
   if (S.gameState === C.STATE.GAMEOVER) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, S.WIDTH, S.HEIGHT);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('游戏结束', S.WIDTH / 2, S.HEIGHT * 0.30);
-    ctx.font = '18px sans-serif';
-    ctx.fillText('得分: ' + S.score + '   🪙' + S.coins + '   💎' + S.skinShards, S.WIDTH / 2, S.HEIGHT * 0.40);
+    ctx.fillText('游戏结束', S.WIDTH / 2, S.HEIGHT * 0.28);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('得分: ' + S.score, S.WIDTH / 2, S.HEIGHT * 0.38);
     if (S.maxCombo > 3) {
       ctx.fillStyle = '#ffd700'; ctx.font = 'bold 15px sans-serif';
-      ctx.fillText('最高连击: ' + S.maxCombo + 'x', S.WIDTH / 2, S.HEIGHT * 0.47);
-      ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif';
+      ctx.fillText('最高连击: ' + S.maxCombo + 'x', S.WIDTH / 2, S.HEIGHT * 0.46);
+      ctx.fillStyle = '#fff'; ctx.font = '20px sans-serif';
     }
     ctx.fillText('最高分: ' + S.bestScore, S.WIDTH / 2, S.HEIGHT * 0.54);
     ctx.font = '16px sans-serif';
-    ctx.fillText('点击重新开始', S.WIDTH / 2, S.HEIGHT * 0.64);
+    ctx.fillText('点击重新开始', S.WIDTH / 2, S.HEIGHT * 0.65);
     ctx.textAlign = 'left';
   }
 }
@@ -297,11 +235,11 @@ function drawCombo() {
   ctx.restore();
 }
 
-function drawAdButton() {
+function drawJetpackButton() {
   var ctx = S.ctx;
   var btnW = 56, btnH = 56;
   var btnCX = S.WIDTH - 40, btnCY = S.HEIGHT - 40;
-  var ready = S.adCooldown <= 0;
+  var ready = S.jetpackCooldown <= 0;
 
   ctx.save();
 
@@ -335,13 +273,13 @@ function drawAdButton() {
   ctx.fillText('🚀', btnCX, btnCY - 7);
 
   ctx.font = 'bold 9px sans-serif';
-  ctx.fillText(ready ? '免费' : '冷却', btnCX, btnCY + 13);
+  ctx.fillText(ready ? '就绪' : '冷却', btnCX, btnCY + 13);
 
   if (!ready) {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.beginPath(); ctx.roundRect(btnCX - btnW / 2, btnCY - btnH / 2, btnW, btnH, 12); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif';
-    ctx.fillText(Math.ceil(S.adCooldown) + 's', btnCX, btnCY);
+    ctx.fillText(Math.ceil(S.jetpackCooldown) + 's', btnCX, btnCY);
   }
   ctx.restore();
 }
@@ -361,14 +299,13 @@ function render() {
   if (sx !== 0 || sy !== 0) ctx.translate(sx, sy);
 
   drawBackground();
-  if (S.gameState === C.STATE.PLAYING || S.gameState === C.STATE.REVIVE || S.gameState === C.STATE.INTERSTITIAL) {
+  if (S.gameState === C.STATE.PLAYING) {
     drawClouds(0.15, 0.5); drawClouds(0.35, 0.3);
     drawPlatforms();
-    drawCollectibles();
     drawParticles();
     drawPlayer();
     drawHUD();
-    if (S.gameState === C.STATE.PLAYING) drawAdButton();
+    drawJetpackButton();
   }
   ctx.restore();
   drawUI();

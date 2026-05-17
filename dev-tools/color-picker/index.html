@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线图片颜色拾取工具，上传图片后点击任意位置即可获取该坐标的RGB/HEX颜色值。">
+  <title>图片颜色拾取 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .picker-wrap { position: relative; display: inline-block; border: 2px solid var(--border);
+      border-radius: 12px; overflow: hidden; max-width: 100%; }
+    .picker-wrap canvas { display: block; max-width: 100%; cursor: crosshair; }
+    .crosshair { position: absolute; width: 21px; height: 21px; border: 2px solid #fff;
+      border-radius: 50%; pointer-events: none; transform: translate(-50%,-50%);
+      box-shadow: 0 0 0 1px #000, 0 0 6px rgba(0,0,0,0.3); display: none; }
+    .color-result { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+    .color-swatch { width: 64px; height: 64px; border-radius: 12px; border: 2px solid var(--border);
+      flex-shrink: 0; }
+    .color-codes { display: grid; grid-template-columns: auto auto; gap: 6px 16px; font-size: 0.82rem; }
+    .color-codes .label { color: var(--text-muted); }
+    .color-codes .value { font-family: var(--font-mono); font-weight: 600; cursor: pointer; }
+    .color-codes .value:hover { color: var(--accent); }
+    .drop-zone { border: 3px dashed var(--border); border-radius: 16px; padding: 30px 20px;
+      text-align: center; cursor: pointer; transition: var(--transition); background: #fafbfc; margin-bottom: 10px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #eef2ff; }
+    .zoom-preview { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent);
+      image-rendering: pixelated; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 图片颜色拾取
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎨 图片颜色拾取</h2>
+      <p class="panel-desc">在线图片颜色拾取工具。上传图片后，鼠标悬停或点击任意位置即可获取该坐标的精确颜色值，支持RGB、HEX、HSL等多种格式，点击颜色代码即可复制。</p>
+
+      <div class="drop-zone" id="dropZone">
+        <span style="font-size:2rem;display:block;margin-bottom:4px;">🖼️</span>
+        <span style="font-size:0.9rem;">拖拽图片到此处，或点击上传</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+      <div id="pickerArea" style="display:none;">
+        <div class="picker-wrap" id="pickerWrap">
+          <canvas id="pickerCanvas"></canvas>
+          <div class="crosshair" id="crosshair"></div>
+        </div>
+        <div class="info-bar" style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;" id="coordInfo"></div>
+
+        <div class="color-result">
+          <div class="color-swatch" id="colorSwatch"></div>
+          <div class="zoom-preview">
+            <canvas id="zoomCanvas" width="80" height="80"></canvas>
+          </div>
+          <div class="color-codes" id="colorCodes">
+            <span class="label">HEX</span><span class="value" id="valHex">—</span>
+            <span class="label">RGB</span><span class="value" id="valRgb">—</span>
+            <span class="label">HSL</span><span class="value" id="valHsl">—</span>
+            <span class="label">坐标</span><span class="value" id="valCoord">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var pickerArea = document.getElementById('pickerArea');
+    var pickerCanvas = document.getElementById('pickerCanvas');
+    var ctx = pickerCanvas.getContext('2d');
+    var zoomCtx = document.getElementById('zoomCanvas').getContext('2d');
+    var crosshair = document.getElementById('crosshair');
+    var img = new Image();
+
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) loadImage(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) loadImage(fileInput.files[0]);
+      fileInput.value = '';
+    });
+
+    function loadImage(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        img.onload = function() {
+          var maxW = Math.min(img.width, 600);
+          var scale = maxW / img.width;
+          pickerCanvas.width = img.width;
+          pickerCanvas.height = img.height;
+          pickerCanvas.style.width = maxW + 'px';
+          pickerCanvas.style.height = (img.height * scale) + 'px';
+          ctx.drawImage(img, 0, 0);
+          dropZone.style.display = 'none';
+          pickerArea.style.display = '';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function getColor(x, y) {
+      if (x < 0 || y < 0 || x >= img.width || y >= img.height) return null;
+      var pixel = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      return { r: pixel[0], g: pixel[1], b: pixel[2] };
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(function(v) { return ('0' + v.toString(16)).slice(-2); }).join('').toUpperCase();
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var max = Math.max(r,g,b), min = Math.min(r,g,b);
+      var h = 0, s, l = (max + min) / 2;
+      if (max === min) { h = s = 0; }
+      else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      return 'hsl(' + Math.round(h*360) + ', ' + Math.round(s*100) + '%, ' + Math.round(l*100) + '%)';
+    }
+
+    function drawZoom(x, y) {
+      var sz = 16;
+      zoomCtx.imageSmoothingEnabled = false;
+      zoomCtx.clearRect(0, 0, 80, 80);
+      var sx = Math.max(0, Math.min(img.width - sz, x - sz/2));
+      var sy = Math.max(0, Math.min(img.height - sz, y - sz/2));
+      zoomCtx.drawImage(pickerCanvas, sx, sy, sz, sz, 0, 0, 80, 80);
+      // Crosshair on zoom
+      zoomCtx.strokeStyle = '#fff'; zoomCtx.lineWidth = 1.5;
+      zoomCtx.beginPath(); zoomCtx.moveTo(40, 0); zoomCtx.lineTo(40, 80); zoomCtx.stroke();
+      zoomCtx.beginPath(); zoomCtx.moveTo(0, 40); zoomCtx.lineTo(80, 40); zoomCtx.stroke();
+      zoomCtx.strokeStyle = '#000'; zoomCtx.lineWidth = 1;
+      zoomCtx.beginPath(); zoomCtx.arc(40, 40, 3, 0, Math.PI*2); zoomCtx.stroke();
+    }
+
+    function updateColor(x, y) {
+      var c = getColor(x, y);
+      if (!c) return;
+      var hex = rgbToHex(c.r, c.g, c.b);
+      document.getElementById('colorSwatch').style.background = hex;
+      document.getElementById('valHex').textContent = hex;
+      document.getElementById('valRgb').textContent = 'rgb(' + c.r + ', ' + c.g + ', ' + c.b + ')';
+      document.getElementById('valHsl').textContent = rgbToHsl(c.r, c.g, c.b);
+      document.getElementById('valCoord').textContent = '(' + Math.round(x) + ', ' + Math.round(y) + ')';
+      document.getElementById('coordInfo').textContent = '坐标: (' + Math.round(x) + ', ' + Math.round(y) + ') | 图片尺寸: ' + img.width + '×' + img.height;
+      drawZoom(x, y);
+    }
+
+    pickerCanvas.addEventListener('mousemove', function(e) {
+      var rect = pickerCanvas.getBoundingClientRect();
+      var scaleX = pickerCanvas.width / rect.width;
+      var scaleY = pickerCanvas.height / rect.height;
+      var x = (e.clientX - rect.left) * scaleX;
+      var y = (e.clientY - rect.top) * scaleY;
+      crosshair.style.display = 'block';
+      crosshair.style.left = (e.clientX - rect.left) + 'px';
+      crosshair.style.top = (e.clientY - rect.top) + 'px';
+      updateColor(x, y);
+    });
+
+    pickerCanvas.addEventListener('click', function(e) {
+      var rect = pickerCanvas.getBoundingClientRect();
+      var scaleX = pickerCanvas.width / rect.width;
+      var scaleY = pickerCanvas.height / rect.height;
+      var x = (e.clientX - rect.left) * scaleX;
+      var y = (e.clientY - rect.top) * scaleY;
+      var c = getColor(x, y);
+      if (c) {
+        var hex = rgbToHex(c.r, c.g, c.b);
+        navigator.clipboard.writeText(hex).then(function() {
+          showToast('✅ 已复制: ' + hex);
+        });
+      }
+    });
+
+    // Click color codes to copy
+    document.querySelectorAll('.color-codes .value').forEach(function(el) {
+      el.addEventListener('click', function() {
+        navigator.clipboard.writeText(this.textContent).then(function() {
+          showToast('✅ 已复制: ' + this.textContent);
+        }.bind(this));
+      });
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>

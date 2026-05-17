@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
   <meta name="description" content="在线跑马灯工具，支持自定义滚动文字、速度、颜色与字体大小，支持全屏显示。">
   <title>跑马灯 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <script src="../../assets/lib/anime.min.js"></script>
   <style>
     .marquee-container {
       overflow: hidden; border-radius: 20px;
@@ -66,7 +68,7 @@
 
       <div class="control-row">
         <label>字体大小 <input type="range" id="mqSize" min="1" max="170" value="32"><span class="size-val" id="sizeVal">32</span></label>
-        <label>滚动速度 <input type="range" id="mqSpeed" min="2" max="30" value="10"><span class="size-val" id="speedVal">10</span>s</label>
+        <label>滚动时长 <input type="range" id="mqSpeed" min="2" max="30" value="10"><span class="size-val" id="speedVal">10</span>秒</label>
         <label>文字颜色 <input type="color" id="mqColor" value="#4f46e5"></label>
         <label>背景颜色 <input type="color" id="mqBg" value="#f1f5f9"></label>
       </div>
@@ -141,19 +143,27 @@
     const speedVal = document.getElementById('speedVal');
 
     let animInstance = null;
+    let currentProgress = 0; // track animation progress 0-1
 
     function stopAnim() {
       if (animInstance) { animInstance.pause(); animInstance = null; }
       if (typeof anime !== 'undefined') anime.remove(disp);
     }
 
-    function start() {
-      stopAnim();
-      const text = textIn.value || ' ';
-      const speed = parseInt(speedIn.value) || 10;
-      const size = parseInt(sizeIn.value) || 32;
-      const color = colorIn.value;
-      const bg = bgIn.value;
+    function getDims() {
+      var viewWidth = container.classList.contains('fullscreen')
+        ? window.innerWidth
+        : container.clientWidth;
+      var textWidth = disp.offsetWidth || disp.scrollWidth || 200;
+      return { textWidth: textWidth, viewWidth: viewWidth };
+    }
+
+    function start(fullReset) {
+      var text = textIn.value || ' ';
+      var speed = parseInt(speedIn.value) || 10;
+      var size = parseInt(sizeIn.value) || 32;
+      var color = colorIn.value;
+      var bg = bgIn.value;
 
       disp.textContent = text;
       disp.style.fontSize = size + 'px';
@@ -162,29 +172,68 @@
       sizeVal.textContent = size;
       speedVal.textContent = speed;
 
-      if (typeof anime !== 'undefined' && text.trim()) {
-        // Reset position first
-        disp.style.transform = 'translateX(0)';
-        const textWidth = disp.offsetWidth;
-        const viewWidth = container.classList.contains('fullscreen')
-          ? window.innerWidth
-          : container.clientWidth;
+      if (typeof anime === 'undefined' || !text.trim()) {
+        stopAnim();
+        return;
+      }
 
+      if (fullReset || !animInstance) {
+        // Full restart
+        stopAnim();
+        disp.style.transform = 'translateX(0)';
+        var dims = getDims();
         animInstance = anime({
           targets: disp,
-          translateX: [-textWidth, viewWidth],
+          translateX: [-dims.textWidth, dims.viewWidth],
           duration: speed * 1000,
           loop: true,
-          easing: 'linear'
+          easing: 'linear',
+          update: function(anim) {
+            currentProgress = anim.progress / 100;
+          }
+        });
+      } else if (animInstance) {
+        // Update in-place: just change duration without resetting position
+        var dims2 = getDims();
+        animInstance.pause();
+        // Create new animation from current position
+        var currentX = -dims2.textWidth + currentProgress * (dims2.viewWidth + dims2.textWidth);
+        anime.remove(disp);
+        disp.style.transform = 'translateX(' + currentX + 'px)';
+        animInstance = anime({
+          targets: disp,
+          translateX: [-dims2.textWidth, dims2.viewWidth],
+          duration: speed * 1000,
+          loop: true,
+          easing: 'linear',
+          update: function(anim) {
+            currentProgress = anim.progress / 100;
+          }
         });
       }
     }
 
-    textIn.oninput = start;
-    sizeIn.oninput = start;
-    speedIn.oninput = start;
-    colorIn.oninput = start;
-    bgIn.oninput = start;
+    // Text change: full reset
+    textIn.oninput = function() { start(true); };
+
+    // Size/speed/color/bg change: no full reset
+    sizeIn.oninput = function() {
+      var size = parseInt(sizeIn.value) || 32;
+      disp.style.fontSize = size + 'px';
+      sizeVal.textContent = size;
+      start(false);
+    };
+    speedIn.oninput = function() {
+      var speed = parseInt(speedIn.value) || 10;
+      speedVal.textContent = speed;
+      start(false);
+    };
+    colorIn.oninput = function() {
+      disp.style.color = colorIn.value;
+    };
+    bgIn.oninput = function() {
+      container.style.background = bgIn.value;
+    };
 
     // Emoji buttons: append to text input
     document.getElementById('emojiGrid').addEventListener('click', function(e) {
@@ -192,7 +241,7 @@
       if (!btn) return;
       const emoji = btn.dataset.emoji;
       textIn.value = textIn.value + emoji;
-      start();
+      start(true);
     });
 
     // Fullscreen
@@ -216,8 +265,8 @@
         container.classList.remove('fullscreen');
         container.querySelector('.fullscreen-hint').textContent = '🔲 点击全屏';
       }
-      // Restart animation to recalculate dimensions
-      setTimeout(start, 100);
+      // Update animation with new dimensions, preserve position
+      setTimeout(function() { start(false); }, 150);
     }
 
     document.addEventListener('fullscreenchange', onFullscreenChange);
@@ -234,7 +283,7 @@
       }
     });
 
-    start();
+    start(true);
   </script>
 </body>
 </html>

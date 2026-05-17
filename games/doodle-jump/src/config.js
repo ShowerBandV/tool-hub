@@ -4,7 +4,7 @@ var J = window.J = window.J || {};
 var DESIGN_W = 420;
 var DESIGN_H = 680;
 
-var STATE = { MENU: 'menu', PLAYING: 'playing', REVIVE: 'revive', GAMEOVER: 'gameover', INTERSTITIAL: 'interstitial' };
+var STATE = { MENU: 'menu', PLAYING: 'playing', GAMEOVER: 'gameover' };
 
 var CHARACTERS = [
   {
@@ -136,17 +136,14 @@ var PLATFORM_TYPES = {
   JETPACK: { name: 'jetpack', fill: '#c0c0c0', stroke: '#111', bounceMultiplier: 1,    points: 30, hasJetpack: true }
 };
 
-var REWARD_INTERVAL_MIN = 5000;
-var REWARD_INTERVAL_MAX = 10000;
 var MAX_FALL_TIME = 2.0;
 var MAX_PLATFORMS = 45;
 var MAX_PARTICLES = 100;
-var INTERSTITIAL_INTERVAL = 3;
 var COMBO_TIMEOUT = 1.2;
 var COMBO_BONUS = 5;
+var JETPACK_COOLDOWN = 30;
 
 var SHAKE = { light: 2, medium: 4, heavy: 6 };
-var AD_UNIT_IDS = { rewarded: '', interstitial: '', banner: '' };
 
 J.config = {
   DESIGN_W: DESIGN_W,
@@ -154,14 +151,11 @@ J.config = {
   STATE: STATE,
   CHARACTERS: CHARACTERS,
   PLATFORM_TYPES: PLATFORM_TYPES,
-  REWARD_INTERVAL_MIN: REWARD_INTERVAL_MIN,
-  REWARD_INTERVAL_MAX: REWARD_INTERVAL_MAX,
   MAX_FALL_TIME: MAX_FALL_TIME,
   MAX_PLATFORMS: MAX_PLATFORMS,
   MAX_PARTICLES: MAX_PARTICLES,
-  INTERSTITIAL_INTERVAL: INTERSTITIAL_INTERVAL,
   COMBO_TIMEOUT: COMBO_TIMEOUT,
   COMBO_BONUS: COMBO_BONUS,
-  SHAKE: SHAKE,
-  AD_UNIT_IDS: AD_UNIT_IDS
+  JETPACK_COOLDOWN: JETPACK_COOLDOWN,
+  SHAKE: SHAKE
 };

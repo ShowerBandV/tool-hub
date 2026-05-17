@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
   <meta name="description" content="HTML特殊符号速查表，收录常用HTML实体字符（空格、版权、箭头等）及对应代码。">
   <title>HTML 符号 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
@@ -16,32 +18,97 @@
 
     <div class="card tool-panel">
       <h2 class="panel-title">🆎 HTML 符号速查</h2>
-      <p class="panel-desc">HTML特殊符号速查表。按类别列出常用HTML实体字符（数学符号、货币符号、箭头、标点等），每个符号显示字符预览和HTML代码，点击即可复制，适合前端开发和内容编辑场景。</p>
-      <table class="data-table">
-        <thead><tr><th>符号</th><th>实体</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr><td>&amp;</td><td><code>&amp;amp;</code></td><td>和号</td></tr>
-          <tr><td>&lt;</td><td><code>&amp;lt;</code></td><td>小于号</td></tr>
-          <tr><td>&gt;</td><td><code>&amp;gt;</code></td><td>大于号</td></tr>
-          <tr><td>&quot;</td><td><code>&amp;quot;</code></td><td>双引号</td></tr>
-          <tr><td>&apos;</td><td><code>&amp;apos;</code></td><td>单引号</td></tr>
-          <tr><td>&copy;</td><td><code>&amp;copy;</code></td><td>版权</td></tr>
-          <tr><td>&reg;</td><td><code>&amp;reg;</code></td><td>注册商标</td></tr>
-          <tr><td>&trade;</td><td><code>&amp;trade;</code></td><td>商标</td></tr>
-          <tr><td>&euro;</td><td><code>&amp;euro;</code></td><td>欧元</td></tr>
-          <tr><td>&pound;</td><td><code>&amp;pound;</code></td><td>英镑</td></tr>
-          <tr><td>&yen;</td><td><code>&amp;yen;</code></td><td>日元</td></tr>
-          <tr><td>&larr;</td><td><code>&amp;larr;</code></td><td>左箭头</td></tr>
-          <tr><td>&rarr;</td><td><code>&amp;rarr;</code></td><td>右箭头</td></tr>
-          <tr><td>&hearts;</td><td><code>&amp;hearts;</code></td><td>红心</td></tr>
-          <tr><td>&spades;</td><td><code>&amp;spades;</code></td><td>黑桃</td></tr>
-          <tr><td>&infin;</td><td><code>&amp;infin;</code></td><td>无穷</td></tr>
-          <tr><td>&plusmn;</td><td><code>&amp;plusmn;</code></td><td>正负号</td></tr>
-          <tr><td>&times;</td><td><code>&amp;times;</code></td><td>乘号</td></tr>
-          <tr><td>&divide;</td><td><code>&amp;divide;</code></td><td>除号</td></tr>
-          <tr><td>&deg;</td><td><code>&amp;deg;</code></td><td>度</td></tr>
-        </tbody>
-      </table>
+      <p class="panel-desc">前端开发速查手册。包含常用HTML特殊符号、HTML标签参考、CSS实用技巧。点击符号或代码即可复制，适合前端开发和内容编辑场景。</p>
+
+      <div class="tab-row" style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="tab-btn active" data-tab="symbols">🔣 HTML 符号</button>
+        <button class="tab-btn" data-tab="tags">🏷️ HTML 标签</button>
+        <button class="tab-btn" data-tab="css">🎨 CSS 技巧</button>
+      </div>
+
+      <div id="tabSymbols">
+        <div class="form-label" style="margin-bottom:6px;">🔍 搜索：<input type="text" class="form-input" id="symbolSearch" placeholder="搜索符号或描述..." style="display:inline-block;width:200px;margin-left:8px;"></div>
+        <table class="data-table">
+          <thead><tr><th>符号</th><th>实体名称</th><th>实体编号</th><th>说明</th></tr></thead>
+          <tbody id="symbolsBody"></tbody>
+        </table>
+      </div>
+
+      <div id="tabTags" style="display:none;">
+        <table class="data-table">
+          <thead><tr><th>标签</th><th>说明</th><th>示例</th></tr></thead>
+          <tbody>
+            <tr><td><code>&lt;h1&gt;~&lt;h6&gt;</code></td><td>标题标签，h1最高级</td><td><code>&lt;h1&gt;主标题&lt;/h1&gt;</code></td></tr>
+            <tr><td><code>&lt;p&gt;</code></td><td>段落</td><td><code>&lt;p&gt;文本段落&lt;/p&gt;</code></td></tr>
+            <tr><td><code>&lt;a&gt;</code></td><td>超链接</td><td><code>&lt;a href="url"&gt;链接&lt;/a&gt;</code></td></tr>
+            <tr><td><code>&lt;img&gt;</code></td><td>图片（自闭合）</td><td><code>&lt;img src="url" alt="描述"&gt;</code></td></tr>
+            <tr><td><code>&lt;div&gt;</code></td><td>块级容器</td><td><code>&lt;div class="box"&gt;...&lt;/div&gt;</code></td></tr>
+            <tr><td><code>&lt;span&gt;</code></td><td>行内容器</td><td><code>&lt;span style="color:red"&gt;红字&lt;/span&gt;</code></td></tr>
+            <tr><td><code>&lt;ul&gt; / &lt;ol&gt; / &lt;li&gt;</code></td><td>无序列表 / 有序列表 / 列表项</td><td><code>&lt;ul&gt;&lt;li&gt;项目&lt;/li&gt;&lt;/ul&gt;</code></td></tr>
+            <tr><td><code>&lt;table&gt;</code></td><td>表格，含tr/td/th</td><td><code>&lt;table&gt;&lt;tr&gt;&lt;td&gt;单元格&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</code></td></tr>
+            <tr><td><code>&lt;form&gt;</code></td><td>表单容器</td><td><code>&lt;form action="/submit" method="post"&gt;...&lt;/form&gt;</code></td></tr>
+            <tr><td><code>&lt;input&gt;</code></td><td>输入框（自闭合）</td><td><code>&lt;input type="text" placeholder="请输入"&gt;</code></td></tr>
+            <tr><td><code>&lt;textarea&gt;</code></td><td>多行文本输入</td><td><code>&lt;textarea rows="4"&gt;&lt;/textarea&gt;</code></td></tr>
+            <tr><td><code>&lt;select&gt; / &lt;option&gt;</code></td><td>下拉选择框</td><td><code>&lt;select&gt;&lt;option&gt;选项&lt;/option&gt;&lt;/select&gt;</code></td></tr>
+            <tr><td><code>&lt;button&gt;</code></td><td>按钮</td><td><code>&lt;button type="submit"&gt;提交&lt;/button&gt;</code></td></tr>
+            <tr><td><code>&lt;label&gt;</code></td><td>表单标签</td><td><code>&lt;label for="id"&gt;姓名&lt;/label&gt;</code></td></tr>
+            <tr><td><code>&lt;strong&gt; / &lt;em&gt;</code></td><td>加粗 / 斜体（语义化）</td><td><code>&lt;strong&gt;重要&lt;/strong&gt;</code></td></tr>
+            <tr><td><code>&lt;br&gt;</code></td><td>换行（自闭合）</td><td><code>第一行&lt;br&gt;第二行</code></td></tr>
+            <tr><td><code>&lt;hr&gt;</code></td><td>水平分割线（自闭合）</td><td><code>&lt;hr&gt;</code></td></tr>
+            <tr><td><code>&lt;code&gt; / &lt;pre&gt;</code></td><td>行内代码 / 预格式代码块</td><td><code>&lt;pre&gt;&lt;code&gt;console.log()&lt;/code&gt;&lt;/pre&gt;</code></td></tr>
+            <tr><td><code>&lt;details&gt; / &lt;summary&gt;</code></td><td>折叠面板</td><td><code>&lt;details&gt;&lt;summary&gt;标题&lt;/summary&gt;内容&lt;/details&gt;</code></td></tr>
+            <tr><td><code>&lt;video&gt; / &lt;audio&gt;</code></td><td>视频 / 音频</td><td><code>&lt;video src="url" controls&gt;&lt;/video&gt;</code></td></tr>
+            <tr><td><code>&lt;canvas&gt;</code></td><td>画布（JS绘图）</td><td><code>&lt;canvas id="c" width="400" height="300"&gt;&lt;/canvas&gt;</code></td></tr>
+            <tr><td><code>&lt;meta&gt;</code></td><td>页面元信息（head内）</td><td><code>&lt;meta name="description" content="..."&gt;</code></td></tr>
+            <tr><td><code>&lt;link&gt;</code></td><td>外部资源链接（head内）</td><td><code>&lt;link rel="stylesheet" href="style.css"&gt;</code></td></tr>
+            <tr><td><code>&lt;script&gt;</code></td><td>JavaScript脚本</td><td><code>&lt;script src="app.js"&gt;&lt;/script&gt;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="tabCSS" style="display:none;">
+        <style>
+          .css-tip { background: #f8fafc; border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; }
+          .css-tip h4 { font-size: 0.9rem; margin-bottom: 6px; }
+          .css-tip pre { background: #1e293b; color: #e2e8f0; padding: 10px 14px; border-radius: 8px; overflow-x: auto; font-size: 0.78rem; margin: 0; }
+        </style>
+        <div class="css-tip"><h4>🎯 居中万能公式</h4><pre>/* Flexbox 居中 */
+.parent { display: flex; justify-content: center; align-items: center; }
+/* Grid 居中 */
+.parent { display: grid; place-items: center; }</pre></div>
+        <div class="css-tip"><h4>📐 等宽多列布局</h4><pre>/* Grid 自动填充，最小200px */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }</pre></div>
+        <div class="css-tip"><h4>🖱️ 悬停缩放效果</h4><pre>.card { transition: transform 0.3s ease; }
+.card:hover { transform: scale(1.05); }</pre></div>
+        <div class="css-tip"><h4>📏 文本超出省略号</h4><pre>.ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* 多行省略 */
+.multi-line { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }</pre></div>
+        <div class="css-tip"><h4>🎨 CSS 变量（自定义属性）</h4><pre>:root { --primary: #4f46e5; --radius: 8px; }
+.btn { background: var(--primary); border-radius: var(--radius); }</pre></div>
+        <div class="css-tip"><h4>🌑 暗色模式</h4><pre>@media (prefers-color-scheme: dark) {
+  body { background: #1a1a2e; color: #e2e8f0; }
+}</pre></div>
+        <div class="css-tip"><h4>📱 响应式断点</h4><pre>/* 手机 */
+@media (max-width: 640px) { ... }
+/* 平板 */
+@media (min-width: 641px) and (max-width: 1024px) { ... }
+/* 桌面 */
+@media (min-width: 1025px) { ... }</pre></div>
+        <div class="css-tip"><h4>✨ 渐变背景</h4><pre>/* 线性渐变 */
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* 径向渐变 */
+background: radial-gradient(circle, #fff 0%, #ccc 100%);</pre></div>
+        <div class="css-tip"><h4>🔲 圆角和阴影</h4><pre>.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+}</pre></div>
+        <div class="css-tip"><h4>🎭 伪元素装饰</h4><pre>.badge::before { content: '●'; color: #10b981; margin-right: 4px; }
+.tooltip::after { content: attr(data-tip); position: absolute; ... }</pre></div>
+        <div class="css-tip"><h4>🔄 CSS动画基础</h4><pre>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate { animation: fadeIn 0.5s ease; }</pre></div>
+        <div class="css-tip"><h4>🔲 自定义滚动条</h4><pre>::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }</pre></div>
+      </div>
     </div>
 
     <div class="ad-unit ad-leaderboard">
@@ -72,5 +139,74 @@
   </div>
 
   <script src="../../assets/js/common.js"></script>
+  <script>
+    const symbols = [
+      ['&amp;','&#38;','和号'],['&lt;','&#60;','小于号'],['&gt;','&#62;','大于号'],['&quot;','&#34;','双引号'],['&apos;','&#39;','单引号'],
+      ['&copy;','&#169;','版权'],['&reg;','&#174;','注册商标'],['&trade;','&#8482;','商标'],['&euro;','&#8364;','欧元'],['&pound;','&#163;','英镑'],
+      ['&yen;','&#165;','日元/人民币'],['&cent;','&#162;','美分'],['&dollar;','&#36;','美元符号'],['&larr;','&#8592;','左箭头'],['&rarr;','&#8594;','右箭头'],
+      ['&uarr;','&#8593;','上箭头'],['&darr;','&#8595;','下箭头'],['&harr;','&#8596;','左右箭头'],['&crarr;','&#8629;','回车箭头'],['&hearts;','&#9829;','红心'],
+      ['&spades;','&#9824;','黑桃'],['&clubs;','&#9827;','梅花'],['&diams;','&#9830;','方块'],['&infin;','&#8734;','无穷大'],['&plusmn;','&#177;','正负号'],
+      ['&times;','&#215;','乘号'],['&divide;','&#247;','除号'],['&minus;','&#8722;','减号'],['&deg;','&#176;','度'],['&permil;','&#8240;','千分号'],
+      ['&radic;','&#8730;','根号'],['&sum;','&#8721;','求和'],['&prod;','&#8719;','求积'],['&int;','&#8747;','积分'],['&asymp;','&#8776;','约等于'],
+      ['&ne;','&#8800;','不等于'],['&le;','&#8804;','小于等于'],['&ge;','&#8805;','大于等于'],['&frac14;','&#188;','1/4'],['&frac12;','&#189;','1/2'],
+      ['&frac34;','&#190;','3/4'],['&bull;','&#8226;','圆点'],['&hellip;','&#8230;','省略号'],['&lsquo;','&#8216;','左单引号'],['&rsquo;','&#8217;','右单引号'],
+      ['&ldquo;','&#8220;','左双引号'],['&rdquo;','&#8221;','右双引号'],['&laquo;','&#171;','左书引号'],['&raquo;','&#187;','右书引号'],['&middot;','&#183;','中间点'],
+      ['&nbsp;','&#160;','不换行空格'],['&ensp;','&#8194;','半角空格'],['&emsp;','&#8195;','全角空格'],['&star;','&#9733;','实心星'],['&starf;','&#9734;','空心星'],
+      ['&check;','&#10003;','勾号'],['&cross;','&#10007;','叉号'],['&loz;','&#9674;','菱形'],['&ndash;','&#8211;','短破折号'],['&mdash;','&#8212;','长破折号'],
+      ['&larr;','&#8592;','左箭头'],['&rarr;','&#8594;','右箭头'],['&alpha;','&#945;','Alpha'],['&beta;','&#946;','Beta'],['&gamma;','&#947;','Gamma'],
+      ['&delta;','&#948;','Delta'],['&pi;','&#960;','Pi'],['&mu;','&#956;','Mu'],['&sigma;','&#963;','Sigma'],['&omega;','&#969;','Omega'],
+    ];
+
+    function renderSymbols(filter) {
+      const tbody = document.getElementById('symbolsBody');
+      const f = (filter || '').toLowerCase();
+      const filtered = f ? symbols.filter(s => s[0].toLowerCase().includes(f) || s[2].includes(f)) : symbols;
+      tbody.innerHTML = filtered.map(s => `<tr class="clickable-row" title="点击复制 ${s[0]}">
+        <td style="font-size:1.3rem;">${s[0]}</td>
+        <td><code>${escapeHTML(s[0])}</code></td>
+        <td><code>${s[1]}</code></td>
+        <td>${s[2]}</td>
+      </tr>`).join('');
+      tbody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', () => {
+          const code = row.querySelector('td:first-child').textContent;
+          navigator.clipboard.writeText(code).then(() => showToast('✅ 已复制 ' + code));
+        });
+        row.style.cursor = 'pointer';
+      });
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.borderColor = 'var(--border)';
+          b.style.background = '#fff';
+          b.style.color = '';
+        });
+        btn.classList.add('active');
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.background = '#eef2ff';
+        btn.style.color = 'var(--accent)';
+        document.getElementById('tabSymbols').style.display = btn.dataset.tab === 'symbols' ? 'block' : 'none';
+        document.getElementById('tabTags').style.display = btn.dataset.tab === 'tags' ? 'block' : 'none';
+        document.getElementById('tabCSS').style.display = btn.dataset.tab === 'css' ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('symbolSearch').addEventListener('input', function() {
+      renderSymbols(this.value);
+    });
+
+    // Style for tab buttons
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.style.cssText = 'flex:1;padding:8px;border-radius:8px;border:2px solid var(--border);background:#fff;cursor:pointer;font-weight:600;font-size:0.85rem;transition:var(--transition);';
+    });
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab) { activeTab.style.borderColor = 'var(--accent)'; activeTab.style.background = '#eef2ff'; activeTab.style.color = 'var(--accent)'; }
+
+    renderSymbols();
+  </script>
 </body>
 </html>

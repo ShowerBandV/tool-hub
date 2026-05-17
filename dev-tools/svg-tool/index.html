@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="SVG预览与转换工具，支持在线预览SVG代码效果，一键导出为PNG/JPG/WebP格式图片。">
+  <title>SVG 预览转换 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .split-pane { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .split-pane { grid-template-columns: 1fr; } }
+    textarea { font-family: var(--font-mono); min-height: 300px; }
+    .preview-box { border: 2px solid var(--border); border-radius: 12px; min-height: 300px;
+      display: flex; align-items: center; justify-content: center; background: #fff;
+      background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+      background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      overflow: auto; padding: 12px; }
+    .preview-box img { max-width: 100%; max-height: 400px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-action { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+      background: #fff; display: flex; align-items: center; gap: 4px; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .size-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+    .size-row input { width: 80px; padding: 6px 8px; border: 2px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+    .size-row label { font-size: 0.78rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> SVG 预览转换
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎨 SVG 预览与转换</h2>
+      <p class="panel-desc">在线预览SVG代码效果，支持粘贴SVG代码或上传.svg文件。可将SVG导出为PNG、JPG、WebP格式的高清图片。</p>
+
+      <div class="split-pane">
+        <div>
+          <textarea class="form-input" id="svgInput" placeholder="粘贴 SVG 代码到这里...&#10;或点击下方按钮上传 .svg 文件"></textarea>
+          <div class="btn-row">
+            <button class="btn-action" id="uploadBtn">📁 上传 SVG</button>
+            <button class="btn-action primary" id="previewBtn">👁 预览</button>
+            <button class="btn-action" id="clearBtn">🗑 清空</button>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" id="previewBox">
+            <span style="color:var(--text-muted);">SVG 预览区域</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="size-row">
+        <label>导出尺寸：</label>
+        <input type="number" id="exportW" value="800" min="1" max="4000"> <span style="font-size:0.78rem;">×</span>
+        <input type="number" id="exportH" value="600" min="1" max="4000"> <span style="font-size:0.78rem;">px</span>
+        <label style="margin-left:8px;">格式：</label>
+        <select id="exportFmt" style="padding:6px 8px;border:2px solid var(--border);border-radius:6px;font-size:0.82rem;">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/webp">WebP</option>
+        </select>
+        <button class="btn-action primary" id="exportBtn">📥 导出图片</button>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept=".svg" style="display:none;">
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var svgInput = document.getElementById('svgInput');
+    var previewBox = document.getElementById('previewBox');
+    var fileInput = document.getElementById('fileInput');
+    var lastDataUrl = '';
+
+    document.getElementById('previewBtn').addEventListener('click', function() {
+      var svg = svgInput.value.trim();
+      if (!svg) { showToast('请先粘贴SVG代码或上传文件'); return; }
+      previewBox.innerHTML = '<img src="' + svgToDataUrl(svg) + '" alt="SVG Preview">';
+      lastDataUrl = '';
+    });
+
+    document.getElementById('uploadBtn').addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() {
+      if (!fileInput.files.length) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        svgInput.value = e.target.result;
+        document.getElementById('previewBtn').click();
+      };
+      reader.readAsText(fileInput.files[0]);
+      fileInput.value = '';
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      svgInput.value = '';
+      previewBox.innerHTML = '<span style="color:var(--text-muted);">SVG 预览区域</span>';
+      lastDataUrl = '';
+    });
+
+    function svgToDataUrl(svg) {
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      var svg = svgInput.value.trim();
+      if (!svg) { showToast('请先输入SVG代码'); return; }
+      var w = parseInt(document.getElementById('exportW').value) || 800;
+      var h = parseInt(document.getElementById('exportH').value) || 600;
+      var fmt = document.getElementById('exportFmt').value;
+
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+
+        canvas.toBlob(function(blob) {
+          var url = URL.createObjectURL(blob);
+          var ext = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/webp' ? 'webp' : 'png';
+          downloadImageFromUrl(url, 'svg-export.' + ext);
+          URL.revokeObjectURL(url);
+          showToast('已导出: svg-export.' + ext);
+        }, fmt, 0.92);
+      };
+      img.onerror = function() { showToast('SVG解析失败，请检查代码'); };
+      img.src = svgToDataUrl(svg);
+    });
+
+    function downloadImageFromUrl(url, filename) {
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    // 支持粘贴
+    svgInput.addEventListener('input', function() {
+      if (this.value.trim().startsWith('<svg') || this.value.trim().startsWith('<?xml')) {
+        previewBox.innerHTML = '<img src="' + svgToDataUrl(this.value.trim()) + '" alt="SVG Preview">';
+      }
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../color-picker', i: '🎨', n: '图片颜色拾取' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>

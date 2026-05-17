@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
   <meta name="description" content="涂鸦跳跃 Doodle Jump 网页版，经典跳跃小游戏，四种角色可选，支持键盘与触屏操控。">
   <title>涂鸦跳跃 · 游戏盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="../../assets/lib/anime.min.js"></script>
   <style>
     :root { --bg: #f5f5f0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -124,6 +126,20 @@
       color: #111;
       font-weight: bold;
     }
+    /* Loading spinner */
+    .loading-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #fffef7; border-radius: 18px; z-index: 10; gap: 16px;
+    }
+    .loading-overlay.hidden { display: none; }
+    .spinner {
+      width: 48px; height: 48px; border: 5px solid #e2e8f0;
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-weight: 700; color: #64748b; font-size: 0.9rem; }
     canvas {
       border-radius: 18px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 0 3px #333;
@@ -165,25 +181,28 @@
     <div class="game-header">
       <div class="stats">
         <div class="stat-item">🏆 <span id="scoreDisplay">0</span></div>
-        <div class="stat-item">🪙 <span id="coinDisplay">0</span></div>
-        <div class="stat-item">💎 <span id="shardDisplay">0</span></div>
       </div>
       <div class="best-score">👑 最高: <span id="bestScoreDisplay">0</span></div>
       <div id="buffBar" class="buff-indicator" style="display: none;">⚡ 加速中 <span id="buffTimer">0</span>s</div>
     </div>
-    <canvas id="gameCanvas"></canvas>
+    <div style="position:relative;display:inline-block;">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">加载中...</div>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+    </div>
     <div class="controls-hint">
       <kbd>←</kbd><kbd>→</kbd> 或 <kbd>A</kbd><kbd>D</kbd> 移动 · 移动端触摸左右半屏
     </div>
   </div>
 
-  <script src="../../assets/js/common.js"></script>
-  <script src="src/config.js"></script>
-  <script src="src/state.js"></script>
-  <script src="src/platform.js"></script>
-  <script src="src/render.js"></script>
-  <script src="src/input.js"></script>
-  <script src="src/ad.js"></script>
-  <script src="src/main.js"></script>
+  <script src="../../assets/js/common.js" defer></script>
+  <script src="src/config.js" defer></script>
+  <script src="src/state.js" defer></script>
+  <script src="src/platform.js" defer></script>
+  <script src="src/render.js" defer></script>
+  <script src="src/input.js" defer></script>
+  <script src="src/main.js" defer></script>
 </body>
 </html>

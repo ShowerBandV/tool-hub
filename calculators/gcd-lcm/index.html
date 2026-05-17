@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <meta name="description" content="在线最大公因数、最小公倍数、约分计算器。输入两个或多个数字，一键计算GCD和LCM。">
+  <title>公因数/公倍数 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .result-card { background: #f8fafc; border-radius: 12px; padding: 16px; margin-top: 12px; }
+    .result-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .result-row:last-child { border-bottom: none; }
+    .result-label { font-weight: 600; font-size: 0.85rem; color: var(--text-muted); min-width: 100px; }
+    .result-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 公因数/公倍数
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔢 最大公因数 & 最小公倍数</h2>
+      <p class="panel-desc">在线计算多个数字的最大公因数(GCD)和最小公倍数(LCM)，支持分数约分功能。</p>
+
+      <div class="form-label">输入数字（逗号或空格分隔）</div>
+      <input type="text" class="form-input" id="numInput" placeholder="例: 24, 36, 48 或 24 36 48">
+
+      <div class="result-card" id="resultCard" style="display:none;">
+        <div class="result-row"><span class="result-label">最大公因数 (GCD)</span><span class="result-value" id="gcdResult">—</span></div>
+        <div class="result-row"><span class="result-label">最小公倍数 (LCM)</span><span class="result-value" id="lcmResult">—</span></div>
+        <div class="result-row"><span class="result-label">质因数分解</span><span class="result-value" style="font-size:0.82rem;" id="factorResult">—</span></div>
+      </div>
+
+      <h3 style="margin-top:16px;font-size:0.9rem;">分数约分</h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="number" class="form-input" id="numerator" placeholder="分子" style="width:100px;">
+        <span style="font-size:1.2rem;">/</span>
+        <input type="number" class="form-input" id="denominator" placeholder="分母" style="width:100px;">
+        <button class="btn btn-primary" id="simplifyBtn">约分</button>
+      </div>
+      <div class="result-card" id="simplifyResult" style="display:none;">
+        <span class="result-label">约分结果：</span>
+        <span class="result-value" id="simplifyVal">—</span>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+    <div class="card" style="margin-top:20px;"><h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div></div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while(b) { var t = b; b = a % b; a = t; } return a; }
+    function lcm(a, b) { return Math.abs(a * b) / gcd(a, b); }
+    function primeFactors(n) {
+      n = Math.abs(n); var factors = [], d = 2;
+      while (d * d <= n) { while (n % d === 0) { factors.push(d); n /= d; } d++; }
+      if (n > 1) factors.push(n);
+      return factors;
+    }
+
+    function parseNumbers(str) {
+      return str.split(/[,，\s]+/).filter(function(s) { return s && !isNaN(parseInt(s)); }).map(Number);
+    }
+
+    document.getElementById('numInput').addEventListener('input', function() {
+      var nums = parseNumbers(this.value);
+      if (nums.length < 2) { document.getElementById('resultCard').style.display = 'none'; return; }
+
+      var g = nums.reduce(gcd);
+      var l = nums.reduce(lcm);
+      var factors = nums.map(function(n) { return n + ' = ' + primeFactors(n).join(' × '); }).join('；');
+
+      document.getElementById('gcdResult').textContent = g;
+      document.getElementById('lcmResult').textContent = l;
+      document.getElementById('factorResult').textContent = factors;
+      document.getElementById('resultCard').style.display = '';
+    });
+
+    document.getElementById('simplifyBtn').addEventListener('click', function() {
+      var num = parseInt(document.getElementById('numerator').value);
+      var den = parseInt(document.getElementById('denominator').value);
+      if (isNaN(num) || isNaN(den) || den === 0) { showToast('请输入有效的分子和分母'); return; }
+      var g = gcd(num, den);
+      var sn = num / g, sd = den / g;
+      var sign = (sn < 0 && sd < 0) || (sd < 0) ? -1 : 1;
+      sn = Math.abs(sn) * (num * den < 0 ? -1 : 1);
+      sd = Math.abs(sd);
+      document.getElementById('simplifyVal').textContent = sn + ' / ' + sd + (sn % sd !== 0 ? ' (≈ ' + (sn/sd).toFixed(4) + ')' : ' = ' + (sn/sd));
+      document.getElementById('simplifyResult').style.display = '';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'sequences', i: '📈', n: '数列计算器' },
+      { h: 'time-calc', i: '🕐', n: '时间加减' },
+      { h: 'factorial', i: '!', n: '阶乘计算器' },
+      { h: 'fraction-calc', i: '÷', n: '分数计算器' },
+      { h: 'text-set', i: '∩∪', n: '文本交集/差集' },
+      { h: 'permutations', i: '🔀', n: '列表全排列' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(function(t) { return '<a href="../' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>'; }).join('');
+  </script>
+</body>
+</html>

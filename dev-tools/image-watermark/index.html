@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="在线图片水印平铺工具，支持文字水印和图片水印，可自定义透明度、旋转角度、间距等参数。">
+  <title>图片水印平铺 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .preview-wrap { text-align: center; }
+    .preview-wrap img { max-width: 100%; max-height: 400px; border-radius: 12px; border: 2px solid var(--border); }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+    .config-item { display: flex; flex-direction: column; gap: 4px; }
+    .config-item label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+    .config-item input, .config-item select { padding: 6px 8px; border: 2px solid var(--border);
+      border-radius: 6px; font-size: 0.82rem; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .btn-action { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+      background: #fff; display: flex; align-items: center; gap: 4px; }
+    .btn-action:hover { border-color: var(--accent); background: #eef2ff; }
+    .btn-action.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .drop-zone { border: 3px dashed var(--border); border-radius: 16px; padding: 30px 20px;
+      text-align: center; cursor: pointer; transition: var(--transition); background: #fafbfc; margin-bottom: 10px; }
+    .drop-zone:hover { border-color: var(--accent); background: #eef2ff; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 图片水印平铺
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">💧 图片水印平铺</h2>
+      <p class="panel-desc">在线图片水印平铺工具。上传底图后，可添加文字或图片水印，支持自定义透明度、旋转角度、间距等参数，水印平铺覆盖全图。</p>
+
+      <div class="drop-zone" id="dropZone">
+        <span style="font-size:2rem;display:block;margin-bottom:4px;">🖼️</span>
+        <span style="font-size:0.9rem;">拖拽底图到此处，或点击上传</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+      <div id="configArea" style="display:none;">
+        <div class="preview-wrap" id="previewWrap"></div>
+
+        <div class="config-grid">
+          <div class="config-item">
+            <label>水印类型</label>
+            <select id="wmType">
+              <option value="text">文字水印</option>
+              <option value="image">图片水印</option>
+            </select>
+          </div>
+          <div class="config-item" id="textCfg">
+            <label>水印文字</label>
+            <input type="text" id="wmText" value="Watermark" placeholder="输入水印文字">
+          </div>
+          <div class="config-item" id="imageCfg" style="display:none;">
+            <label>水印图片</label>
+            <input type="file" id="wmImageFile" accept="image/*">
+          </div>
+          <div class="config-item">
+            <label>透明度</label>
+            <input type="range" id="wmOpacity" min="5" max="100" value="25">
+            <span style="font-size:0.72rem;color:var(--text-muted);" id="opacityVal">25%</span>
+          </div>
+          <div class="config-item">
+            <label>旋转角度</label>
+            <input type="range" id="wmRotate" min="-90" max="90" value="-30">
+            <span style="font-size:0.72rem;color:var(--text-muted);" id="rotateVal">-30°</span>
+          </div>
+          <div class="config-item">
+            <label>水平间距 (px)</label>
+            <input type="range" id="wmGapX" min="40" max="400" value="180">
+            <span style="font-size:0.72rem;color:var(--text-muted);" id="gapXVal">180</span>
+          </div>
+          <div class="config-item">
+            <label>垂直间距 (px)</label>
+            <input type="range" id="wmGapY" min="40" max="400" value="140">
+            <span style="font-size:0.72rem;color:var(--text-muted);" id="gapYVal">140</span>
+          </div>
+          <div class="config-item">
+            <label>字体大小 (文字水印)</label>
+            <input type="range" id="wmFontSize" min="12" max="80" value="28">
+            <span style="font-size:0.72rem;color:var(--text-muted);" id="fontSizeVal">28</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-action primary" id="applyBtn">👁 预览水印</button>
+          <button class="btn-action primary" id="exportBtn">📥 导出图片 (PNG)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var configArea = document.getElementById('configArea');
+    var baseImg = new Image();
+    var wmImg = new Image();
+    var previewImg = document.createElement('img');
+    var lastCanvas = null;
+
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) loadBaseImage(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length) loadBaseImage(fileInput.files[0]);
+      fileInput.value = '';
+    });
+
+    function loadBaseImage(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        baseImg.onload = function() { configArea.style.display = ''; dropZone.style.display = 'none'; renderWatermark(); };
+        baseImg.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('wmImageFile').addEventListener('change', function() {
+      if (!this.files.length) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        wmImg.onload = function() { renderWatermark(); };
+        wmImg.src = e.target.result;
+      };
+      reader.readAsDataURL(this.files[0]);
+    });
+
+    document.getElementById('wmType').addEventListener('change', function() {
+      document.getElementById('textCfg').style.display = this.value === 'text' ? '' : 'none';
+      document.getElementById('imageCfg').style.display = this.value === 'image' ? '' : 'none';
+    });
+
+    // Live slider value display
+    ['wmOpacity','wmRotate','wmGapX','wmGapY','wmFontSize'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', function() {
+        var valId = id.replace('wm','').charAt(0).toLowerCase() + id.replace('wm','').slice(1) + 'Val';
+        document.getElementById(valId).textContent = this.value + (id === 'wmOpacity' ? '%' : id === 'wmRotate' ? '°' : '');
+      });
+    });
+
+    function renderWatermark() {
+      if (!baseImg.width) return;
+      var canvas = document.createElement('canvas');
+      canvas.width = baseImg.width;
+      canvas.height = baseImg.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(baseImg, 0, 0);
+
+      var opacity = parseInt(document.getElementById('wmOpacity').value) / 100;
+      var rotate = parseInt(document.getElementById('wmRotate').value) * Math.PI / 180;
+      var gapX = parseInt(document.getElementById('wmGapX').value);
+      var gapY = parseInt(document.getElementById('wmGapY').value);
+      var fontSize = parseInt(document.getElementById('wmFontSize').value);
+      var type = document.getElementById('wmType').value;
+
+      ctx.globalAlpha = opacity;
+
+      if (type === 'text') {
+        var text = document.getElementById('wmText').value || 'Watermark';
+        ctx.font = 'bold ' + fontSize + 'px sans-serif';
+        var tw = ctx.measureText(text).width;
+        var th = fontSize;
+      } else {
+        if (!wmImg.width) return;
+        var tw = Math.min(wmImg.width, 120);
+        var th = tw * (wmImg.height / wmImg.width);
+      }
+
+      // Cover area bigger than canvas to account for rotation
+      for (var y = -canvas.height; y < canvas.height * 2; y += gapY) {
+        for (var x = -canvas.width; x < canvas.width * 2; x += gapX) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(rotate);
+          if (type === 'text') {
+            ctx.fillStyle = '#666';
+            ctx.font = 'bold ' + fontSize + 'px sans-serif';
+            ctx.fillText(text, 0, 0);
+          } else if (wmImg.width) {
+            ctx.drawImage(wmImg, -tw/2, -th/2, tw, th);
+          }
+          ctx.restore();
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      lastCanvas = canvas;
+      previewImg.src = canvas.toDataURL();
+      document.getElementById('previewWrap').innerHTML = '';
+      document.getElementById('previewWrap').appendChild(previewImg);
+    }
+
+    document.getElementById('applyBtn').addEventListener('click', renderWatermark);
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      if (!lastCanvas) { showToast('请先预览水印效果'); return; }
+      lastCanvas.toBlob(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'watermarked.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('✅ 已导出: watermarked.png');
+      }, 'image/png');
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../color-picker', i: '🎨', n: '图片颜色拾取' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../cron-parser', i: '⏱', n: 'Cron 表达式' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>

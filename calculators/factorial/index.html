@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <meta name="description" content="在线阶乘计算器，输入正整数计算阶乘n!，支持大数阶乘精确计算。">
+  <title>阶乘计算器 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .result-card { background: linear-gradient(135deg, #eef2ff, #faf5ff); border-radius: 16px;
+      padding: 20px; text-align: center; margin-top: 12px; word-break: break-all; }
+    .result-num { font-size: 2rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+    .result-full { font-size: 0.78rem; font-family: var(--font-mono); line-height: 1.6;
+      margin-top: 8px; max-height: 200px; overflow-y: auto; color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 阶乘计算器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">❕ 阶乘计算器</h2>
+      <p class="panel-desc">在线阶乘计算器。输入正整数 n，计算 n! = 1 × 2 × 3 × ... × n，支持大数阶乘的精确计算结果。</p>
+
+      <div class="form-label">输入 n</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" class="form-input" id="nInput" value="10" min="0" max="1000" placeholder="例: 10" style="width:150px;">
+        <button class="btn btn-primary" id="calcBtn">计算 n!</button>
+      </div>
+
+      <div class="result-card" id="resultCard" style="display:none;">
+        <div style="font-size:0.85rem;color:var(--text-muted);">结果</div>
+        <div class="result-num" id="resultShort"></div>
+        <div class="result-full" id="resultFull"></div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;font-size:0.78rem;color:var(--text-muted);">
+        💡 提示：n 越大，阶乘结果增长极快。n=20 ≈ 2.43×10¹⁸，n=100 约有158位数字。推荐输入 ≤ 500。
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+    <div class="card" style="margin-top:20px;"><h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div></div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function bigFactorial(n) {
+      var result = [1];
+      for (var i = 2; i <= n; i++) {
+        var carry = 0;
+        for (var j = 0; j < result.length; j++) {
+          var prod = result[j] * i + carry;
+          result[j] = prod % 10000000;
+          carry = Math.floor(prod / 10000000);
+        }
+        while (carry > 0) {
+          result.push(carry % 10000000);
+          carry = Math.floor(carry / 10000000);
+        }
+      }
+      return result;
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      var n = parseInt(document.getElementById('nInput').value);
+      if (isNaN(n) || n < 0) { showToast('请输入有效的非负整数'); return; }
+      if (n > 1000) { showToast('请输入 ≤ 1000 的数字'); return; }
+
+      if (n <= 20) {
+        var r = 1;
+        for (var i = 2; i <= n; i++) r *= i;
+        document.getElementById('resultShort').textContent = r.toLocaleString();
+        document.getElementById('resultFull').textContent = '';
+      } else {
+        var arr = bigFactorial(n);
+        var str = '';
+        for (var i = arr.length - 1; i >= 0; i--) {
+          str += (i === arr.length - 1 ? '' : ('0000000' + arr[i]).slice(-7));
+        }
+        document.getElementById('resultShort').textContent = n + '! = ' + str.substring(0, 20) + '... (' + str.length + '位数字)';
+        document.getElementById('resultFull').textContent = str;
+      }
+
+      document.getElementById('resultCard').style.display = '';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'gcd-lcm', i: '🔢', n: '公因数/公倍数' },
+      { h: 'sequences', i: '📈', n: '数列计算器' },
+      { h: 'time-calc', i: '🕐', n: '时间加减' },
+      { h: 'fraction-calc', i: '÷', n: '分数计算器' },
+      { h: 'text-set', i: '∩∪', n: '文本交集/差集' },
+      { h: 'permutations', i: '🔀', n: '列表全排列' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(function(t) { return '<a href="../' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>'; }).join('');
+  </script>
+</body>
+</html>

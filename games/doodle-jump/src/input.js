@@ -1,4 +1,4 @@
-// input.js - 触摸 & 键盘输入处理 (web 版)
+// input.js - 触摸 & 键盘输入处理
 var J = window.J || {};
 var C = J.config;
 var S = J.state;
@@ -17,19 +17,14 @@ function screenToGameY(screenY) {
 }
 
 var handleMenuClick;
-var handleReviveClick;
 var startGameCallback;
 var restartGameCallback;
-var reviveCallback;
-var gameOverCallback;
-var adJetpackCallback;
+var jetpackCallback;
 
-function initInput(onStartGame, onRestartGame, onRevive, onGameOver, onAdJetpack) {
+function initInput(onStartGame, onRestartGame, onJetpack) {
   startGameCallback = onStartGame;
   restartGameCallback = onRestartGame;
-  reviveCallback = onRevive;
-  gameOverCallback = onGameOver;
-  adJetpackCallback = onAdJetpack;
+  jetpackCallback = onJetpack;
 
   canvas = S.canvas;
   if (!canvas) return;
@@ -49,22 +44,6 @@ function initInput(onStartGame, onRestartGame, onRevive, onGameOver, onAdJetpack
     startGameCallback();
   };
 
-  handleReviveClick = function(mx, my) {
-    var btnW = 180, btnH = 50;
-    var reviveBtnX = S.WIDTH / 2, reviveBtnY = S.HEIGHT * 0.42;
-    if (mx > reviveBtnX - btnW / 2 && mx < reviveBtnX + btnW / 2 &&
-        my > reviveBtnY - btnH / 2 && my < reviveBtnY + btnH / 2) {
-      reviveCallback();
-      return;
-    }
-    var giveUpBtnY = S.HEIGHT * 0.55;
-    if (mx > reviveBtnX - btnW / 2 && mx < reviveBtnX + btnW / 2 &&
-        my > giveUpBtnY - btnH / 2 && my < giveUpBtnY + btnH / 2) {
-      gameOverCallback();
-      return;
-    }
-  };
-
   canvas.addEventListener('touchstart', function(e) {
     e.preventDefault();
     if (!e.touches || e.touches.length === 0) return;
@@ -75,11 +54,6 @@ function initInput(onStartGame, onRestartGame, onRevive, onGameOver, onAdJetpack
       handleMenuClick(gx, gy);
       return;
     }
-    if (S.gameState === C.STATE.INTERSTITIAL) return;
-    if (S.gameState === C.STATE.REVIVE) {
-      handleReviveClick(gx, gy);
-      return;
-    }
     if (S.gameState === C.STATE.GAMEOVER) {
       restartGameCallback();
       return;
@@ -87,7 +61,7 @@ function initInput(onStartGame, onRestartGame, onRevive, onGameOver, onAdJetpack
     if (S.gameState === C.STATE.PLAYING) {
       var btnCX = S.WIDTH - 40, btnCY = S.HEIGHT - 40;
       if (Math.abs(gx - btnCX) < 30 && Math.abs(gy - btnCY) < 30) {
-        adJetpackCallback();
+        jetpackCallback();
         return;
       }
     }
@@ -132,10 +106,8 @@ function initInput(onStartGame, onRestartGame, onRevive, onGameOver, onAdJetpack
     if (e.key === ' ' || e.key === 'ArrowUp') {
       e.preventDefault();
       if (S.gameState === C.STATE.MENU) startGameCallback();
-      if (S.gameState === C.STATE.REVIVE) reviveCallback();
       if (S.gameState === C.STATE.GAMEOVER) restartGameCallback();
     }
-    if (e.key === 'Escape' && S.gameState === C.STATE.REVIVE) gameOverCallback();
     if (['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].indexOf(e.key) !== -1) e.preventDefault();
   });
 

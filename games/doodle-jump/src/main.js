@@ -1,11 +1,10 @@
-// main.js - 入口: 初始化、游戏循环、状态切换 (web 版)
+// main.js - 入口: 初始化、游戏循环、状态切换
 var J = window.J || {};
 var C = J.config;
 var S = J.state;
 var P = J.platform;
 var R = J.render;
 var I = J.input;
-var Ad = J.ad;
 
 // 获取 canvas 并注入状态
 var canvas = document.getElementById('gameCanvas');
@@ -84,81 +83,28 @@ function updateJetpack(dt) {
 function endGame() {
   if (S.gameState !== C.STATE.PLAYING) return;
   incrementGamesPlayed();
-
-  freezeGame();
-
-  Ad.hideBanner();
-
-  if (S.gamesPlayed % C.INTERSTITIAL_INTERVAL === 0) {
-    S.gameState = C.STATE.INTERSTITIAL;
-    Ad.showInterstitial(skipToAfterInterstitial);
-  } else {
-    skipToAfterInterstitial();
-  }
-}
-
-function skipToAfterInterstitial() {
-  S.gameState = S.reviveCount < 3 ? C.STATE.REVIVE : C.STATE.GAMEOVER;
-  if (S.gameState === C.STATE.GAMEOVER) saveBestScore();
-}
-
-function freezeGame() {
   saveBestScore();
-  P.spawnParticles(S.player.x, S.player.y, '#111', 20);
-  S.player.vy = 0; S.player.vx = 0;
-}
-
-function revivePlayer() {
-  saveBestScore();
-  S.gameState = C.STATE.PLAYING;
-  S.difficultyBase = S.score;
-  S.reviveCount++;
-
-  resetPlayer();
-  S.platforms = []; S.particles = []; S.collectibles = [];
-  S.activeSpeedBoost = false; S.speedBoostTimer = 0;
-  S.fallTimer = 0;
-  S.lastPlatform = null;
-  S.combo = 0; S.comboTimer = 0; S.maxCombo = 0;
-  S.floatingTexts = [];
-  S.shakeAmount = 0;
-  S.nextRewardTime = C.REWARD_INTERVAL_MIN + Math.random() * (C.REWARD_INTERVAL_MAX - C.REWARD_INTERVAL_MIN);
-  P.generateInitialPlatforms();
-  if (S.platforms.length > 0) {
-    var sp = S.platforms[0];
-    var p = S.player;
-    p.x = sp.x; p.y = sp.y - sp.height / 2 - p.height / 2;
-    p.vy = 0; p.onPlatform = sp;
-  }
-  S.cameraY = S.player.y - S.HEIGHT * 0.35;
-  S.highestReachedY = S.player.y;
-  if (S.platforms.length > 0) {
-    S.lastPlatformY = S.platforms[0].y - S.platforms[0].height / 2;
-  }
-  S.lastTime = Date.now();
-  Ad.showBanner();
-}
-
-function finalGameOver() {
   S.gameState = C.STATE.GAMEOVER;
-  Ad.hideBanner();
-  saveBestScore();
+  P.spawnParticles(S.player.x, S.player.y, '#111', 20);
   S.player.vy = 0; S.player.vx = 0;
 }
 
 function startGame() {
   S.gameState = C.STATE.PLAYING;
-  S.score = 0; S.coins = 0; S.skinShards = 0;
-  S.difficultyBase = 0; S.reviveCount = 0;
+  S.score = 0;
+  S.difficultyBase = 0;
   resetPlayer();
   S.platforms = []; S.particles = []; S.collectibles = [];
   S.activeSpeedBoost = false; S.speedBoostTimer = 0;
   S.fallTimer = 0;
   S.lastPlatform = null;
+  S.lastPlatformId = 0; S.lastScoredY = undefined;
   S.combo = 0; S.comboTimer = 0; S.maxCombo = 0;
   S.floatingTexts = [];
   S.shakeAmount = 0;
-  S.nextRewardTime = C.REWARD_INTERVAL_MIN + Math.random() * (C.REWARD_INTERVAL_MAX - C.REWARD_INTERVAL_MIN);
+  S.jetpackCooldown = 0;
+  // Reset platform ID counter
+  platformIdCounter = 0;
   P.generateInitialPlatforms();
   if (S.platforms.length > 0) {
     var sp = S.platforms[0];
@@ -172,28 +118,20 @@ function startGame() {
     S.lastPlatformY = S.platforms[0].y - S.platforms[0].height / 2;
   }
   S.lastTime = Date.now();
-  Ad.resetFrequency();
-  Ad.showBanner();
 
-  // 更新 DOM 分数显示
   updateDOMScore();
 }
 
 function restartGame() { startGame(); }
 
-function requestRevive() {
-  Ad.showRewarded(revivePlayer);
-}
-
-function requestAdJetpack() {
-  if (S.adCooldown > 0) return;
-  Ad.showRewarded(function() {
-    var p = S.player;
-    p.jetpackActive = true; p.jetpackTimer = 1.8; p.jetpackFuel = 0.9;
-    p.vy = p.jumpSpeed * 1.3;
-    P.spawnParticles(p.x, p.y, '#111', 12);
-    S.adCooldown = 30;
-  });
+// 直接使用喷气背包 (无广告, 30s冷却)
+function activateJetpack() {
+  if (S.jetpackCooldown > 0 || S.gameState !== C.STATE.PLAYING) return;
+  var p = S.player;
+  p.jetpackActive = true; p.jetpackTimer = 1.8; p.jetpackFuel = 0.9;
+  p.vy = p.jumpSpeed * 1.3;
+  P.spawnParticles(p.x, p.y, '#111', 12);
+  S.jetpackCooldown = C.JETPACK_COOLDOWN;
 }
 
 // ============ 主更新 ============
@@ -207,16 +145,14 @@ function update() {
   if (dt > 0.1) dt = 0.1;
   S.lastTime = now;
 
-  if (S.gameState === C.STATE.INTERSTITIAL) return;
   if (S.gameState !== C.STATE.PLAYING) return;
 
-  P.updateRewardTimer(dt);
   P.updateSpeedBoost(dt);
   P.updateShake(dt);
   P.updateFloatingTexts(dt);
   P.updateCombo(dt);
   updateJetpack(dt);
-  if (S.adCooldown > 0) S.adCooldown -= dt;
+  if (S.jetpackCooldown > 0) S.jetpackCooldown -= dt;
 
   var p = S.player;
   var targetVx = S.inputDirection * p.moveSpeed * p.speedBoostMultiplier;
@@ -232,7 +168,6 @@ function update() {
 
   P.updateMovingPlatforms(dt);
   P.checkPlatformCollision();
-  P.checkCollectibleCollision();
   P.updatePlatformAnimations(dt);
   updateCamera();
   P.ensurePlatformsAbove();
@@ -250,8 +185,6 @@ function update() {
   if (p.trailPositions.length > 15) p.trailPositions.shift();
 
   P.updateParticles();
-  P.updateCollectibles();
-  P.updateCollectibleAnims(dt);
 
   for (var i = 0; i < S.platforms.length; i++) {
     var plat = S.platforms[i];
@@ -266,7 +199,6 @@ function update() {
   }
   if (p.squashTimer > 0) p.squashTimer -= dt;
 
-  // 更新 DOM 分数显示
   updateDOMScore();
 
   if (p.y > S.cameraY + S.HEIGHT + 60) endGame();
@@ -274,15 +206,11 @@ function update() {
 
 function updateDOMScore() {
   var scoreEl = document.getElementById('scoreDisplay');
-  var coinEl = document.getElementById('coinDisplay');
-  var shardEl = document.getElementById('shardDisplay');
   var bestEl = document.getElementById('bestScoreDisplay');
   var buffBar = document.getElementById('buffBar');
   var buffTimer = document.getElementById('buffTimer');
 
   if (scoreEl) scoreEl.textContent = S.score;
-  if (coinEl) coinEl.textContent = S.coins;
-  if (shardEl) shardEl.textContent = S.skinShards;
   if (bestEl) bestEl.textContent = S.bestScore;
 
   if (buffBar && buffTimer) {
@@ -304,15 +232,17 @@ function gameLoop() {
 
 // 初始化 & 启动
 function init() {
-  Ad.init();
   resetPlayer();
   S.platforms = []; S.particles = []; S.collectibles = [];
   S.cameraY = 0; S.highestReachedY = S.HEIGHT - 200;
-  S.score = 0; S.coins = 0; S.skinShards = 0; S.fallTimer = 0;
-  S.difficultyBase = 0; S.reviveCount = 0; S.lastPlatform = null;
+  S.score = 0; S.fallTimer = 0;
+  S.difficultyBase = 0; S.lastPlatform = null;
+  S.lastPlatformId = 0; S.lastScoredY = undefined;
   S.combo = 0; S.comboTimer = 0; S.maxCombo = 0;
   S.floatingTexts = [];
   S.shakeAmount = 0;
+  S.jetpackCooldown = 0;
+  platformIdCounter = 0;
   S.gameState = C.STATE.MENU;
   P.generateInitialPlatforms();
   if (S.platforms.length > 0) {
@@ -320,13 +250,15 @@ function init() {
     var p = S.player;
     p.x = sp.x; p.y = sp.y - sp.height / 2 - p.height / 2; p.vy = 0; p.onPlatform = sp;
   }
-  S.nextRewardTime = 0; S.activeSpeedBoost = false; S.speedBoostTimer = 0;
+  S.activeSpeedBoost = false; S.speedBoostTimer = 0;
   S.lastTime = Date.now();
-  Ad.showBanner();
 
   updateDOMScore();
 }
 
-I.initInput(startGame, restartGame, requestRevive, finalGameOver, requestAdJetpack);
+I.initInput(startGame, restartGame, activateJetpack);
 init();
 gameLoop();
+// 隐藏加载动画
+var loader = document.getElementById('loadingOverlay');
+if (loader) { loader.classList.add('hidden'); }

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="周易六十四卦速查表，包含卦名、卦序、卦辞、上卦下卦等信息，支持搜索筛选。">
+  <title>周易六十四卦速查 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .search-input { margin-bottom: 12px; }
+    .hex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+    .hex-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; cursor: pointer; transition: var(--transition); display: flex; gap: 12px; align-items: center; }
+    .hex-card:hover { border-color: var(--accent); background: #eef2ff; }
+    .hex-symbol { font-size: 2.2rem; font-weight: 900; width: 50px; text-align: center;
+      flex-shrink: 0; color: var(--accent); }
+    .hex-info { flex: 1; min-width: 0; }
+    .hex-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .hex-num { font-size: 0.68rem; color: var(--text-muted); }
+    .hex-meaning { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .hex-trigrams { font-size: 0.68rem; color: var(--accent); margin-top: 2px; }
+    .toast-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast-hint.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 周易六十四卦
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">☯ 周易六十四卦速查表</h2>
+      <p class="panel-desc">周易六十四卦速查表。包含卦序、卦名、卦象、上下卦及卦辞等信息，支持搜索筛选。点击任意卦象即可复制卦名。</p>
+
+      <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 搜索卦名、卦序或卦辞...">
+
+      <div class="hex-grid" id="hexGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <div class="toast-hint" id="toastHint"></div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    var hexagrams = [
+      { num:1,  name:'乾', sym:'䷀', up:'☰ 乾', down:'☰ 乾', meaning:'元亨利贞' },
+      { num:2,  name:'坤', sym:'䷁', up:'☷ 坤', down:'☷ 坤', meaning:'元亨，利牝马之贞' },
+      { num:3,  name:'屯', sym:'䷂', up:'☵ 坎', down:'☳ 震', meaning:'元亨利贞，勿用有攸往' },
+      { num:4,  name:'蒙', sym:'䷃', up:'☶ 艮', down:'☵ 坎', meaning:'亨，匪我求童蒙' },
+      { num:5,  name:'需', sym:'䷄', up:'☵ 坎', down:'☰ 乾', meaning:'有孚，光亨，贞吉' },
+      { num:6,  name:'讼', sym:'䷅', up:'☰ 乾', down:'☵ 坎', meaning:'有孚窒惕，中吉' },
+      { num:7,  name:'师', sym:'䷆', up:'☷ 坤', down:'☵ 坎', meaning:'贞，丈人吉，无咎' },
+      { num:8,  name:'比', sym:'䷇', up:'☵ 坎', down:'☷ 坤', meaning:'吉，原筮元永贞' },
+      { num:9,  name:'小畜', sym:'䷈', up:'☴ 巽', down:'☰ 乾', meaning:'亨，密云不雨' },
+      { num:10, name:'履', sym:'䷉', up:'☰ 乾', down:'☱ 兑', meaning:'履虎尾，不咥人，亨' },
+      { num:11, name:'泰', sym:'䷊', up:'☷ 坤', down:'☰ 乾', meaning:'小往大来，吉亨' },
+      { num:12, name:'否', sym:'䷋', up:'☰ 乾', down:'☷ 坤', meaning:'否之匪人，不利君子贞' },
+      { num:13, name:'同人', sym:'䷌', up:'☰ 乾', down:'☲ 离', meaning:'同人于野，亨' },
+      { num:14, name:'大有', sym:'䷍', up:'☲ 离', down:'☰ 乾', meaning:'元亨' },
+      { num:15, name:'谦', sym:'䷎', up:'☷ 坤', down:'☶ 艮', meaning:'亨，君子有终' },
+      { num:16, name:'豫', sym:'䷏', up:'☳ 震', down:'☷ 坤', meaning:'利建侯行师' },
+      { num:17, name:'随', sym:'䷐', up:'☱ 兑', down:'☳ 震', meaning:'元亨利贞，无咎' },
+      { num:18, name:'蛊', sym:'䷑', up:'☶ 艮', down:'☴ 巽', meaning:'元亨，利涉大川' },
+      { num:19, name:'临', sym:'䷒', up:'☷ 坤', down:'☱ 兑', meaning:'元亨利贞，至于八月有凶' },
+      { num:20, name:'观', sym:'䷓', up:'☴ 巽', down:'☷ 坤', meaning:'盥而不荐，有孚颙若' },
+      { num:21, name:'噬嗑', sym:'䷔', up:'☲ 离', down:'☳ 震', meaning:'亨，利用狱' },
+      { num:22, name:'贲', sym:'䷕', up:'☶ 艮', down:'☲ 离', meaning:'亨，小利有攸往' },
+      { num:23, name:'剥', sym:'䷖', up:'☶ 艮', down:'☷ 坤', meaning:'不利有攸往' },
+      { num:24, name:'复', sym:'䷗', up:'☷ 坤', down:'☳ 震', meaning:'亨，出入无疾' },
+      { num:25, name:'无妄', sym:'䷘', up:'☰ 乾', down:'☳ 震', meaning:'元亨利贞，其匪正有眚' },
+      { num:26, name:'大畜', sym:'䷙', up:'☶ 艮', down:'☰ 乾', meaning:'利贞，不家食吉' },
+      { num:27, name:'颐', sym:'䷚', up:'☶ 艮', down:'☳ 震', meaning:'贞吉，观颐自求口实' },
+      { num:28, name:'大过', sym:'䷛', up:'☱ 兑', down:'☴ 巽', meaning:'栋桡，利有攸往，亨' },
+      { num:29, name:'坎', sym:'䷜', up:'☵ 坎', down:'☵ 坎', meaning:'习坎，有孚维心亨' },
+      { num:30, name:'离', sym:'䷝', up:'☲ 离', down:'☲ 离', meaning:'利贞，亨，畜牝牛吉' },
+      { num:31, name:'咸', sym:'䷞', up:'☱ 兑', down:'☶ 艮', meaning:'亨，利贞，取女吉' },
+      { num:32, name:'恒', sym:'䷟', up:'☳ 震', down:'☴ 巽', meaning:'亨，无咎，利贞' },
+      { num:33, name:'遁', sym:'䷠', up:'☰ 乾', down:'☶ 艮', meaning:'亨，小利贞' },
+      { num:34, name:'大壮', sym:'䷡', up:'☳ 震', down:'☰ 乾', meaning:'利贞' },
+      { num:35, name:'晋', sym:'䷢', up:'☲ 离', down:'☷ 坤', meaning:'康侯用锡马蕃庶' },
+      { num:36, name:'明夷', sym:'䷣', up:'☷ 坤', down:'☲ 离', meaning:'利艰贞' },
+      { num:37, name:'家人', sym:'䷤', up:'☴ 巽', down:'☲ 离', meaning:'利女贞' },
+      { num:38, name:'睽', sym:'䷥', up:'☲ 离', down:'☱ 兑', meaning:'小事吉' },
+      { num:39, name:'蹇', sym:'䷦', up:'☵ 坎', down:'☶ 艮', meaning:'利西南，不利东北' },
+      { num:40, name:'解', sym:'䷧', up:'☳ 震', down:'☵ 坎', meaning:'利西南，无所往' },
+      { num:41, name:'损', sym:'䷨', up:'☶ 艮', down:'☱ 兑', meaning:'有孚元吉，无咎可贞' },
+      { num:42, name:'益', sym:'䷩', up:'☴ 巽', down:'☳ 震', meaning:'利有攸往，利涉大川' },
+      { num:43, name:'夬', sym:'䷪', up:'☱ 兑', down:'☰ 乾', meaning:'扬于王庭，孚号有厉' },
+      { num:44, name:'姤', sym:'䷫', up:'☰ 乾', down:'☴ 巽', meaning:'女壮，勿用取女' },
+      { num:45, name:'萃', sym:'䷬', up:'☱ 兑', down:'☷ 坤', meaning:'亨，王假有庙' },
+      { num:46, name:'升', sym:'䷭', up:'☷ 坤', down:'☴ 巽', meaning:'元亨，用见大人' },
+      { num:47, name:'困', sym:'䷮', up:'☱ 兑', down:'☵ 坎', meaning:'亨，贞大人吉，无咎' },
+      { num:48, name:'井', sym:'䷯', up:'☵ 坎', down:'☴ 巽', meaning:'改邑不改井，无丧无得' },
+      { num:49, name:'革', sym:'䷰', up:'☱ 兑', down:'☲ 离', meaning:'巳日乃孚，元亨利贞' },
+      { num:50, name:'鼎', sym:'䷱', up:'☲ 离', down:'☴ 巽', meaning:'元吉，亨' },
+      { num:51, name:'震', sym:'䷲', up:'☳ 震', down:'☳ 震', meaning:'亨，震来虩虩，笑言哑哑' },
+      { num:52, name:'艮', sym:'䷳', up:'☶ 艮', down:'☶ 艮', meaning:'艮其背，不获其身' },
+      { num:53, name:'渐', sym:'䷴', up:'☴ 巽', down:'☶ 艮', meaning:'女归吉，利贞' },
+      { num:54, name:'归妹', sym:'䷵', up:'☳ 震', down:'☱ 兑', meaning:'征凶，无攸利' },
+      { num:55, name:'丰', sym:'䷶', up:'☳ 震', down:'☲ 离', meaning:'亨，王假之，勿忧' },
+      { num:56, name:'旅', sym:'䷷', up:'☲ 离', down:'☶ 艮', meaning:'小亨，旅贞吉' },
+      { num:57, name:'巽', sym:'䷸', up:'☴ 巽', down:'☴ 巽', meaning:'小亨，利有攸往' },
+      { num:58, name:'兑', sym:'䷹', up:'☱ 兑', down:'☱ 兑', meaning:'亨，利贞' },
+      { num:59, name:'涣', sym:'䷺', up:'☴ 巽', down:'☵ 坎', meaning:'亨，王假有庙' },
+      { num:60, name:'节', sym:'䷻', up:'☵ 坎', down:'☱ 兑', meaning:'亨，苦节不可贞' },
+      { num:61, name:'中孚', sym:'䷼', up:'☴ 巽', down:'☱ 兑', meaning:'豚鱼吉，利涉大川' },
+      { num:62, name:'小过', sym:'䷽', up:'☳ 震', down:'☶ 艮', meaning:'亨，利贞，可小事不可大事' },
+      { num:63, name:'既济', sym:'䷾', up:'☵ 坎', down:'☲ 离', meaning:'亨小，利贞，初吉终乱' },
+      { num:64, name:'未济', sym:'䷿', up:'☲ 离', down:'☵ 坎', meaning:'亨，小狐汔济，濡其尾' }
+    ];
+
+    var searchInput = document.getElementById('searchInput');
+    var hexGrid = document.getElementById('hexGrid');
+    var toastHint = document.getElementById('toastHint');
+
+    function renderHexagrams() {
+      var query = (searchInput.value || '').trim().toLowerCase();
+
+      var filtered = hexagrams.filter(function(h) {
+        if (!query) return true;
+        return h.name.indexOf(query) !== -1 ||
+               h.num.toString().indexOf(query) !== -1 ||
+               h.meaning.indexOf(query) !== -1 ||
+               h.up.indexOf(query) !== -1 ||
+               h.down.indexOf(query) !== -1;
+      });
+
+      hexGrid.innerHTML = filtered.map(function(h) {
+        return '<div class="hex-card" title="点击复制: 第' + h.num + '卦 ' + h.name + '" data-text="第' + h.num + '卦 ' + h.name + '"><div class="hex-symbol">' + h.sym + '</div><div class="hex-info"><div class="hex-name">第' + h.num + '卦 ' + h.name + '</div><div class="hex-trigrams">上' + h.up + ' · 下' + h.down + '</div><div class="hex-meaning">' + h.meaning + '</div></div></div>';
+      }).join('');
+
+      hexGrid.querySelectorAll('.hex-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          navigator.clipboard.writeText(this.dataset.text).then(function() {
+            toastHint.textContent = '✅ 已复制: ' + this.dataset.text;
+            toastHint.classList.add('show');
+            clearTimeout(toastHint._t);
+            toastHint._t = setTimeout(function() { toastHint.classList.remove('show'); }, 1500);
+          }.bind(this));
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', renderHexagrams);
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../regex-tester', i: '.*', n: '正则测试器' },
+      { h: '../emoji-list', i: '😀', n: 'Emoji 大全' },
+      { h: '../domain-tld', i: '🌐', n: '域名后缀大全' },
+      { h: '../license-plate', i: '🚗', n: '车牌归属地' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../world-capitals', i: '🏛️', n: '世界各国首都' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+
+    renderHexagrams();
+  </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <meta name="description" content="化学元素周期表速查，包含118种元素的符号、原子序数、原子量、分类等信息，支持搜索筛选和高亮分类。">
+  <title>元素周期表 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .search-input { margin-bottom: 12px; }
+    .category-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-tab { padding: 6px 14px; border: 2px solid var(--border); border-radius: 20px;
+      background: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 500;
+      transition: var(--transition); white-space: nowrap; }
+    .cat-tab:hover { border-color: var(--accent); }
+    .cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .ptable { display: grid; grid-template-columns: repeat(18, 1fr); gap: 2px;
+      min-width: 900px; font-size: 0.62rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility; }
+    .element { aspect-ratio: auto; padding: 3px 2px; border-radius: 4px; cursor: pointer;
+      text-align: center; transition: var(--transition); border: 2px solid transparent;
+      min-height: 46px; display: flex; flex-direction: column; justify-content: center; }
+    .element:hover { border-color: var(--accent); z-index: 2; transform: scale(1.3); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .element .num { font-size: 0.52rem; line-height: 1; font-weight: 500; }
+    .element .sym { font-weight: 900; font-size: 0.88rem; line-height: 1.1; }
+    .element .name { font-size: 0.52rem; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .element.alkali { background: #ffd6d6; }
+    .element.alkaline { background: #ffe6cc; }
+    .element.transition { background: #fff2cc; }
+    .element.post-transition { background: #d6f5d6; }
+    .element.metalloid { background: #ccf2ff; }
+    .element.nonmetal { background: #e6e6ff; }
+    .element.halogen { background: #d9f2d9; }
+    .element.noble-gas { background: #ffe6ff; }
+    .element.lanthanide { background: #e0f0e0; }
+    .element.actinide { background: #f0e0d0; }
+    .element.unknown { background: #e8e8e8; }
+    .element.dimmed { opacity: 0.25; }
+    .empty-cell { background: transparent; }
+    .series-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.72rem; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+    .table-wrap { overflow-x: auto; padding-bottom: 8px; }
+    .lanthanide-label, .actinide-label { display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 600; color: var(--text-muted); min-height: 42px; }
+    .count-badge { font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; }
+    .toast-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+    .toast-hint.show { opacity: 1; }
+    @media (max-width:960px) {
+      .ptable { min-width: 900px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 元素周期表
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">⚗️ 化学元素周期表</h2>
+      <p class="panel-desc">化学元素周期表速查。点击任意元素可复制元素符号，支持按名称、符号、原子序数搜索，按分类高亮筛选。</p>
+
+      <input type="text" class="form-input search-input" id="searchInput" placeholder="🔍 搜索元素名称、符号、原子序数...">
+
+      <div class="series-legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:#ffd6d6;"></span> 碱金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ffe6cc;"></span> 碱土金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#fff2cc;"></span> 过渡金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#d6f5d6;"></span> 后过渡金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ccf2ff;"></span> 类金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#e6e6ff;"></span> 非金属</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#d9f2d9;"></span> 卤素</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ffe6ff;"></span> 稀有气体</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#e0f0e0;"></span> 镧系</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#f0e0d0;"></span> 锕系</span>
+      </div>
+
+      <div class="category-tabs" id="categoryTabs"></div>
+
+      <div class="table-wrap">
+        <div class="ptable" id="ptable"></div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <div class="toast-hint" id="toastHint"></div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    // Element data: [Z, symbol, name, mass, category, row, col]
+    var elements = [
+      [1,'H','氢',1.008,'nonmetal',1,1],[2,'He','氦',4.0026,'noble-gas',1,18],
+      [3,'Li','锂',6.94,'alkali',2,1],[4,'Be','铍',9.0122,'alkaline',2,2],
+      [5,'B','硼',10.81,'metalloid',2,13],[6,'C','碳',12.011,'nonmetal',2,14],
+      [7,'N','氮',14.007,'nonmetal',2,15],[8,'O','氧',15.999,'nonmetal',2,16],
+      [9,'F','氟',18.998,'halogen',2,17],[10,'Ne','氖',20.180,'noble-gas',2,18],
+      [11,'Na','钠',22.990,'alkali',3,1],[12,'Mg','镁',24.305,'alkaline',3,2],
+      [13,'Al','铝',26.982,'post-transition',3,13],[14,'Si','硅',28.085,'metalloid',3,14],
+      [15,'P','磷',30.974,'nonmetal',3,15],[16,'S','硫',32.06,'nonmetal',3,16],
+      [17,'Cl','氯',35.45,'halogen',3,17],[18,'Ar','氩',39.948,'noble-gas',3,18],
+      [19,'K','钾',39.098,'alkali',4,1],[20,'Ca','钙',40.078,'alkaline',4,2],
+      [21,'Sc','钪',44.956,'transition',4,3],[22,'Ti','钛',47.867,'transition',4,4],
+      [23,'V','钒',50.942,'transition',4,5],[24,'Cr','铬',51.996,'transition',4,6],
+      [25,'Mn','锰',54.938,'transition',4,7],[26,'Fe','铁',55.845,'transition',4,8],
+      [27,'Co','钴',58.933,'transition',4,9],[28,'Ni','镍',58.693,'transition',4,10],
+      [29,'Cu','铜',63.546,'transition',4,11],[30,'Zn','锌',65.38,'transition',4,12],
+      [31,'Ga','镓',69.723,'post-transition',4,13],[32,'Ge','锗',72.630,'metalloid',4,14],
+      [33,'As','砷',74.922,'metalloid',4,15],[34,'Se','硒',78.971,'nonmetal',4,16],
+      [35,'Br','溴',79.904,'halogen',4,17],[36,'Kr','氪',83.798,'noble-gas',4,18],
+      [37,'Rb','铷',85.468,'alkali',5,1],[38,'Sr','锶',87.62,'alkaline',5,2],
+      [39,'Y','钇',88.906,'transition',5,3],[40,'Zr','锆',91.224,'transition',5,4],
+      [41,'Nb','铌',92.906,'transition',5,5],[42,'Mo','钼',95.95,'transition',5,6],
+      [43,'Tc','锝',98,'transition',5,7],[44,'Ru','钌',101.07,'transition',5,8],
+      [45,'Rh','铑',102.91,'transition',5,9],[46,'Pd','钯',106.42,'transition',5,10],
+      [47,'Ag','银',107.87,'transition',5,11],[48,'Cd','镉',112.41,'transition',5,12],
+      [49,'In','铟',114.82,'post-transition',5,13],[50,'Sn','锡',118.71,'post-transition',5,14],
+      [51,'Sb','锑',121.76,'metalloid',5,15],[52,'Te','碲',127.60,'metalloid',5,16],
+      [53,'I','碘',126.90,'halogen',5,17],[54,'Xe','氙',131.29,'noble-gas',5,18],
+      [55,'Cs','铯',132.91,'alkali',6,1],[56,'Ba','钡',137.33,'alkaline',6,2],
+      [57,'La','镧',138.91,'lanthanide',6,3],[72,'Hf','铪',178.49,'transition',6,4],
+      [73,'Ta','钽',180.95,'transition',6,5],[74,'W','钨',183.84,'transition',6,6],
+      [75,'Re','铼',186.21,'transition',6,7],[76,'Os','锇',190.23,'transition',6,8],
+      [77,'Ir','铱',192.22,'transition',6,9],[78,'Pt','铂',195.08,'transition',6,10],
+      [79,'Au','金',196.97,'transition',6,11],[80,'Hg','汞',200.59,'transition',6,12],
+      [81,'Tl','铊',204.38,'post-transition',6,13],[82,'Pb','铅',207.2,'post-transition',6,14],
+      [83,'Bi','铋',208.98,'post-transition',6,15],[84,'Po','钋',209,'post-transition',6,16],
+      [85,'At','砹',210,'halogen',6,17],[86,'Rn','氡',222,'noble-gas',6,18],
+      [87,'Fr','钫',223,'alkali',7,1],[88,'Ra','镭',226,'alkaline',7,2],
+      [89,'Ac','锕',227,'actinide',7,3],[104,'Rf','𬬻',267,'transition',7,4],
+      [105,'Db','𬭊',268,'transition',7,5],[106,'Sg','𬭳',269,'transition',7,6],
+      [107,'Bh','𬭛',270,'transition',7,7],[108,'Hs','𬭶',269,'transition',7,8],
+      [109,'Mt','鿏',278,'transition',7,9],[110,'Ds','𫟼',281,'transition',7,10],
+      [111,'Rg','𬬭',282,'transition',7,11],[112,'Cn','鿔',285,'transition',7,12],
+      [113,'Nh','鿭',286,'post-transition',7,13],[114,'Fl','𫓧',289,'post-transition',7,14],
+      [115,'Mc','镆',290,'post-transition',7,15],[116,'Lv','𫟷',293,'post-transition',7,16],
+      [117,'Ts','鿬',294,'halogen',7,17],[118,'Og','鿫',294,'noble-gas',7,18],
+      // Lanthanides (row 8)
+      [58,'Ce','铈',140.12,'lanthanide',8,4],[59,'Pr','镨',140.91,'lanthanide',8,5],
+      [60,'Nd','钕',144.24,'lanthanide',8,6],[61,'Pm','钷',145,'lanthanide',8,7],
+      [62,'Sm','钐',150.36,'lanthanide',8,8],[63,'Eu','铕',151.96,'lanthanide',8,9],
+      [64,'Gd','钆',157.25,'lanthanide',8,10],[65,'Tb','铽',158.93,'lanthanide',8,11],
+      [66,'Dy','镝',162.50,'lanthanide',8,12],[67,'Ho','钬',164.93,'lanthanide',8,13],
+      [68,'Er','铒',167.26,'lanthanide',8,14],[69,'Tm','铥',168.93,'lanthanide',8,15],
+      [70,'Yb','镱',173.05,'lanthanide',8,16],[71,'Lu','镥',174.97,'lanthanide',8,17],
+      // Actinides (row 9)
+      [90,'Th','钍',232.04,'actinide',9,4],[91,'Pa','镤',231.04,'actinide',9,5],
+      [92,'U','铀',238.03,'actinide',9,6],[93,'Np','镎',237,'actinide',9,7],
+      [94,'Pu','钚',244,'actinide',9,8],[95,'Am','镅',243,'actinide',9,9],
+      [96,'Cm','锔',247,'actinide',9,10],[97,'Bk','锫',247,'actinide',9,11],
+      [98,'Cf','锎',251,'actinide',9,12],[99,'Es','锿',252,'actinide',9,13],
+      [100,'Fm','镄',257,'actinide',9,14],[101,'Md','钔',258,'actinide',9,15],
+      [102,'No','锘',259,'actinide',9,16],[103,'Lr','铹',266,'actinide',9,17]
+    ];
+
+    var categories = {
+      '碱金属':'alkali', '碱土金属':'alkaline', '过渡金属':'transition',
+      '后过渡金属':'post-transition', '类金属':'metalloid', '非金属':'nonmetal',
+      '卤素':'halogen', '稀有气体':'noble-gas', '镧系':'lanthanide', '锕系':'actinide'
+    };
+
+    var searchInput = document.getElementById('searchInput');
+    var categoryTabs = document.getElementById('categoryTabs');
+    var ptable = document.getElementById('ptable');
+    var toastHint = document.getElementById('toastHint');
+    var currentCat = 'all';
+    var searchQuery = '';
+
+    function renderCategoryTabs() {
+      var html = '<span class="cat-tab active" data-cat="all">全部 <span class="count-badge">(118)</span></span>';
+      Object.keys(categories).forEach(function(cat) {
+        html += '<span class="cat-tab" data-cat="' + categories[cat] + '">' + cat + '</span>';
+      });
+      categoryTabs.innerHTML = html;
+
+      categoryTabs.querySelectorAll('.cat-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          categoryTabs.querySelectorAll('.cat-tab').forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          currentCat = tab.dataset.cat;
+          renderTable();
+        });
+      });
+    }
+
+    // Build grid: 9 rows (7 main + 2 f-block) × 18 columns
+    var gridMap = {};
+    elements.forEach(function(e) { gridMap[e[5] + ',' + e[6]] = e; });
+
+    function renderTable() {
+      var query = (searchInput.value || '').trim().toLowerCase();
+
+      var matchSet = null;
+      if (query) {
+        matchSet = new Set();
+        elements.forEach(function(e) {
+          if (e[1].toLowerCase().indexOf(query) !== -1 ||
+              e[2].indexOf(query) !== -1 ||
+              e[0].toString().indexOf(query) !== -1) {
+            matchSet.add(e[0]);
+          }
+        });
+      }
+
+      var html = '';
+      for (var r = 1; r <= 9; r++) {
+        // Labels for f-block rows
+        if (r === 8) {
+          html += '<div class="lanthanide-label">镧系</div>';
+        }
+        if (r === 9) {
+          html += '<div class="actinide-label">锕系</div>';
+        }
+
+        for (var c = 1; c <= 18; c++) {
+          var key = r + ',' + c;
+          var e = gridMap[key];
+          if (!e) {
+            // Add placeholder cells for layout
+            if (r === 1 && (c >= 2 && c <= 17) && c !== 18) {
+              html += '<div class="empty-cell"></div>';
+            } else if (r === 2 && c >= 3 && c <= 12) {
+              html += '<div class="empty-cell"></div>';
+            } else if (r === 3 && c >= 3 && c <= 12) {
+              html += '<div class="empty-cell"></div>';
+            } else if (r === 8 && c <= 3) {
+              html += '<div class="empty-cell"></div>';
+            } else if (r === 9 && c <= 3) {
+              html += '<div class="empty-cell"></div>';
+            } else {
+              html += '<div class="empty-cell"></div>';
+            }
+            continue;
+          }
+
+          var dimmed = false;
+          if (currentCat !== 'all' && e[4] !== currentCat) dimmed = true;
+          if (matchSet && !matchSet.has(e[0])) dimmed = true;
+
+          html += '<div class="element ' + e[4] + (dimmed ? ' dimmed' : '') + '" title="' + e[0] + '. ' + e[1] + ' ' + e[2] + ' (' + e[3] + ')" data-symbol="' + e[1] + '"><span class="num">' + e[0] + '</span><span class="sym">' + e[1] + '</span><span class="name">' + e[2] + '</span></div>';
+        }
+      }
+      ptable.innerHTML = html;
+
+      ptable.querySelectorAll('.element').forEach(function(el) {
+        el.addEventListener('click', function() {
+          navigator.clipboard.writeText(this.dataset.symbol).then(function() {
+            toastHint.textContent = '✅ 已复制: ' + this.dataset.symbol;
+            toastHint.classList.add('show');
+            clearTimeout(toastHint._t);
+            toastHint._t = setTimeout(function() { toastHint.classList.remove('show'); }, 1500);
+          }.bind(this));
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderTable();
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: '../base64', i: '🔐', n: 'Base64 编解码' },
+      { h: '../regex-tester', i: '.*', n: '正则测试器' },
+      { h: '../emoji-list', i: '😀', n: 'Emoji 大全' },
+      { h: '../domain-tld', i: '🌐', n: '域名后缀大全' },
+      { h: '../license-plate', i: '🚗', n: '车牌归属地' },
+      { h: '../html-symbols', i: '🆎', n: 'HTML 符号' },
+      { h: '../iching', i: '☯', n: '周易六十四卦' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+
+    renderCategoryTabs();
+    renderTable();
+  </script>
+</body>
+</html>
