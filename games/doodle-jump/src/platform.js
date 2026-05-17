@@ -78,34 +78,65 @@ function generateInitialPlatforms() {
 }
 
 function ensurePlatformsAbove() {
+  // 平台生成上限提高到玩家跳跃高度 (158px + 缓冲) 以上
+  var playerTop = S.player.y - 160;
   var topY = S.cameraY - 80;
-  var needed = C.MAX_PLATFORMS - S.platforms.length;
-  if (needed <= 0) return;
+  // 确保至少覆盖到玩家上方 160px（最大跳跃高度 + 余量）
+  var targetTop = Math.min(playerTop, topY);
 
-  var y = S.lastPlatformY;
+  // 计算需要多少个新平台（当前最高平台到目标顶部）
+  var highestY = Infinity;
+  for (var i = 0; i < S.platforms.length; i++) {
+    if (!S.platforms[i].broken && S.platforms[i].y < highestY) {
+      highestY = S.platforms[i].y;
+    }
+  }
+  if (!isFinite(highestY)) highestY = S.lastPlatformY;
+
+  // 计算需要多少平台来填补从最高平台到目标顶部的空隙
+  var gap = isFinite(highestY) ? (highestY - targetTop) : 0;
+  var needed = Math.min(50, Math.max(0, Math.ceil(gap / 38) + 2)); // 上限 50 防止无限生成
+
+  var y = isFinite(Math.min(highestY, S.lastPlatformY)) ? Math.min(highestY, S.lastPlatformY) : (S.player.y - 60);
+  if (!isFinite(y)) y = S.player.y - 60;
   for (var i = 0; i < needed; i++) {
     y -= 38 + Math.random() * 28;
-    if (y < topY) break;
+    if (y < targetTop - 80) break; // 允许超出一些
+    // 避免在已有平台的位置生成（简单去重）
+    var tooClose = false;
     var x = 30 + Math.random() * (S.WIDTH - 60);
+    for (var k = 0; k < S.platforms.length; k++) {
+      if (Math.abs(S.platforms[k].y - y) < 10 && Math.abs(S.platforms[k].x - x) < 20) {
+        tooClose = true; break;
+      }
+    }
+    if (tooClose) { y += 20; continue; }
     var plat = createPlatform(x, y);
     S.platforms.push(plat);
     S.lastPlatformY = y;
   }
-  // Remove platforms too far below
+
+  // 移除屏幕下方很远的平台
   S.platforms = S.platforms.filter(function(p) {
-    return p.y < S.cameraY + S.HEIGHT + 80;
+    return p.y < S.cameraY + S.HEIGHT + 100;
   });
-  // Cap platform count
+
+  // 安全地移除多余平台：优先移除最下方且远离玩家的
   while (S.platforms.length > C.MAX_PLATFORMS) {
-    var oldestAbove = null;
-    var oldestY = -Infinity;
+    var worstIdx = -1;
+    var worstScore = -Infinity;
     for (var j = 0; j < S.platforms.length; j++) {
-      if (S.platforms[j].y > oldestY) {
-        oldestY = S.platforms[j].y;
-        oldestAbove = j;
+      var plat2 = S.platforms[j];
+      // 远离玩家的平台优先移除（y 值大 = 屏幕下方）
+      var distToPlayer = Math.abs(plat2.y - S.player.y);
+      // 下方平台得分高（优先移除），但保护玩家正下方最近的平台
+      var score = plat2.y - distToPlayer * 0.3;
+      if (score > worstScore) {
+        worstScore = score;
+        worstIdx = j;
       }
     }
-    if (oldestAbove !== null) S.platforms.splice(oldestAbove, 1);
+    if (worstIdx >= 0) S.platforms.splice(worstIdx, 1);
     else break;
   }
 }

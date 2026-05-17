@@ -143,9 +143,17 @@ function update() {
   var now = Date.now();
   var dt = (now - S.lastTime) / 1000;
   if (dt > 0.1) dt = 0.1;
+  if (dt <= 0) dt = 0.016;
   S.lastTime = now;
 
   if (S.gameState !== C.STATE.PLAYING) return;
+
+  // 防止 NaN 导致游戏永久卡死
+  var p = S.player;
+  if (!isFinite(p.x) || !isFinite(p.y)) {
+    endGame();
+    return;
+  }
 
   P.updateSpeedBoost(dt);
   P.updateShake(dt);
@@ -225,8 +233,13 @@ function updateDOMScore() {
 
 // 游戏循环
 function gameLoop() {
-  update();
-  R.render();
+  try {
+    update();
+    R.render();
+  } catch (e) {
+    // 防止单帧异常导致游戏卡死
+    S.gameState = C.STATE.GAMEOVER;
+  }
   requestAnimationFrame(gameLoop);
 }
 
