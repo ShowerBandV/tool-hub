@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Base64 编解码 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .panel-row { display: flex; gap: 18px; flex-wrap: wrap; }
+    .panel-col { flex: 1; min-width: 250px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> Base64 编解码
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔐 Base64 编解码</h2>
+      <p class="panel-desc">文本与图片互转，支持导出。</p>
+      <div class="panel-row">
+        <div class="panel-col"><label class="form-label">文本</label><textarea class="form-input" id="b64Text"></textarea></div>
+        <div class="panel-col"><label class="form-label">结果</label><div class="result-box show" id="b64Result"><button class="copy-btn">📋</button></div></div>
+      </div>
+      <div style="margin:8px 0;"><button class="btn btn-primary" id="b64Encode">编码</button> <button class="btn" id="b64Decode">解码</button></div>
+      <label class="form-label">图片 ↔ Base64</label>
+      <input type="file" id="imgFile" accept="image/*"><br>
+      <textarea class="form-input" id="b64ImgInput" placeholder="粘贴Base64" style="margin-top:6px;"></textarea>
+      <button class="btn btn-sm" id="b64ShowImg">显示图片</button>
+      <div id="imgPreview" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../url-encode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔗</span> URL 编解码</a>
+        <a href="../word-count/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 字数统计</a>
+        <a href="../qrcode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📱</span> 二维码工具</a>
+        <a href="../countdown/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏳</span> 倒计时</a>
+        <a href="../random-number/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎲</span> 随机数生成</a>
+        <a href="../marquee/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎠</span> 跑马灯</a>
+        <a href="../http-status/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📡</span> HTTP 状态码</a>
+        <a href="../color-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎨</span> 颜色转换</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const textIn = document.getElementById('b64Text'), res = document.getElementById('b64Result');
+    document.getElementById('b64Encode').onclick = () => {
+      try { res.textContent = btoa(unescape(encodeURIComponent(textIn.value))); res.className='result-box show'; } catch(e) { res.textContent = e.message; }
+    };
+    document.getElementById('b64Decode').onclick = () => {
+      try { res.textContent = decodeURIComponent(escape(atob(textIn.value.trim()))); res.className='result-box show'; } catch(e) { res.textContent = e.message; }
+    };
+    document.getElementById('imgFile').onchange = function(e) {
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('b64ImgInput').value = ev.target.result;
+        document.getElementById('imgPreview').innerHTML = '<img src="'+ev.target.result+'" style="max-width:200px;border-radius:8px;"><br><button class="btn btn-sm export-img-btn">⬇️ 导出图片</button>';
+      };
+      reader.readAsDataURL(file);
+    };
+    document.getElementById('b64ShowImg').onclick = () => {
+      const val = document.getElementById('b64ImgInput').value.trim();
+      if(val) document.getElementById('imgPreview').innerHTML = '<img src="'+val+'" style="max-width:200px;" onerror="this.outerHTML=\'<span style=color:red>无效图片</span>\'"><br><button class="btn btn-sm export-img-btn">⬇️ 导出图片</button>';
+    };
+    document.addEventListener('click', (e) => {
+      if(e.target.classList.contains('export-img-btn')) {
+        const img = document.querySelector('#imgPreview img');
+        if(img) {
+          const canvas = document.createElement('canvas'); canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+          const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0);
+          downloadImage(canvas, 'base64-image.png');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>数据单位换算 · 计算机盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .unit-switch {
+      display: inline-flex; gap: 6px; background: #f0f4ff;
+      padding: 4px; border-radius: 20px; margin-bottom: 12px;
+    }
+    .switch-option {
+      padding: 6px 14px; border-radius: 16px; font-size: 0.78rem;
+      font-weight: 600; cursor: pointer; transition: var(--transition);
+      border: none; background: transparent; color: var(--text-secondary);
+    }
+    .switch-option.active {
+      background: #fff; color: var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .conversion-table {
+      width: 100%; border-collapse: collapse; margin-top: 16px;
+      font-size: 0.9rem; border: 1px solid var(--border);
+      border-radius: var(--radius-xs); overflow: hidden;
+    }
+    .conversion-table th, .conversion-table td {
+      padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .conversion-table th {
+      background: #f8fafd; font-weight: 700; font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .conversion-table tr:last-child td { border-bottom: none; }
+    .conversion-table td { font-family: var(--font-mono); font-weight: 500; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算机盒子</a> <span class="sep">›</span> 数据单位换算
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">📐 数据单位换算</h2>
+      <p class="panel-desc">输入任意数据存储单位数值，实时换算为其他单位。支持SI标准(1000进制)与IEC标准(1024进制)。</p>
+      <div class="unit-switch" id="unitStandardSwitch">
+        <button class="switch-option active" data-std="si" onclick="setUnitStandard('si')">SI (1KB=1000B)</button>
+        <button class="switch-option" data-std="iec" onclick="setUnitStandard('iec')">IEC (1KiB=1024B)</button>
+      </div>
+      <div class="input-row" style="align-items:center;">
+        <div class="form-group" style="flex:2;min-width:160px;">
+          <label class="form-label">数值</label>
+          <input type="number" class="form-input" id="data-input" placeholder="输入数值" step="any" oninput="convertDataUnits()" value="1">
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px;">
+          <label class="form-label">单位</label>
+          <select class="form-select" id="data-unit-select" onchange="convertDataUnits()"></select>
+        </div>
+      </div>
+      <table class="conversion-table" id="conversion-table">
+        <thead><tr><th>单位</th><th>数值</th></tr></thead>
+        <tbody id="conversion-tbody">
+          <tr><td colspan="2" style="text-align:center;color:var(--text-secondary);">输入数值后自动显示换算结果</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算机工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../grade-converter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔄</span> 成绩转换器</a>
+        <a href="../final-grade/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 期末总评计算器</a>
+        <a href="../gpa-cgpa/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎓</span> GPA & CGPA 计算器</a>
+        <a href="../ap-score/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📝</span> AP 分数计算器</a>
+        <a href="../data-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📐</span> 数据单位换算</a>
+        <a href="../scientific-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔢</span> 科学计算器</a>
+        <a href="../graph-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📈</span> 图形计算器</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    let currentStandard = 'si';
+    const siUnits = ['B','KB','MB','GB','TB','PB'];
+    const iecUnits = ['B','KiB','MiB','GiB','TiB','PiB'];
+    const siFactors = [1,1e3,1e6,1e9,1e12,1e15];
+    const iecFactors = [1,1024,1048576,1073741824,1099511627776,1125899906842624];
+
+    function populateDataUnits() {
+      const select = document.getElementById('data-unit-select');
+      const units = currentStandard === 'si' ? siUnits : iecUnits;
+      select.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+      select.value = units[1];
+    }
+    function setUnitStandard(std) {
+      currentStandard = std;
+      document.querySelectorAll('#unitStandardSwitch .switch-option').forEach(b => b.classList.remove('active'));
+      document.querySelector(`#unitStandardSwitch [data-std="${std}"]`).classList.add('active');
+      populateDataUnits(); convertDataUnits();
+    }
+    function convertDataUnits() {
+      const value = parseFloat(document.getElementById('data-input').value);
+      const unit = document.getElementById('data-unit-select').value;
+      const tbody = document.getElementById('conversion-tbody');
+      if (isNaN(value) || value < 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--text-secondary);">请输入有效数值</td></tr>';
+        return;
+      }
+      const units = currentStandard === 'si' ? siUnits : iecUnits;
+      const factors = currentStandard === 'si' ? siFactors : iecFactors;
+      const unitIndex = units.indexOf(unit);
+      if (unitIndex === -1) return;
+      const bytes = value * factors[unitIndex];
+      let html = '';
+      units.forEach((u, i) => {
+        const converted = bytes / factors[i];
+        const display = converted < 1e-6 ? '0' : preciseRound(converted, 6);
+        html += `<tr><td><strong>${u}</strong></td><td>${display}</td></tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+    populateDataUnits(); convertDataUnits();
+  </script>
+</body>
+</html>

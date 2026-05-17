@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>JSON 格式化 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .json-highlight .json-key { color: #b91c1c; }
+    .json-highlight .json-string { color: #0d7a3f; }
+    .json-highlight .json-number { color: #b45309; }
+    .panel-row { display: flex; gap: 18px; flex-wrap: wrap; }
+    .panel-col { flex: 1; min-width: 250px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> JSON 格式化
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">{ } JSON 格式化 / 校验</h2>
+      <p class="panel-desc">格式化、压缩、校验 JSON 数据，支持导出。</p>
+      <div class="panel-row">
+        <div class="panel-col"><label class="form-label">输入</label><textarea class="form-input" id="jsonInput" placeholder='{"key":"value"}'></textarea></div>
+        <div class="panel-col"><label class="form-label">输出</label><div class="result-box" id="jsonOutput" style="max-height:300px;overflow-y:auto;"><button class="copy-btn">📋</button><button class="export-btn">⬇️</button></div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="btn btn-primary" id="jsonFormat">✨ 格式化</button>
+        <button class="btn" id="jsonCompress">🗜️ 压缩</button>
+        <button class="btn" id="jsonValidate">✅ 校验</button>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../json-formatter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>{ }</span> JSON 格式化</a>
+        <a href="../base64/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔐</span> Base64 编解码</a>
+        <a href="../regex-tester/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>.*</span> 正则测试器</a>
+        <a href="../password-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔑</span> 密码生成器</a>
+        <a href="../timestamp/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏰</span> 时间戳转换</a>
+        <a href="../uuid-generator/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆔</span> UUID 生成器</a>
+        <a href="../hash/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>#</span> 哈希计算</a>
+        <a href="../url-encode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔗</span> URL 编解码</a>
+        <a href="../word-count/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 字数统计</a>
+        <a href="../qrcode/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📱</span> 二维码工具</a>
+        <a href="../countdown/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>⏳</span> 倒计时</a>
+        <a href="../random-number/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎲</span> 随机数生成</a>
+        <a href="../marquee/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎠</span> 跑马灯</a>
+        <a href="../http-status/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📡</span> HTTP 状态码</a>
+        <a href="../color-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎨</span> 颜色转换</a>
+        <a href="../html-symbols/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🆎</span> HTML 符号</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const input = document.getElementById('jsonInput'), output = document.getElementById('jsonOutput');
+    function highlight(json) {
+      return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+          let cls = 'json-number';
+          if (/^"/.test(m)) cls = /:$/.test(m) ? 'json-key' : 'json-string';
+          else if (/true|false/.test(m)) cls = 'json-boolean';
+          else if (/null/.test(m)) cls = 'json-null';
+          return '<span class="'+cls+'">'+m+'</span>';
+        });
+    }
+    document.getElementById('jsonFormat').onclick = () => {
+      try { const obj = JSON.parse(input.value); output.className='result-box json-highlight show'; output.innerHTML=highlight(JSON.stringify(obj,null,2))+'<button class="copy-btn">📋</button><button class="export-btn">⬇️</button>'; bindBtns(output, ()=>JSON.stringify(obj,null,2), 'formatted.json'); }
+      catch(e) { output.className='result-box show'; output.innerHTML='<span style="color:var(--danger)">'+e.message+'</span>'; }
+    };
+    document.getElementById('jsonCompress').onclick = () => {
+      try { const txt = JSON.stringify(JSON.parse(input.value)); output.className='result-box show'; output.textContent = txt; output.innerHTML += '<button class="copy-btn">📋</button><button class="export-btn">⬇️</button>'; bindBtns(output, ()=>txt, 'compressed.json'); }
+      catch(e) { output.className='result-box show'; output.textContent = e.message; }
+    };
+    document.getElementById('jsonValidate').onclick = () => {
+      try { const o = JSON.parse(input.value); output.className='result-box show'; output.innerHTML='<span style="color:var(--success)">✅ 有效 ('+(Array.isArray(o)?'Array':typeof o)+')</span>'; }
+      catch(e) { output.className='result-box show'; output.innerHTML='<span style="color:var(--danger)">❌ '+e.message+'</span>'; }
+    };
+    function bindBtns(el, getContent, filename) {
+      el.querySelector('.copy-btn')?.addEventListener('click', () => navigator.clipboard.writeText(getContent()));
+      el.querySelector('.export-btn')?.addEventListener('click', () => downloadText(getContent(), filename));
+    }
+  </script>
+</body>
+</html>

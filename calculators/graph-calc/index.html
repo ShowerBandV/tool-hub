@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>图形计算器 · 计算机盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .graph-container { position: relative; text-align: center; }
+    .graph-canvas {
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      background: #fdfdfd; cursor: crosshair; max-width: 100%;
+    }
+    .graph-controls {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+      margin-top: 10px; justify-content: center;
+    }
+    .graph-presets {
+      display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; justify-content: center;
+    }
+    .preset-chip {
+      padding: 5px 11px; border-radius: 16px; font-size: 0.74rem;
+      cursor: pointer; background: #f0f4ff; color: var(--accent);
+      border: 1px solid #d0d8f8; font-weight: 500;
+    }
+    .func-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 16px; font-size: 0.76rem;
+      font-weight: 600; font-family: var(--font-mono);
+      background: #fff; border: 2px solid;
+    }
+    .func-tag .remove-func { cursor: pointer; margin-left: 2px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算机盒子</a> <span class="sep">›</span> 图形计算器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">📈 卡西欧图形计算器</h2>
+      <p class="panel-desc">输入函数表达式（使用x为变量），绘制函数图像。支持多条函数、鼠标滚轮缩放。</p>
+      <div id="graphFuncList" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px;justify-content:center;min-height:24px;">
+        <span style="font-size:0.8rem;color:var(--text-secondary);">已添加的函数将显示在此处</span>
+      </div>
+      <div class="graph-controls">
+        <input type="text" class="form-input" id="graph-func-input" placeholder="输入函数，如 sin(x)" style="flex:1;min-width:160px;">
+        <button class="btn btn-primary btn-sm" onclick="addGraphFunction()">+ 添加</button>
+      </div>
+      <div class="graph-presets">
+        <span class="preset-chip" onclick="quickGraph('sin(x)')">sin(x)</span>
+        <span class="preset-chip" onclick="quickGraph('cos(x)')">cos(x)</span>
+        <span class="preset-chip" onclick="quickGraph('x^2')">x²</span>
+        <span class="preset-chip" onclick="quickGraph('x^3-3*x')">x³-3x</span>
+        <span class="preset-chip" onclick="quickGraph('exp(x)')">eˣ</span>
+        <span class="preset-chip" onclick="quickGraph('ln(x)')">ln(x)</span>
+        <span class="preset-chip" onclick="quickGraph('sqrt(x)')">√x</span>
+        <span class="preset-chip" onclick="quickGraph('abs(x)')">|x|</span>
+      </div>
+      <div class="graph-controls" style="margin-top:8px;">
+        <label style="font-size:0.75rem;">X:</label><input type="number" class="form-input" id="graph-xmin" value="-6" step="1" style="width:55px;">
+        <span>~</span><input type="number" class="form-input" id="graph-xmax" value="6" step="1" style="width:55px;">
+        <label style="font-size:0.75rem;margin-left:6px;">Y:</label><input type="number" class="form-input" id="graph-ymin" value="-4" step="1" style="width:55px;">
+        <span>~</span><input type="number" class="form-input" id="graph-ymax" value="4" step="1" style="width:55px;">
+        <button class="btn btn-outline btn-xs" onclick="redrawGraph()">🔄 重绘</button>
+        <button class="btn btn-outline btn-xs" onclick="clearAllGraphFunctions()">🗑 清除</button>
+      </div>
+      <div class="graph-container" style="margin-top:10px;">
+        <canvas class="graph-canvas" id="graphCanvas" width="660" height="420"></canvas>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算机工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../grade-converter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔄</span> 成绩转换器</a>
+        <a href="../final-grade/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 期末总评计算器</a>
+        <a href="../gpa-cgpa/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎓</span> GPA & CGPA 计算器</a>
+        <a href="../ap-score/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📝</span> AP 分数计算器</a>
+        <a href="../data-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📐</span> 数据单位换算</a>
+        <a href="../scientific-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔢</span> 科学计算器</a>
+        <a href="../graph-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📈</span> 图形计算器</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const graphFuncs = [];
+    const graphColors = ['#4f46e5','#ef4444','#10b981','#f59e0b','#8b5cf6','#06b6d4','#f97316','#3b82f6','#ec4899'];
+    let gIdx = 0;
+
+    function addGraphFunction(fStr) {
+      const input = document.getElementById('graph-func-input');
+      const expr = (typeof fStr === 'string') ? fStr.trim() : input.value.trim();
+      if (!expr) return;
+      try {
+        const te = expr.replace(/\^/g,'**').replace(/sin/g,'Math.sin').replace(/cos/g,'Math.cos').replace(/tan/g,'Math.tan').replace(/log/g,'Math.log10').replace(/ln/g,'Math.log').replace(/sqrt/g,'Math.sqrt').replace(/abs/g,'Math.abs').replace(/exp/g,'Math.exp').replace(/pi/g,'Math.PI').replace(/e(?![xp])/g,'Math.E');
+        Function('x','"use strict"; return (' + te + ')')(1);
+      } catch(e) { shakeElement(input); showToast('⚠️ 函数表达式无效'); return; }
+      graphFuncs.push({ expr, color: graphColors[gIdx % graphColors.length] });
+      gIdx++;
+      updateGraphFuncList(); redrawGraph();
+      if (typeof fStr !== 'string') input.value = '';
+      showToast('✅ 函数已添加');
+    }
+    function removeGraphFunc(idx) { graphFuncs.splice(idx,1); updateGraphFuncList(); redrawGraph(); }
+    function clearAllGraphFunctions() { graphFuncs.length = 0; gIdx = 0; updateGraphFuncList(); redrawGraph(); }
+    function updateGraphFuncList() {
+      const c = document.getElementById('graphFuncList');
+      if (graphFuncs.length === 0) c.innerHTML = '<span style="font-size:0.8rem;color:var(--text-secondary);">已添加的函数将显示在此处</span>';
+      else c.innerHTML = graphFuncs.map((f,i) => `<span class="func-tag" style="border-color:${f.color};"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${f.color};"></span>y=${escapeHTML(f.expr)}<span class="remove-func" onclick="removeGraphFunc(${i})">×</span></span>`).join('');
+    }
+    function quickGraph(e) { document.getElementById('graph-func-input').value = e; addGraphFunction(e); }
+
+    function redrawGraph() {
+      const canvas = document.getElementById('graphCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h); ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0,0,w,h);
+      const xmin = parseFloat(document.getElementById('graph-xmin').value)||-6;
+      const xmax = parseFloat(document.getElementById('graph-xmax').value)||6;
+      const ymin = parseFloat(document.getElementById('graph-ymin').value)||-4;
+      const ymax = parseFloat(document.getElementById('graph-ymax').value)||4;
+      const pad = 42;
+      const toSX = x => pad + (x-xmin)/(xmax-xmin)*(w-2*pad);
+      const toSY = y => pad + (ymax-y)/(ymax-ymin)*(h-2*pad);
+      drawGrid(ctx,w,h,pad,xmin,xmax,ymin,ymax,toSX,toSY);
+      drawAxes(ctx,w,h,pad,xmin,xmax,ymin,ymax,toSX,toSY);
+      graphFuncs.forEach(f => drawFunc(ctx,f,xmin,xmax,ymin,ymax,toSX,toSY));
+    }
+    function calcTick(range,target){const raw=range/target;const mag=Math.pow(10,Math.floor(Math.log10(raw)));const res=raw/mag;return res<=1.5?mag:res<=3.5?2*mag:res<=7?5*mag:10*mag;}
+    function drawGrid(ctx,w,h,pad,xmin,xmax,ymin,ymax,toSX,toSY){
+      ctx.strokeStyle='#e8ecf2';ctx.lineWidth=0.5;ctx.setLineDash([3,4]);
+      const xt=calcTick(xmax-xmin,8),yt=calcTick(ymax-ymin,6);
+      for(let x=Math.ceil(xmin/xt)*xt;x<=xmax;x+=xt){const sx=toSX(x);if(sx>=pad&&sx<=w-pad){ctx.beginPath();ctx.moveTo(sx,pad);ctx.lineTo(sx,h-pad);ctx.stroke();}}
+      for(let y=Math.ceil(ymin/yt)*yt;y<=ymax;y+=yt){const sy=toSY(y);if(sy>=pad&&sy<=h-pad){ctx.beginPath();ctx.moveTo(pad,sy);ctx.lineTo(w-pad,sy);ctx.stroke();}}
+      ctx.setLineDash([]);
+    }
+    function drawAxes(ctx,w,h,pad,xmin,xmax,ymin,ymax,toSX,toSY){
+      ctx.strokeStyle='#333';ctx.lineWidth=1.6;ctx.fillStyle='#333';ctx.font='10px Inter';
+      if(0>=ymin&&0<=ymax){const oy=Math.max(pad,Math.min(h-pad,toSY(0)));ctx.beginPath();ctx.moveTo(pad,oy);ctx.lineTo(w-pad,oy);ctx.stroke();}
+      if(0>=xmin&&0<=xmax){const ox=Math.max(pad,Math.min(w-pad,toSX(0)));ctx.beginPath();ctx.moveTo(ox,pad);ctx.lineTo(ox,h-pad);ctx.stroke();}
+      const xt=calcTick(xmax-xmin,8),yt=calcTick(ymax-ymin,6);
+      ctx.textAlign='center';
+      for(let x=Math.ceil(xmin/xt)*xt;x<=xmax;x+=xt){const sx=toSX(x);if(sx>=pad+3&&sx<=w-pad-3)ctx.fillText(x,sx,(0>=ymin&&0<=ymax?Math.max(pad,Math.min(h-pad,toSY(0))):h-pad)+15);}
+      ctx.textAlign='right';
+      for(let y=Math.ceil(ymin/yt)*yt;y<=ymax;y+=yt){const sy=toSY(y);if(sy>=pad+3&&sy<=h-pad-3)ctx.fillText(y,(0>=xmin&&0<=xmax?Math.max(pad,Math.min(w-pad,toSX(0))):pad)-6,sy+4);}
+    }
+    function drawFunc(ctx,f,xmin,xmax,ymin,ymax,toSX,toSY){
+      const se=f.expr.replace(/\^/g,'**').replace(/sin/g,'Math.sin').replace(/cos/g,'Math.cos').replace(/tan/g,'Math.tan').replace(/log/g,'Math.log10').replace(/ln/g,'Math.log').replace(/sqrt/g,'Math.sqrt').replace(/abs/g,'Math.abs').replace(/exp/g,'Math.exp').replace(/pi/g,'Math.PI').replace(/e(?![xp])/g,'Math.E');
+      let fn;try{fn=Function('x','"use strict"; return ('+se+')');}catch(e){return;}
+      ctx.strokeStyle=f.color;ctx.lineWidth=2.2;ctx.beginPath();
+      const steps=700,dx=(xmax-xmin)/steps;let first=true;
+      for(let i=0;i<=steps;i++){const x=xmin+i*dx;let y;try{y=fn(x);}catch(e){first=true;continue;}if(!isFinite(y)||Math.abs(y)>1e8){first=true;continue;}const sx=toSX(x),sy=toSY(y);if(sy<-50||sy>h+50){first=true;continue;}first?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy);first=false;}
+      ctx.stroke();ctx.globalAlpha=0.25;ctx.lineWidth=5;ctx.stroke();ctx.globalAlpha=1;ctx.lineWidth=2.2;ctx.stroke();
+    }
+
+    document.getElementById('graphCanvas').addEventListener('wheel', function(e) {
+      e.preventDefault();
+      const z = e.deltaY < 0 ? 0.82 : 1.22;
+      const xmin=parseFloat(document.getElementById('graph-xmin').value),xmax=parseFloat(document.getElementById('graph-xmax').value);
+      const ymin=parseFloat(document.getElementById('graph-ymin').value),ymax=parseFloat(document.getElementById('graph-ymax').value);
+      const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2;
+      const hx=(xmax-xmin)/2*z,hy=(ymax-ymin)/2*z;
+      document.getElementById('graph-xmin').value=(cx-hx).toFixed(2);
+      document.getElementById('graph-xmax').value=(cx+hx).toFixed(2);
+      document.getElementById('graph-ymin').value=(cy-hy).toFixed(2);
+      document.getElementById('graph-ymax').value=(cy+hy).toFixed(2);
+      redrawGraph();
+    });
+    updateGraphFuncList();
+  </script>
+</body>
+</html>

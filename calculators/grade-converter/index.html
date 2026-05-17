@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>成绩转换器 · 计算机盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .converter-row {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch;
+    }
+    .converter-card {
+      flex: 1; min-width: 140px;
+      background: #fafbfc; border-radius: var(--radius-sm);
+      padding: 16px; border: 2px solid var(--border);
+      text-align: center; transition: var(--transition); cursor: pointer;
+    }
+    .converter-card.active-field {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 5px rgba(79,70,229,0.06);
+      background: #fff;
+    }
+    .converter-card .conv-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-secondary); font-weight: 700; margin-bottom: 6px;
+    }
+    .converter-card .conv-value {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; color: var(--text);
+    }
+    .converter-input {
+      width: 100%; border: none; background: transparent;
+      font-size: 1.6rem; font-weight: 800; text-align: center;
+      font-family: inherit; letter-spacing: -1px;
+      color: var(--text); outline: none; padding: 4px;
+    }
+    .conv-arrow {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: var(--text-secondary); flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .converter-row { flex-direction: column; }
+      .conv-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算机盒子</a> <span class="sep">›</span> 成绩转换器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔄 成绩转换器</h2>
+      <p class="panel-desc">在百分比、字母等级和4.0制GPA之间自由转换。</p>
+      <div class="converter-row" id="converterRow">
+        <div class="converter-card active-field" id="convPercentCard" onclick="focusConverter('percent')">
+          <div class="conv-label">📊 百分比</div>
+          <input type="number" class="converter-input" id="convPercent" placeholder="输入分数" min="0" max="100" step="0.1" oninput="convertFrom('percent')" onfocus="setActiveField('percent')">
+          <div style="font-size:0.7rem;color:var(--text-secondary);">0–100</div>
+        </div>
+        <div class="conv-arrow">⇄</div>
+        <div class="converter-card" id="convLetterCard" onclick="focusConverter('letter')">
+          <div class="conv-label">🔤 字母等级</div>
+          <select class="form-select" id="convLetter" onchange="convertFrom('letter')" onfocus="setActiveField('letter')" style="font-size:1.2rem;font-weight:700;text-align:center;text-align-last:center;">
+            <option value="">选择等级</option>
+            <option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+            <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option>
+            <option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option>
+            <option value="F">F</option>
+          </select>
+          <div style="font-size:0.7rem;color:var(--text-secondary);">含+/-等级</div>
+        </div>
+        <div class="conv-arrow">⇄</div>
+        <div class="converter-card" id="convGPACard" onclick="focusConverter('gpa')">
+          <div class="conv-label">🎯 GPA (4.0)</div>
+          <input type="number" class="converter-input" id="convGPA" placeholder="输入GPA" min="0" max="4.3" step="0.01" oninput="convertFrom('gpa')" onfocus="setActiveField('gpa')">
+          <div style="font-size:0.7rem;color:var(--text-secondary);">0.0 – 4.0</div>
+        </div>
+      </div>
+      <div class="result-box result-primary show" id="conv-result">
+        💡 点击上方任意卡片并输入数值，其他两项将自动转换。
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算机工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../grade-converter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔄</span> 成绩转换器</a>
+        <a href="../final-grade/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 期末总评计算器</a>
+        <a href="../gpa-cgpa/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎓</span> GPA & CGPA 计算器</a>
+        <a href="../ap-score/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📝</span> AP 分数计算器</a>
+        <a href="../data-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📐</span> 数据单位换算</a>
+        <a href="../scientific-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔢</span> 科学计算器</a>
+        <a href="../graph-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📈</span> 图形计算器</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function setActiveField(f) {
+      document.querySelectorAll('.converter-card').forEach(c => c.classList.remove('active-field'));
+      const map = { percent:'convPercentCard', letter:'convLetterCard', gpa:'convGPACard' };
+      const card = document.getElementById(map[f]);
+      if (card) card.classList.add('active-field');
+    }
+    function focusConverter(f) {
+      setActiveField(f);
+      const el = document.getElementById({percent:'convPercent',letter:'convLetter',gpa:'convGPA'}[f]);
+      if (el) setTimeout(() => el.focus(), 50);
+    }
+    function convertFrom(source) {
+      setActiveField(source);
+      const pEl = document.getElementById('convPercent');
+      const lEl = document.getElementById('convLetter');
+      const gEl = document.getElementById('convGPA');
+      const res = document.getElementById('conv-result');
+      if (source === 'percent') {
+        const p = parseFloat(pEl.value);
+        if (isNaN(p) || p < 0 || p > 100) {
+          res.className = 'result-box result-danger show';
+          res.innerHTML = '⚠️ 请输入0-100之间的数值。'; return;
+        }
+        const letter = percentToLetter(p);
+        const gpa = LETTER_TO_GPA[letter];
+        lEl.value = letter; gEl.value = preciseRound(gpa, 2);
+        res.className = 'result-box result-success show';
+        res.innerHTML = `✅ <b>${preciseRound(p,1)}%</b> → 字母等级 <b>${letter}</b> → GPA <b>${preciseRound(gpa,2)}</b>`;
+      } else if (source === 'letter') {
+        const letter = lEl.value;
+        if (!letter || !LETTER_TO_GPA[letter]) {
+          res.className = 'result-box result-danger show';
+          res.innerHTML = '⚠️ 请选择有效的字母等级。'; return;
+        }
+        const range = LETTER_TO_PERCENT[letter];
+        const mid = preciseRound((range[0]+range[1])/2, 1);
+        const gpa = LETTER_TO_GPA[letter];
+        pEl.value = mid; gEl.value = preciseRound(gpa, 2);
+        res.className = 'result-box result-success show';
+        res.innerHTML = `✅ 字母等级 <b>${letter}</b> → 约 <b>${mid}%</b> (范围${range[0]}-${range[1]}%) → GPA <b>${preciseRound(gpa,2)}</b>`;
+      } else if (source === 'gpa') {
+        const gpa = parseFloat(gEl.value);
+        if (isNaN(gpa) || gpa < 0 || gpa > 4.3) {
+          res.className = 'result-box result-danger show';
+          res.innerHTML = '⚠️ 请输入0-4.3之间的GPA。'; return;
+        }
+        let closest = 'F', minDiff = Infinity;
+        for (const [l, v] of Object.entries(LETTER_TO_GPA)) {
+          const d = Math.abs(v - gpa);
+          if (d < minDiff) { minDiff = d; closest = l; }
+        }
+        const range = LETTER_TO_PERCENT[closest];
+        const mid = preciseRound((range[0]+range[1])/2, 1);
+        pEl.value = mid; lEl.value = closest;
+        res.className = 'result-box result-success show';
+        res.innerHTML = `✅ GPA <b>${preciseRound(gpa,2)}</b> → 最接近等级 <b>${closest}</b> → 约 <b>${mid}%</b>`;
+      }
+      res.animate([{opacity:0,transform:'scale(0.88)'},{opacity:1,transform:'scale(1)'}],{duration:400,easing:'cubic-bezier(0.175,0.885,0.32,1.275)'});
+    }
+  </script>
+</body>
+</html>

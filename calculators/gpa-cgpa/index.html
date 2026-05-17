@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>GPA & CGPA 计算器 · 计算机盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .semester-block {
+      background: #fafbfc; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden;
+    }
+    .semester-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; cursor: pointer; font-weight: 700;
+      font-size: 0.9rem; gap: 8px; flex-wrap: wrap;
+    }
+    .semester-body { padding: 0 16px 14px; display: none; }
+    .semester-block.open .semester-body { display: block; animation: fadeSlideIn 0.3s ease; }
+    .course-row {
+      display: flex; gap: 6px; align-items: center; margin-bottom: 7px;
+      flex-wrap: wrap; padding: 8px 10px; background: #fff;
+      border-radius: 6px; border: 1px solid var(--border);
+    }
+    .remove-btn-circle {
+      width: 30px; height: 30px; border-radius: 50%; border: none;
+      background: #fee2e2; color: #dc2626; cursor: pointer;
+      font-size: 1rem; font-weight: 700; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chart-container {
+      margin-top: 16px; background: #fafbfc; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); padding: 14px; text-align: center;
+    }
+    .chart-canvas { max-width: 100%; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算机盒子</a> <span class="sep">›</span> GPA & CGPA 计算器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎓 GPA & CGPA 计算器</h2>
+      <p class="panel-desc">管理多个学期，每学期添加课程，自动计算学期GPA和累积CGPA。数据自动保存至本地。</p>
+      <div id="semesterList"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="addSemester()">+ 添加学期</button>
+        <button class="btn btn-primary btn-sm" onclick="calcAllGPA()">🎓 刷新计算</button>
+        <button class="btn btn-outline btn-sm" onclick="resetCGPA()" style="color:var(--danger);border-color:var(--danger);">🗑 重置全部</button>
+      </div>
+      <div class="result-box result-success" id="cgpa-result"></div>
+      <div class="chart-container" id="cgpaChartContainer" style="display:none;">
+        <p style="font-weight:700;font-size:0.85rem;margin-bottom:6px;">📈 学期GPA趋势</p>
+        <canvas class="chart-canvas" id="cgpaChart" width="600" height="260"></canvas>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard">
+      <span>📢 广告位</span>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算机工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
+        <a href="../grade-converter/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔄</span> 成绩转换器</a>
+        <a href="../final-grade/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📊</span> 期末总评计算器</a>
+        <a href="../gpa-cgpa/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🎓</span> GPA & CGPA 计算器</a>
+        <a href="../ap-score/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📝</span> AP 分数计算器</a>
+        <a href="../data-convert/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📐</span> 数据单位换算</a>
+        <a href="../scientific-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>🔢</span> 科学计算器</a>
+        <a href="../graph-calc/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>📈</span> 图形计算器</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const STORAGE_KEY = 'toolhub_cgpa_data';
+    let cgpaData = { semesters: [] };
+
+    function saveCGPA() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cgpaData)); } catch(e){} }
+    function loadCGPA() {
+      try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) { const p = JSON.parse(raw); if (p.semesters && Array.isArray(p.semesters)) cgpaData = p; } } catch(e) { cgpaData = { semesters:[] }; }
+      if (cgpaData.semesters.length === 0) cgpaData.semesters = [{ name:'学期 1', courses:[{ name:'', credits:3, grade:'A' },{ name:'', credits:4, grade:'B+' }] }];
+    }
+
+    function addSemester() {
+      cgpaData.semesters.push({ name:`学期 ${cgpaData.semesters.length+1}`, courses:[{ name:'', credits:3, grade:'B' }] });
+      saveCGPA(); renderAllSemesters(); calcAllGPA(true); showToast('✅ 已添加新学期');
+    }
+    function addCourse(si) {
+      cgpaData.semesters[si].courses.push({ name:'', credits:3, grade:'B' });
+      saveCGPA(); renderAllSemesters(); calcAllGPA(true);
+    }
+    function removeCourse(si, ci) {
+      if (cgpaData.semesters[si].courses.length <= 1) { showToast('⚠️ 每学期至少保留一门课程'); return; }
+      cgpaData.semesters[si].courses.splice(ci, 1);
+      saveCGPA(); renderAllSemesters(); calcAllGPA(true);
+    }
+    function removeSemester(si) {
+      if (cgpaData.semesters.length <= 1) { showToast('⚠️ 至少保留一个学期'); return; }
+      cgpaData.semesters.splice(si, 1);
+      saveCGPA(); renderAllSemesters(); calcAllGPA(true); showToast('🗑 学期已删除');
+    }
+    function updateSemesterData(si, ci, field, value) {
+      const course = cgpaData.semesters[si].courses[ci];
+      if (field === 'credits') course.credits = parseFloat(value) || 0;
+      else if (field === 'grade') course.grade = value;
+      else if (field === 'name') course.name = value;
+      saveCGPA(); calcAllGPA(true);
+    }
+    function updateSemesterName(si, value) { cgpaData.semesters[si].name = value || `学期 ${si+1}`; saveCGPA(); }
+    function calcSemesterGPA(sem) {
+      let pts = 0, creds = 0;
+      sem.courses.forEach(c => {
+        const cr = parseFloat(c.credits) || 0; if (cr <= 0) return;
+        const g = LETTER_TO_GPA[c.grade] || 0;
+        pts += g * cr; creds += cr;
+      });
+      return creds === 0 ? { gpa:0, credits:0, points:0 } : { gpa:preciseRound(pts/creds,3), credits:preciseRound(creds,1), points:preciseRound(pts,2) };
+    }
+    function calcAllGPA(silent) {
+      const all = cgpaData.semesters.map(s => calcSemesterGPA(s));
+      let tp = 0, tc = 0;
+      all.forEach(s => { tp += s.points; tc += s.credits; });
+      const cgpa = tc > 0 ? preciseRound(tp/tc, 3) : 0;
+      const el = document.getElementById('cgpa-result');
+      el.className = 'result-box result-success show';
+      el.innerHTML = `🎓 累积CGPA：<span class="result-big">${cgpa.toFixed(2)}</span> / 4.0<br><small>总学分: ${preciseRound(tc,1)} | 总学期: ${cgpaData.semesters.length}</small>`;
+      if (!silent) el.animate([{opacity:0,transform:'scale(0.85)'},{opacity:1,transform:'scale(1)'}],{duration:450,easing:'cubic-bezier(0.175,0.885,0.32,1.275)'});
+      updateCGPAChart(all);
+      updateSemesterGPADisplay(all);
+    }
+    function updateSemesterGPADisplay(allGPA) {
+      cgpaData.semesters.forEach((_, i) => {
+        const el = document.getElementById(`sem-gpa-${i}`);
+        if (el && allGPA[i]) el.textContent = `GPA: ${allGPA[i].gpa.toFixed(2)} | 学分: ${allGPA[i].credits}`;
+      });
+    }
+    function updateCGPAChart(allGPA) {
+      const container = document.getElementById('cgpaChartContainer');
+      if (allGPA.length <= 1) { container.style.display = 'none'; return; }
+      container.style.display = 'block';
+      const canvas = document.getElementById('cgpaChart');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#fafbfc'; ctx.fillRect(0, 0, w, h);
+      const pad = { top:25, right:30, bottom:40, left:45 };
+      const pw = w - pad.left - pad.right, ph = h - pad.top - pad.bottom;
+      const barW = Math.min(50, pw / allGPA.length * 0.6);
+      const gap = pw / allGPA.length;
+      ctx.strokeStyle = '#e8ecf2'; ctx.lineWidth = 0.5;
+      for (let g = 0; g <= 4; g += 0.5) {
+        const y = pad.top + ph - (g/4)*ph;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w-pad.right, y); ctx.stroke();
+        ctx.fillStyle = '#777'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+        ctx.fillText(g.toFixed(1), pad.left-8, y+4);
+      }
+      allGPA.forEach((sg, i) => {
+        const x = pad.left + gap*i + (gap-barW)/2;
+        const barH = (sg.gpa/4)*ph;
+        const y = pad.top + ph - barH;
+        ctx.fillStyle = sg.gpa >= 3 ? '#4f46e5' : sg.gpa >= 2 ? '#f59e0b' : '#ef4444';
+        try { ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [5,5,0,0]); ctx.fill(); } catch(e) { ctx.fillRect(x, y, barW, barH); }
+        ctx.fillStyle = '#333'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'center';
+        ctx.fillText(sg.gpa.toFixed(2), x+barW/2, y-7);
+        ctx.fillStyle = '#555'; ctx.font = '10px Inter';
+        ctx.fillText(cgpaData.semesters[i].name, x+barW/2, pad.top+ph+16);
+      });
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, pad.top+ph); ctx.lineTo(w-pad.right, pad.top+ph); ctx.stroke();
+    }
+    function renderAllSemesters() {
+      const container = document.getElementById('semesterList');
+      container.innerHTML = cgpaData.semesters.map((sem, si) => `
+        <div class="semester-block open" id="sem-block-${si}">
+          <div class="semester-header" onclick="toggleSemester(${si})">
+            <span>📚 <input type="text" value="${escapeHTML(sem.name)}" style="border:none;background:transparent;font-weight:700;font-size:0.9rem;width:120px;outline:none;font-family:inherit;" onchange="updateSemesterName(${si},this.value)" onclick="event.stopPropagation()"></span>
+            <span id="sem-gpa-${si}">GPA: --</span>
+            <span>▼</span>
+            <button class="btn btn-xs btn-danger" onclick="event.stopPropagation();removeSemester(${si})">🗑</button>
+          </div>
+          <div class="semester-body">
+            ${sem.courses.map((c,ci) => `
+              <div class="course-row">
+                <input type="text" class="form-input" placeholder="课程名" value="${escapeHTML(c.name||'')}" onchange="updateSemesterData(${si},${ci},'name',this.value)">
+                <input type="number" class="form-input" placeholder="学分" value="${c.credits}" min="0.5" step="0.5" onchange="updateSemesterData(${si},${ci},'credits',this.value)" style="width:80px;">
+                <select class="form-select" onchange="updateSemesterData(${si},${ci},'grade',this.value)" style="width:80px;">
+                  ${['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'].map(g => `<option value="${g}" ${c.grade===g?'selected':''}>${g}</option>`).join('')}
+                </select>
+                <button class="remove-btn-circle" onclick="removeCourse(${si},${ci})">×</button>
+              </div>
+            `).join('')}
+            <button class="btn btn-outline btn-xs" onclick="addCourse(${si})" style="margin-top:4px;">+ 添加课程</button>
+          </div>
+        </div>`).join('');
+    }
+    function toggleSemester(si) { document.getElementById(`sem-block-${si}`).classList.toggle('open'); }
+    function resetCGPA() {
+      if (confirm('确定要重置所有学期数据吗？')) {
+        cgpaData = { semesters:[{ name:'学期 1', courses:[{ name:'', credits:3, grade:'A' },{ name:'', credits:4, grade:'B+' }] }] };
+        saveCGPA(); renderAllSemesters(); calcAllGPA(true); showToast('🔄 数据已重置');
+      }
+    }
+
+    loadCGPA(); renderAllSemesters(); calcAllGPA(true);
+  </script>
+</body>
+</html>

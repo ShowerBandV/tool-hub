@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/</loc><priority>1.0</priority></url>
+  <url><loc>https://example.com/games/</loc><priority>0.8</priority></url>
+  <url><loc>https://example.com/calculators/</loc><priority>0.8</priority></url>
+  <url><loc>https://example.com/calculators/grade-converter/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/final-grade/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/gpa-cgpa/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/ap-score/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/data-convert/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/scientific-calc/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/calculators/graph-calc/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/</loc><priority>0.8</priority></url>
+  <url><loc>https://example.com/dev-tools/json-formatter/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/base64/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/regex-tester/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/password-generator/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/timestamp/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/uuid-generator/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/hash/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/url-encode/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/word-count/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/qrcode/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/countdown/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/random-number/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/marquee/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/http-status/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/color-convert/</loc><priority>0.6</priority></url>
+  <url><loc>https://example.com/dev-tools/html-symbols/</loc><priority>0.6</priority></url>
+</urlset>
