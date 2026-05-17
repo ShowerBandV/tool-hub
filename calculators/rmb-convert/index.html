@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线人民币大小写转换工具，将阿拉伯数字金额转换为中文大写金额，支持元角分，适用于发票、支票、合同等财务场景。">
+  <title>人民币大小写转换 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .result-big { font-size: 1.8rem; font-weight: 800; text-align: center; padding: 24px;
+      background: var(--bg); border-radius: 16px; margin-top: 12px; word-break: break-all; line-height: 1.6; }
+    .copy-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+      padding: 6px 16px; border-radius: 8px; border: 2px solid var(--border);
+      background: #fff; cursor: pointer; font-size: 0.82rem; transition: var(--transition); }
+    .copy-btn:hover { border-color: var(--accent); }
+    .quick-amounts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .quick-amount { padding: 6px 14px; background: #fff; border: 2px solid var(--border);
+      border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: var(--transition); }
+    .quick-amount:hover { border-color: var(--accent); background: #eef2ff; }
+    .preview-box { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 10px;
+      padding: 12px 16px; margin-top: 12px; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 人民币大小写转换
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">💴 人民币大小写转换</h2>
+      <p class="panel-desc">在线人民币大小写转换工具，将阿拉伯数字金额转为中文大写金额（元角分），同时显示财务金额格式。适用于发票填写、支票开具、合同金额等场景。</p>
+
+      <div class="form-group">
+        <label class="form-label">💰 金额（阿拉伯数字）</label>
+        <input type="text" class="form-input" id="amountInput" placeholder="例如：12345.67" value="12345.67">
+        <div class="quick-amounts">
+          <span class="quick-amount" data-amount="0.01">0.01</span>
+          <span class="quick-amount" data-amount="100">100</span>
+          <span class="quick-amount" data-amount="1000">1,000</span>
+          <span class="quick-amount" data-amount="12345.67">12,345.67</span>
+          <span class="quick-amount" data-amount="1000000">1,000,000</span>
+          <span class="quick-amount" data-amount="987654321.09">987,654,321.09</span>
+        </div>
+      </div>
+
+      <div class="result-big" id="result">—</div>
+      <div style="text-align:center;"><button class="copy-btn" id="copyBtn">📋 复制大写金额</button></div>
+
+      <div class="preview-box" id="previewBox"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const digits = '零壹贰叁肆伍陆柒捌玖';
+    const radices = ['', '拾', '佰', '仟'];
+    const bigRadices = ['', '万', '亿', '万亿'];
+
+    function toChineseNumber(num) {
+      let str = '';
+      let zeroCount = 0;
+      const ns = String(Math.floor(num));
+      for (let i = 0; i < ns.length; i++) {
+        const p = ns.length - i - 1;
+        const d = parseInt(ns[i]);
+        const q = p % 4;
+        if (d === 0) {
+          zeroCount++;
+        } else {
+          if (zeroCount > 0) str += '零';
+          zeroCount = 0;
+          str += digits[d] + radices[q];
+        }
+        if (q === 0 && zeroCount < 4) {
+          str += bigRadices[Math.floor(p / 4)];
+          zeroCount = 0;
+        }
+      }
+      return str;
+    }
+
+    function convert() {
+      let input = document.getElementById('amountInput').value.trim();
+      if (!input) { document.getElementById('result').textContent = '—'; return; }
+      // Remove commas, spaces
+      input = input.replace(/[,，\s]/g, '');
+      const num = parseFloat(input);
+      if (isNaN(num)) {
+        document.getElementById('result').textContent = '⚠️ 请输入有效的数字金额';
+        document.getElementById('previewBox').innerHTML = '';
+        return;
+      }
+      if (num < 0) {
+        document.getElementById('result').textContent = '⚠️ 请输入正数金额';
+        document.getElementById('previewBox').innerHTML = '';
+        return;
+      }
+
+      const intPart = Math.floor(num);
+      const decPart = Math.round((num - intPart) * 100);
+
+      let upper = '';
+      if (intPart === 0) {
+        upper = '零元';
+      } else {
+        upper = toChineseNumber(intPart) + '元';
+      }
+
+      const jiao = Math.floor(decPart / 10);
+      const fen = decPart % 10;
+
+      if (jiao === 0 && fen === 0) {
+        upper += '整';
+      } else {
+        if (jiao > 0) upper += digits[jiao] + '角';
+        else upper += '零';
+        if (fen > 0) upper += digits[fen] + '分';
+      }
+
+      document.getElementById('result').textContent = upper;
+
+      // Preview: formatted
+      const formatted = num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('previewBox').innerHTML = `
+        <strong>📋 金额明细：</strong><br>
+        小写金额：<strong>¥${formatted}</strong><br>
+        大写金额：<strong style="color:var(--accent);">${upper}</strong><br>
+        整数部分：${intPart.toLocaleString('zh-CN')} 元 &nbsp;|&nbsp; 角：${jiao} &nbsp;|&nbsp; 分：${fen}
+      `;
+    }
+
+    document.getElementById('amountInput').addEventListener('input', convert);
+
+    document.querySelectorAll('.quick-amount').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('amountInput').value = btn.dataset.amount;
+        convert();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('result').textContent;
+      if (!text || text === '—') return;
+      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制大写金额'));
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'length-converter', i: '📏', n: '长度换算' },
+      { h: 'weight-converter', i: '⚖️', n: '重量换算' },
+      { h: 'temperature-converter', i: '🌡️', n: '温度转换' },
+      { h: 'area-converter', i: '📐', n: '面积换算' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓计算器' },
+      { h: 'pinyin-table', i: '🔤', n: '拼音字母表' },
+      { h: 'grade-converter', i: '🔄', n: '成绩转换器' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+
+    convert();
+  </script>
+</body>
+</html>

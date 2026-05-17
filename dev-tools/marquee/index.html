@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线跑马灯工具，支持自定义滚动文字、速度、颜色与字体大小，支持全屏显示。">
   <title>跑马灯 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
@@ -59,7 +60,7 @@
 
     <div class="card tool-panel">
       <h2 class="panel-title">🎠 跑马灯</h2>
-      <p class="panel-desc">在线跑马灯工具，支持设置滚动内容、速度、字体大小、字体颜色和背景颜色，并支持全屏显示。</p>
+      <p class="panel-desc">在线跑马灯工具。输入滚动文字后自动播放滚动动画，可调整字体大小、滚动速度、文字颜色和背景颜色。点击屏幕进入全屏模式，支持添加庆祝表情符号，适合活动现场大屏展示。</p>
 
       <input type="text" class="form-input" id="mqText" value="欢迎使用工具盒子！🎉" placeholder="输入滚动文字...">
 
@@ -222,10 +223,14 @@
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
-    // ESC to exit fullscreen (handled natively, but ensure state is cleaned)
+    // ESC to exit fullscreen
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && isFullscreen) {
-        // Browser handles exit, onFullscreenChange will fire
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
       }
     });
 

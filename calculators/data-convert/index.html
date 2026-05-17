@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线数据单位换算器，支持SI/IEC标准（B、KB、MB、GB到PiB）的实时换算。">
   <title>数据单位换算 · 计算机盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
@@ -44,7 +45,7 @@
 
     <div class="card tool-panel">
       <h2 class="panel-title">📐 数据单位换算</h2>
-      <p class="panel-desc">输入任意数据存储单位数值，实时换算为其他单位。支持SI标准(1000进制)与IEC标准(1024进制)。</p>
+      <p class="panel-desc">在线数据单位换算器。输入数值后选择输入单位和输出单位，自动实时换算。支持SI标准（KB/MB/GB/TB）和IEC标准（KiB/MiB/GiB/TiB），涵盖从字节(B)到拍字节(PB)的全部常用单位。</p>
       <div class="unit-switch" id="unitStandardSwitch">
         <button class="switch-option active" data-std="si" onclick="setUnitStandard('si')">SI (1KB=1000B)</button>
         <button class="switch-option" data-std="iec" onclick="setUnitStandard('iec')">IEC (1KiB=1024B)</button>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线色盲测试工具，基于石原氏色觉检测图原理。通过辨别彩色圆点组成的数字图案，初步筛查红绿色盲和色弱。">
+  <title>色盲测试 · 游戏盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .plate-container { text-align: center; margin-top: 12px; }
+    .plate { display: inline-block; width: 280px; height: 280px; border-radius: 50%;
+      position: relative; overflow: hidden; border: 4px solid var(--border); }
+    .plate canvas { width: 100%; height: 100%; border-radius: 50%; }
+    .answer-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .answer-btn { padding: 12px 24px; border-radius: 12px; border: 2px solid var(--border);
+      background: #fff; cursor: pointer; font-size: 1.2rem; font-weight: 700;
+      transition: var(--transition); min-width: 70px; }
+    .answer-btn:hover { border-color: var(--accent); background: #eef2ff; }
+    .answer-btn.correct { border-color: #10b981; background: #f0fdf4; color: #10b981; }
+    .answer-btn.wrong { border-color: #ef4444; background: #fef2f2; color: #ef4444; }
+    .answer-btn:disabled { pointer-events: none; opacity: 0.7; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+    .result-card { text-align: center; padding: 30px 20px; background: var(--bg); border-radius: 20px; margin-top: 16px; }
+    .result-icon { font-size: 4rem; }
+    .result-title { font-size: 1.5rem; font-weight: 800; margin-top: 8px; }
+    .result-desc { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🎮 游戏盒子</a> <span class="sep">›</span> 色盲测试
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎨 色盲测试</h2>
+      <p class="panel-desc">在线色盲测试工具，模拟石原氏色觉检测图。请辨别图中彩色圆点组成的数字并选择答案，测试完成后给出初步评估结果。共8道题，涵盖红绿色盲常见检测图案。</p>
+
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div style="text-align:center;margin-top:4px;font-size:0.82rem;color:var(--text-muted);" id="progressText">第 1/8 题</div>
+
+      <div class="plate-container">
+        <div class="plate"><canvas id="plateCanvas" width="280" height="280"></canvas></div>
+      </div>
+
+      <div style="text-align:center;margin-top:8px;font-size:0.9rem;color:var(--text-secondary);">
+        你看到的数字是？
+      </div>
+
+      <div class="answer-row" id="answerRow"></div>
+
+      <div id="resultCard" style="display:none;"></div>
+
+      <div style="text-align:center;margin-top:12px;">
+        <button class="btn btn-outline" id="restartBtn" style="display:none;">🔄 重新测试</button>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🎮 更多游戏与测试</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    // Ishihara-style test plates
+    // Each plate: { number, description, normalSee, deficientSee }
+    const testPlates = [
+      { number: 12, desc: '红绿色觉正常者应看到 12', normal: 12, deficient: null },
+      { number: 8, desc: '红绿色觉正常者应看到 8', normal: 8, deficient: 3 },
+      { number: 6, desc: '红绿色觉正常者应看到 6', normal: 6, deficient: 5 },
+      { number: 29, desc: '红绿色觉正常者应看到 29', normal: 29, deficient: 70 },
+      { number: 57, desc: '红绿色觉正常者应看到 57', normal: 57, deficient: 35 },
+      { number: 5, desc: '红绿色觉正常者应看到 5', normal: 5, deficient: 2 },
+      { number: 3, desc: '红绿色觉正常者应看到 3', normal: 3, deficient: 5 },
+      { number: 15, desc: '红绿色觉正常者应看到 15', normal: 15, deficient: 17 },
+    ];
+
+    let currentQuestion = 0;
+    let answers = []; // 'correct' | 'wrong' | 'deficient' (picked the colorblind answer)
+
+    const canvas = document.getElementById('plateCanvas');
+    const ctx = canvas.getContext('2d');
+    const answerRow = document.getElementById('answerRow');
+
+    function generatePlate(plateData, canvasEl, ctx) {
+      const w = canvasEl.width;
+      const h = canvasEl.height;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw random colored dots background
+      const dots = [];
+      const dotCount = 600;
+
+      // Generate dot positions
+      for (let i = 0; i < dotCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 130;
+        const x = cx + Math.cos(angle) * dist;
+        const y = cy + Math.sin(angle) * dist;
+        dots.push({ x, y });
+      }
+
+      // Draw the number mask first to know which dots are in the number area
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = w;
+      maskCanvas.height = h;
+      const maskCtx = maskCanvas.getContext('2d');
+      maskCtx.fillStyle = '#000';
+      maskCtx.fillRect(0, 0, w, h);
+      maskCtx.fillStyle = '#fff';
+      maskCtx.font = 'bold 120px Arial, sans-serif';
+      maskCtx.textAlign = 'center';
+      maskCtx.textBaseline = 'middle';
+      maskCtx.fillText(String(plateData.number), cx, cy);
+
+      const maskData = maskCtx.getImageData(0, 0, w, h);
+
+      dots.forEach(d => {
+        const px = Math.round(d.x);
+        const py = Math.round(d.y);
+        if (px < 0 || px >= w || py < 0 || py >= h) return;
+
+        const idx = (py * w + px) * 4;
+        const isInNumber = maskData.data[idx] > 128;
+
+        let r, g, b;
+        if (isInNumber) {
+          // Number area: use distinct red/green tones
+          r = 180 + Math.random() * 75;
+          g = 50 + Math.random() * 60;
+          b = 40 + Math.random() * 50;
+        } else {
+          // Background area: use greenish/brownish tones
+          r = 40 + Math.random() * 80;
+          g = 140 + Math.random() * 80;
+          b = 40 + Math.random() * 60;
+        }
+
+        // Add noise variation
+        r = Math.min(255, Math.max(0, r + (Math.random() - 0.5) * 40));
+        g = Math.min(255, Math.max(0, g + (Math.random() - 0.5) * 40));
+        b = Math.min(255, Math.max(0, b + (Math.random() - 0.5) * 40));
+
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 6 + Math.random() * 5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+        ctx.fill();
+      });
+
+      // Add scattered small dots for texture
+      for (let i = 0; i < 200; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const idx = (Math.round(y) * w + Math.round(x)) * 4;
+        const isInNumber = maskData.data[idx] > 128;
+
+        let r, g, b;
+        if (!isInNumber) {
+          r = 50 + Math.random() * 40;
+          g = 100 + Math.random() * 60;
+          b = 50 + Math.random() * 40;
+        } else {
+          r = 200 + Math.random() * 55;
+          g = 100 + Math.random() * 60;
+          b = 60 + Math.random() * 50;
+        }
+        ctx.beginPath();
+        ctx.arc(x, y, 3 + Math.random() * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+        ctx.fill();
+      }
+    }
+
+    function renderQuestion() {
+      if (currentQuestion >= testPlates.length) {
+        showResults();
+        return;
+      }
+
+      const plate = testPlates[currentQuestion];
+      generatePlate(plate, canvas, ctx);
+
+      document.getElementById('progressFill').style.width = ((currentQuestion / testPlates.length) * 100) + '%';
+      document.getElementById('progressText').textContent = `第 ${currentQuestion + 1}/${testPlates.length} 题`;
+
+      // Generate answer buttons: correct answer + distractors
+      const options = [plate.normal];
+      // Add deficient answer if different
+      if (plate.deficient !== null && plate.deficient !== plate.normal) {
+        options.push(plate.deficient);
+      }
+      // Add random distractors
+      while (options.length < 4) {
+        const distractors = [3, 5, 6, 7, 8, 9, 12, 15, 16, 18, 21, 25, 27, 29, 35, 42, 45, 57, 70, 74];
+        const d = distractors[Math.floor(Math.random() * distractors.length)];
+        if (!options.includes(d)) options.push(d);
+      }
+
+      // Shuffle
+      options.sort(() => Math.random() - 0.5);
+
+      answerRow.innerHTML = options.map(o =>
+        `<button class="answer-btn" data-answer="${o}">${o}</button>`
+      ).join('');
+
+      answerRow.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => handleAnswer(parseInt(btn.dataset.answer)));
+      });
+    }
+
+    function handleAnswer(chosen) {
+      const plate = testPlates[currentQuestion];
+
+      // Disable all buttons
+      answerRow.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+      // Highlight correct answer
+      const correctBtn = answerRow.querySelector(`[data-answer="${plate.normal}"]`);
+      if (correctBtn) correctBtn.classList.add('correct');
+
+      // Check user's answer
+      if (chosen === plate.normal) {
+        answers.push('correct');
+        // Highlight user's choice green if correct
+        const userBtn = answerRow.querySelector(`[data-answer="${chosen}"]`);
+        if (userBtn) userBtn.classList.add('correct');
+      } else if (chosen === plate.deficient) {
+        answers.push('deficient');
+        const userBtn = answerRow.querySelector(`[data-answer="${chosen}"]`);
+        if (userBtn) userBtn.classList.add('wrong');
+      } else {
+        answers.push('wrong');
+        const userBtn = answerRow.querySelector(`[data-answer="${chosen}"]`);
+        if (userBtn) userBtn.classList.add('wrong');
+      }
+
+      currentQuestion++;
+      setTimeout(renderQuestion, 1200);
+    }
+
+    function showResults() {
+      document.getElementById('plateCanvas').style.display = 'none';
+      answerRow.innerHTML = '';
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('progressText').textContent = '测试完成';
+      document.getElementById('restartBtn').style.display = 'inline-block';
+
+      const totalCorrect = answers.filter(a => a === 'correct').length;
+      const totalDeficient = answers.filter(a => a === 'deficient').length;
+      const total = testPlates.length;
+      const ratio = totalCorrect / total;
+
+      const resultCard = document.getElementById('resultCard');
+      resultCard.style.display = 'block';
+
+      let icon, title, desc;
+      if (ratio >= 0.875) {
+        icon = '✅';
+        title = '色觉正常';
+        desc = `你在 ${total} 道题中答对了 ${totalCorrect} 题，表现良好。你的红绿色觉功能正常，能准确辨别色彩差异。`;
+      } else if (ratio >= 0.625) {
+        icon = '⚠️';
+        title = '可能有轻度色弱';
+        desc = `你在 ${total} 道题中答对了 ${totalCorrect} 题，有 ${totalDeficient} 题选择了色盲典型答案。建议在良好光线下再做一次测试，如有疑虑请咨询眼科医生。`;
+      } else {
+        icon = '🔴';
+        title = '可能有红绿色觉异常';
+        desc = `你在 ${total} 道题中仅答对 ${totalCorrect} 题，有 ${totalDeficient} 题选择了色盲典型答案。建议到正规医院眼科做专业色觉检查。本测试仅供初步筛查，不构成医学诊断。`;
+      }
+
+      desc += '<br><br><span style="font-size:0.8rem;color:var(--text-muted);">⚠️ 免责声明：本测试仅为趣味性初步筛查，不能替代专业医学检查。如有色觉疑虑，请前往正规医疗机构进行诊断。</span>';
+
+      resultCard.innerHTML = `
+        <div class="result-icon">${icon}</div>
+        <div class="result-title">${title}</div>
+        <div class="result-desc">${desc}</div>
+      `;
+    }
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      currentQuestion = 0;
+      answers = [];
+      document.getElementById('plateCanvas').style.display = '';
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('restartBtn').style.display = 'none';
+      renderQuestion();
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../doodle-jump', i: '🏔️', n: '涂鸦跳跃' },
+      { h: 'reaction-test', i: '⚡', n: '反应速度测试' },
+      { h: '../../dev-tools/random-picker', i: '🎯', n: '随机点名' },
+      { h: '../../dev-tools/random-number', i: '🎲', n: '随机数生成' },
+      { h: '../../dev-tools/countdown', i: '⏳', n: '倒计时' },
+      { h: '../../calculators/zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: '../../calculators/kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(t => `<a href="${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+
+    renderQuestion();
+  </script>
+</body>
+</html>

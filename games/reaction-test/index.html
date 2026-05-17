@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线反应速度测试工具，通过颜色变化测试你的视觉反应速度。支持多次测试取平均值，看看你的反应有多快！">
+  <title>反应速度测试 · 游戏盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .test-area { width: 100%; height: 300px; border-radius: 20px; display: flex;
+      align-items: center; justify-content: center; cursor: pointer;
+      transition: background-color 0.1s; user-select: none; position: relative; }
+    .test-area.waiting { background: #ef4444; }
+    .test-area.ready { background: #f59e0b; }
+    .test-area.go { background: #10b981; }
+    .test-area.idle { background: #6366f1; }
+    .test-text { font-size: 2rem; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .result-list { margin-top: 16px; }
+    .result-item { display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 4px; }
+    .result-item .time { font-weight: 800; font-size: 1.1rem; }
+    .result-item.fast { background: #f0fdf4; }
+    .result-item.slow { background: #fef2f2; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .stat-card { text-align: center; padding: 16px 10px; background: var(--bg); border-radius: 12px; }
+    .stat-card .stat-val { font-size: 1.8rem; font-weight: 800; }
+    .stat-card .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .stat-card.best .stat-val { color: #10b981; }
+    .stat-card.avg .stat-val { color: var(--accent); }
+    .stat-card.worst .stat-val { color: #ef4444; }
+
+    /* FPS-style gauge */
+    .rank-badge { display: inline-block; padding: 6px 16px; border-radius: 20px;
+      font-weight: 800; font-size: 0.9rem; margin-top: 8px; }
+    .rank-god { background: #fef3c7; color: #d97706; }
+    .rank-fast { background: #dbeafe; color: #2563eb; }
+    .rank-avg { background: #f0fdf4; color: #16a34a; }
+    .rank-slow { background: #fef2f2; color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🎮 游戏盒子</a> <span class="sep">›</span> 反应速度测试
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">⚡ 反应速度测试</h2>
+      <p class="panel-desc">在线反应速度测试工具。屏幕变绿后尽快点击，测量你的视觉反应时间（毫秒）。进行5次测试后取平均值，看看你的反应有多快！</p>
+
+      <div class="test-area idle" id="testArea">
+        <span class="test-text" id="testText">👆 点击此处开始</span>
+      </div>
+
+      <div class="stat-row" id="statsRow" style="display:none;">
+        <div class="stat-card best">
+          <div class="stat-val" id="bestTime">—</div>
+          <div class="stat-label">🏆 最快</div>
+        </div>
+        <div class="stat-card avg">
+          <div class="stat-val" id="avgTime">—</div>
+          <div class="stat-label">📊 平均</div>
+        </div>
+        <div class="stat-card worst">
+          <div class="stat-val" id="worstTime">—</div>
+          <div class="stat-label">🐢 最慢</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;" id="rankBadge"></div>
+
+      <div class="result-list" id="resultList"></div>
+
+      <div class="action-row" style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-outline" id="resetBtn">🔄 重新测试</button>
+        <span style="font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center;" id="roundInfo">共 5 轮</span>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🎮 更多游戏与测试</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const TOTAL_ROUNDS = 5;
+    const testArea = document.getElementById('testArea');
+    const testText = document.getElementById('testText');
+    const resultList = document.getElementById('resultList');
+    const roundInfo = document.getElementById('roundInfo');
+    const rankBadge = document.getElementById('rankBadge');
+    const statsRow = document.getElementById('statsRow');
+
+    let state = 'idle'; // idle | waiting | ready | go
+    let results = [];
+    let waitTimer = null;
+    let goTime = 0;
+    let currentRound = 0;
+
+    function setState(newState) {
+      state = newState;
+      testArea.className = 'test-area ' + newState;
+    }
+
+    function startRound() {
+      if (currentRound >= TOTAL_ROUNDS) {
+        finishTest();
+        return;
+      }
+      currentRound++;
+      roundInfo.textContent = `第 ${currentRound}/${TOTAL_ROUNDS} 轮`;
+      results = results.slice(0, currentRound - 1); // trim if restart
+
+      setState('waiting');
+      testText.textContent = '🟡 等待变绿...';
+
+      // Random delay between 1.5-4 seconds
+      const delay = 1500 + Math.random() * 2500;
+      waitTimer = setTimeout(() => {
+        setState('go');
+        goTime = performance.now();
+        testText.textContent = '🟢 现在点击！';
+      }, delay);
+    }
+
+    function handleClick() {
+      if (state === 'idle') {
+        // Start the test
+        results = [];
+        currentRound = 0;
+        resultList.innerHTML = '';
+        statsRow.style.display = 'none';
+        rankBadge.innerHTML = '';
+        startRound();
+        return;
+      }
+
+      if (state === 'waiting') {
+        // Clicked too early!
+        clearTimeout(waitTimer);
+        setState('idle');
+        testText.textContent = '⚠️ 太早了！等变绿再点击，点击重试';
+        results.push(-1); // penalty
+        renderResults();
+        return;
+      }
+
+      if (state === 'go') {
+        // Success!
+        const reactionTime = Math.round(performance.now() - goTime);
+        results.push(reactionTime);
+        renderResults();
+        setState('idle');
+        testText.textContent = `⏱ ${reactionTime} ms — 点击继续下一轮`;
+
+        if (currentRound >= TOTAL_ROUNDS) {
+          finishTest();
+        }
+        return;
+      }
+
+      if (state === 'ready') {
+        // Continue to next round
+        startRound();
+      }
+    }
+
+    testArea.addEventListener('click', handleClick);
+
+    // Keyboard support
+    document.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        handleClick();
+      }
+    });
+
+    function renderResults() {
+      let html = '';
+      results.forEach((t, i) => {
+        let cls = '';
+        let icon = '';
+        if (t < 0) {
+          cls = 'slow';
+          icon = '⚠️ 过早';
+        } else if (t < 200) {
+          cls = 'fast';
+          icon = '🔥';
+        } else if (t < 300) {
+          icon = '👍';
+        } else {
+          cls = 'slow';
+          icon = '🐢';
+        }
+        html += `<div class="result-item ${cls}">
+          <span>第 ${i + 1} 轮 ${icon}</span>
+          <span class="time">${t > 0 ? t + ' ms' : '犯规'}</span>
+        </div>`;
+      });
+      resultList.innerHTML = html;
+    }
+
+    function finishTest() {
+      setState('idle');
+      testText.textContent = '✅ 测试完成！点击重新开始';
+
+      const validResults = results.filter(t => t > 0);
+      if (validResults.length === 0) return;
+
+      const best = Math.min(...validResults);
+      const worst = Math.max(...validResults);
+      const avg = Math.round(validResults.reduce((a, b) => a + b, 0) / validResults.length);
+
+      statsRow.style.display = 'grid';
+      document.getElementById('bestTime').textContent = best + 'ms';
+      document.getElementById('avgTime').textContent = avg + 'ms';
+      document.getElementById('worstTime').textContent = worst + 'ms';
+
+      // Rank
+      let rankHtml = '';
+      if (avg < 180) {
+        rankHtml = '<span class="rank-badge rank-god">🏆 神级反应！你是电竞选手吗？</span>';
+      } else if (avg < 250) {
+        rankHtml = '<span class="rank-badge rank-fast">⚡ 反应很快！超越大多数人</span>';
+      } else if (avg < 350) {
+        rankHtml = '<span class="rank-badge rank-avg">👌 正常水平，多加练习会更快</span>';
+      } else {
+        rankHtml = '<span class="rank-badge rank-slow">☕ 需要来杯咖啡提提神</span>';
+      }
+      rankBadge.innerHTML = rankHtml;
+      roundInfo.textContent = '全部完成！';
+
+      currentRound = TOTAL_ROUNDS;
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      clearTimeout(waitTimer);
+      results = [];
+      currentRound = 0;
+      setState('idle');
+      testText.textContent = '👆 点击此处开始';
+      resultList.innerHTML = '';
+      statsRow.style.display = 'none';
+      rankBadge.innerHTML = '';
+      roundInfo.textContent = '共 5 轮';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../doodle-jump', i: '🏔️', n: '涂鸦跳跃' },
+      { h: 'color-blind-test', i: '🎨', n: '色盲测试' },
+      { h: '../../dev-tools/random-picker', i: '🎯', n: '随机点名' },
+      { h: '../../dev-tools/random-number', i: '🎲', n: '随机数生成' },
+      { h: '../../dev-tools/countdown', i: '⏳', n: '倒计时' },
+      { h: '../../calculators/zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: '../../calculators/kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓' },
+    ].map(t => `<a href="${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>

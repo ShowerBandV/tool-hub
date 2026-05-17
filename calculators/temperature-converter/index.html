@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线温度单位转换器，支持摄氏度(℃)、华氏度(℉)、开尔文(K)三种温度单位的实时互转。">
+  <title>温度转换 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .temp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+    .temp-card { background: var(--bg); border-radius: 16px; padding: 20px; text-align: center; border: 2px solid transparent; transition: var(--transition); }
+    .temp-card:focus-within { border-color: var(--accent); }
+    .temp-card .unit-label { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+    .temp-card input { width: 100%; font-size: 1.8rem; font-weight: 800; text-align: center; border: none; background: transparent; color: var(--text); outline: none; }
+    .temp-card input::-webkit-outer-spin-button, .temp-card input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .temp-card .symbol { font-size: 2.5rem; display: block; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 温度转换
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🌡️ 温度转换</h2>
+      <p class="panel-desc">在线温度单位转换器，支持摄氏度(℃)、华氏度(℉)、开尔文(K)的实时互转。在任意输入框中输入温度，其他单位自动同步换算。</p>
+
+      <div class="temp-grid">
+        <div class="temp-card">
+          <span class="symbol">❄️</span>
+          <div class="unit-label">摄氏度 Celsius</div>
+          <input type="number" id="celsius" value="0" step="any" placeholder="℃">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">℃</div>
+        </div>
+        <div class="temp-card">
+          <span class="symbol">🔥</span>
+          <div class="unit-label">华氏度 Fahrenheit</div>
+          <input type="number" id="fahrenheit" value="32" step="any" placeholder="℉">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">℉</div>
+        </div>
+        <div class="temp-card">
+          <span class="symbol">⚛️</span>
+          <div class="unit-label">开尔文 Kelvin</div>
+          <input type="number" id="kelvin" value="273.15" step="any" placeholder="K">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">K</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;font-size:0.82rem;color:var(--text-secondary);">
+        <strong>📌 常用参考：</strong>
+        水冰点 = 0℃ = 32℉ = 273.15K &nbsp;|&nbsp;
+        水沸点 = 100℃ = 212℉ = 373.15K &nbsp;|&nbsp;
+        绝对零度 = -273.15℃ = -459.67℉ = 0K
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const celsiusInp = document.getElementById('celsius');
+    const fahrenheitInp = document.getElementById('fahrenheit');
+    const kelvinInp = document.getElementById('kelvin');
+    let updating = false;
+
+    function cToF(c) { return c * 9 / 5 + 32; }
+    function cToK(c) { return c + 273.15; }
+    function fToC(f) { return (f - 32) * 5 / 9; }
+    function kToC(k) { return k - 273.15; }
+
+    celsiusInp.addEventListener('input', () => {
+      if (updating) return;
+      updating = true;
+      const c = parseFloat(celsiusInp.value) || 0;
+      fahrenheitInp.value = cToF(c).toFixed(2);
+      kelvinInp.value = cToK(c).toFixed(2);
+      updating = false;
+    });
+
+    fahrenheitInp.addEventListener('input', () => {
+      if (updating) return;
+      updating = true;
+      const f = parseFloat(fahrenheitInp.value) || 0;
+      const c = fToC(f);
+      celsiusInp.value = c.toFixed(2);
+      kelvinInp.value = cToK(c).toFixed(2);
+      updating = false;
+    });
+
+    kelvinInp.addEventListener('input', () => {
+      if (updating) return;
+      updating = true;
+      const k = parseFloat(kelvinInp.value) || 0;
+      const c = kToC(k);
+      celsiusInp.value = c.toFixed(2);
+      fahrenheitInp.value = cToF(c).toFixed(2);
+      updating = false;
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'length-converter', i: '📏', n: '长度换算' },
+      { h: 'weight-converter', i: '⚖️', n: '重量换算' },
+      { h: 'area-converter', i: '📐', n: '面积换算' },
+      { h: 'data-convert', i: '💾', n: '数据单位换算' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'rmb-convert', i: '💴', n: '人民币大小写' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓计算器' },
+      { h: 'grade-converter', i: '🔄', n: '成绩转换器' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>

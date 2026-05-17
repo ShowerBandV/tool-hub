@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线生肖查询工具，支持按出生年份或年龄查询生肖属相。输入年份或年龄即可快速查出对应的生肖、五行和性格特点。">
+  <title>生肖查询 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .zodiac-result { text-align: center; padding: 30px 20px; background: var(--bg); border-radius: 20px; margin-top: 12px; }
+    .zodiac-emoji { font-size: 5rem; display: block; }
+    .zodiac-name { font-size: 2rem; font-weight: 800; margin-top: 8px; }
+    .zodiac-info { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+    .zodiac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 16px; }
+    .zodiac-item { text-align: center; padding: 10px 6px; background: #fff; border-radius: 10px;
+      border: 2px solid var(--border); cursor: pointer; transition: var(--transition); }
+    .zodiac-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .zodiac-item.active { border-color: var(--accent); background: #eef2ff; }
+    .zodiac-item .zi-emoji { font-size: 1.8rem; display: block; }
+    .zodiac-item .zi-year { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .tab-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab-btn { flex:1; padding: 8px; border-radius: 8px; border: 2px solid var(--border);
+      background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: var(--transition); }
+    .tab-btn.active { border-color: var(--accent); background: #eef2ff; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 生肖查询
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🐲 生肖查询</h2>
+      <p class="panel-desc">在线生肖查询工具，支持按出生年份或年龄查询生肖。点击下方生肖卡片或输入出生年份，即可了解每个生肖的五行属性与性格特点。</p>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab="year">📅 按年份查询</button>
+        <button class="tab-btn" data-tab="age">🎂 按年龄查询</button>
+      </div>
+
+      <div id="tabYear">
+        <div class="form-group">
+          <label class="form-label">出生年份</label>
+          <input type="number" class="form-input" id="birthYear" placeholder="例如：2000" min="1900" max="2100">
+        </div>
+        <button class="btn btn-primary" id="yearQueryBtn" style="margin-top:8px;">🔍 查询生肖</button>
+      </div>
+
+      <div id="tabAge" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">今年年龄（周岁）</label>
+          <input type="number" class="form-input" id="ageInput" placeholder="例如：24" min="0" max="150">
+        </div>
+        <button class="btn btn-primary" id="ageQueryBtn" style="margin-top:8px;">🔍 查询生肖</button>
+      </div>
+
+      <div class="zodiac-result" id="zodiacResult">
+        <span class="zodiac-emoji">🔍</span>
+        <div class="zodiac-name">选择查询方式</div>
+        <div class="zodiac-info">输入出生年份或年龄，也可以直接点击下方生肖卡片</div>
+      </div>
+
+      <div class="zodiac-grid" id="zodiacGrid"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const zodiacData = [
+      { name: '鼠', emoji: '🐭', wuxing: '水', traits: '机智灵活，善于交际，记忆力强', years: [2020,2008,1996,1984,1972,1960,1948] },
+      { name: '牛', emoji: '🐮', wuxing: '土', traits: '勤劳踏实，责任心强，坚持原则', years: [2021,2009,1997,1985,1973,1961,1949] },
+      { name: '虎', emoji: '🐯', wuxing: '木', traits: '勇猛果断，富有领导力，敢于冒险', years: [2022,2010,1998,1986,1974,1962,1950] },
+      { name: '兔', emoji: '🐰', wuxing: '木', traits: '温柔善良，心思细腻，追求和谐', years: [2023,2011,1999,1987,1975,1963,1951] },
+      { name: '龙', emoji: '🐲', wuxing: '土', traits: '自信威严，志向远大，充满活力', years: [2024,2012,2000,1988,1976,1964,1952] },
+      { name: '蛇', emoji: '🐍', wuxing: '火', traits: '冷静理智，神秘优雅，洞察力强', years: [2025,2013,2001,1989,1977,1965,1953] },
+      { name: '马', emoji: '🐴', wuxing: '火', traits: '热情奔放，独立自由，行动力强', years: [2026,2014,2002,1990,1978,1966,1954] },
+      { name: '羊', emoji: '🐑', wuxing: '土', traits: '温和善良，富有创造力，懂得享受', years: [2027,2015,2003,1991,1979,1967,1955] },
+      { name: '猴', emoji: '🐵', wuxing: '金', traits: '聪明灵活，幽默风趣，好奇心强', years: [2028,2016,2004,1992,1980,1968,1956] },
+      { name: '鸡', emoji: '🐔', wuxing: '金', traits: '勤奋守时，自信直率，善于表达', years: [2029,2017,2005,1993,1981,1969,1957] },
+      { name: '狗', emoji: '🐶', wuxing: '土', traits: '忠诚可靠，正义感强，重情重义', years: [2018,2006,1994,1982,1970,1958,1946] },
+      { name: '猪', emoji: '🐷', wuxing: '水', traits: '真诚宽厚，乐观豁达，享受生活', years: [2019,2007,1995,1983,1971,1959,1947] },
+    ];
+
+    function getZodiacByYear(year) {
+      // Chinese zodiac cycles every 12 years, with Rat = year 0 in the 12-cycle
+      // 2008 = Rat, so offset: year % 12 mapping
+      const baseZodiac = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+      // 2008 = Rat (0), so (2008 % 12) = 4
+      // Map: 4->0, 5->1, 6->2, 7->3, 8->4, 9->5, 10->6, 11->7, 0->8, 1->9, 2->10, 3->11
+      const idx = ((year % 12) + 12 - 4) % 12;
+      return zodiacData.find(z => z.name === baseZodiac[idx]);
+    }
+
+    function getYearByAge(age) {
+      const now = new Date();
+      const thisYear = now.getFullYear();
+      // Approximate birth year from age (could be this year or last year's birthday)
+      return thisYear - age;
+    }
+
+    function showZodiac(z) {
+      document.getElementById('zodiacResult').innerHTML = `
+        <span class="zodiac-emoji">${z.emoji}</span>
+        <div class="zodiac-name">属${z.name}</div>
+        <div class="zodiac-info">五行属<span style="font-weight:700;color:var(--accent);">${z.wuxing}</span> · ${z.traits}</div>
+        <div class="zodiac-info" style="margin-top:4px;">代表年份：${z.years.slice(0,6).join('、')}</div>
+      `;
+      // Highlight in grid
+      document.querySelectorAll('.zodiac-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.querySelector(`.zodiac-item[data-zodiac="${z.name}"]`);
+      if (activeEl) activeEl.classList.add('active');
+    }
+
+    // Build zodiac grid
+    const grid = document.getElementById('zodiacGrid');
+    zodiacData.forEach(z => {
+      const div = document.createElement('div');
+      div.className = 'zodiac-item';
+      div.dataset.zodiac = z.name;
+      div.innerHTML = `<span class="zi-emoji">${z.emoji}</span><span style="font-weight:700;font-size:0.85rem;">${z.name}</span><span class="zi-year">${z.wuxing}</span>`;
+      div.addEventListener('click', () => showZodiac(z));
+      grid.appendChild(div);
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tabYear').style.display = btn.dataset.tab === 'year' ? 'block' : 'none';
+        document.getElementById('tabAge').style.display = btn.dataset.tab === 'age' ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('yearQueryBtn').addEventListener('click', () => {
+      const year = parseInt(document.getElementById('birthYear').value);
+      if (!year || year < 1900 || year > 2100) { showToast('⚠️ 请输入有效的出生年份（1900-2100）'); return; }
+      showZodiac(getZodiacByYear(year));
+    });
+
+    document.getElementById('ageQueryBtn').addEventListener('click', () => {
+      const age = parseInt(document.getElementById('ageInput').value);
+      if (isNaN(age) || age < 0 || age > 150) { showToast('⚠️ 请输入有效的年龄（0-150）'); return; }
+      const year = getYearByAge(age);
+      showZodiac(getZodiacByYear(year));
+    });
+
+    // Enter key support
+    document.getElementById('birthYear').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('yearQueryBtn').click(); });
+    document.getElementById('ageInput').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ageQueryBtn').click(); });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'length-converter', i: '📏', n: '长度换算' },
+      { h: 'weight-converter', i: '⚖️', n: '重量换算' },
+      { h: 'temperature-converter', i: '🌡️', n: '温度转换' },
+      { h: 'area-converter', i: '📐', n: '面积换算' },
+      { h: 'rmb-convert', i: '💴', n: '人民币大小写' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓计算器' },
+      { h: 'pinyin-table', i: '🔤', n: '拼音字母表' },
+      { h: 'grade-converter', i: '🔄', n: '成绩转换器' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线文本批量替换工具，支持多组查找替换规则一键执行。支持普通文本和正则表达式模式，适合批量处理日志、代码、文档等文本内容。">
+  <title>文本批量替换 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .rule-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+    .rule-row input { flex: 1; min-width: 100px; }
+    .rule-row button { flex-shrink: 0; }
+    .rule-row .regex-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
+    .add-rule-btn { margin-top: 6px; font-size: 0.82rem; }
+    .io-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    @media (max-width: 600px) { .io-panels { grid-template-columns: 1fr; } }
+    .io-panel textarea { width: 100%; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 文本批量替换
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">📝 文本批量替换</h2>
+      <p class="panel-desc">在线文本批量替换工具，支持多组查找→替换规则一键执行，可切换普通模式或正则表达式模式。适用于批量处理日志、代码、文档中的重复文本。</p>
+
+      <div class="form-label">🔧 替换规则</div>
+      <div id="rulesContainer">
+        <div class="rule-row" data-rule="0">
+          <input type="text" class="form-input find-inp" placeholder="查找文本">
+          <span>→</span>
+          <input type="text" class="form-input replace-inp" placeholder="替换为">
+          <label class="regex-toggle"><input type="checkbox" class="regex-cb"> 正则</label>
+          <button class="btn btn-sm btn-outline del-rule-btn" title="删除此行">✕</button>
+        </div>
+      </div>
+      <button class="btn btn-outline add-rule-btn" id="addRuleBtn">＋ 添加规则</button>
+
+      <div class="io-panels">
+        <div class="io-panel">
+          <div class="form-label">📥 输入文本</div>
+          <textarea class="form-input" id="inputText" rows="10" placeholder="粘贴或输入要处理的文本..."></textarea>
+        </div>
+        <div class="io-panel">
+          <div class="form-label">📤 输出结果</div>
+          <textarea class="form-input" id="outputText" rows="10" placeholder="替换结果将显示在这里..." readonly></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="replaceBtn">🔄 执行替换</button>
+        <button class="btn btn-outline" id="copyOutputBtn">📋 复制结果</button>
+        <button class="btn btn-outline" id="clearBtn">🗑 清空</button>
+        <span id="matchCount" style="font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center;"></span>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const rulesContainer = document.getElementById('rulesContainer');
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const matchCount = document.getElementById('matchCount');
+
+    function addRuleRow() {
+      const idx = rulesContainer.children.length;
+      const row = document.createElement('div');
+      row.className = 'rule-row';
+      row.dataset.rule = idx;
+      row.innerHTML = `
+        <input type="text" class="form-input find-inp" placeholder="查找文本">
+        <span>→</span>
+        <input type="text" class="form-input replace-inp" placeholder="替换为">
+        <label class="regex-toggle"><input type="checkbox" class="regex-cb"> 正则</label>
+        <button class="btn btn-sm btn-outline del-rule-btn" title="删除此行">✕</button>
+      `;
+      row.querySelector('.del-rule-btn').addEventListener('click', () => {
+        if (rulesContainer.children.length > 1) row.remove();
+      });
+      rulesContainer.appendChild(row);
+    }
+
+    document.getElementById('addRuleBtn').addEventListener('click', addRuleRow);
+
+    // Delete handler for initial row
+    rulesContainer.querySelector('.del-rule-btn').addEventListener('click', function() {
+      if (rulesContainer.children.length > 1) this.closest('.rule-row').remove();
+    });
+
+    function doReplace() {
+      let text = inputText.value;
+      if (!text) { outputText.value = ''; matchCount.textContent = ''; return; }
+
+      let totalMatches = 0;
+      const rows = rulesContainer.querySelectorAll('.rule-row');
+      rows.forEach(row => {
+        const findVal = row.querySelector('.find-inp').value;
+        if (!findVal) return;
+        const replaceVal = row.querySelector('.replace-inp').value;
+        const useRegex = row.querySelector('.regex-cb').checked;
+
+        if (useRegex) {
+          try {
+            const re = new RegExp(findVal, 'g');
+            const matches = (text.match(re) || []);
+            totalMatches += matches.length;
+            text = text.replace(re, replaceVal);
+          } catch (e) {
+            showToast('⚠️ 正则表达式错误：' + e.message);
+          }
+        } else {
+          const escaped = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const matches = (text.match(new RegExp(escaped, 'g')) || []);
+          totalMatches += matches.length;
+          text = text.split(findVal).join(replaceVal);
+        }
+      });
+
+      outputText.value = text;
+      matchCount.textContent = `共替换 ${totalMatches} 处`;
+    }
+
+    document.getElementById('replaceBtn').addEventListener('click', doReplace);
+
+    // Auto-replace on input
+    inputText.addEventListener('input', doReplace);
+    rulesContainer.addEventListener('input', doReplace);
+
+    document.getElementById('copyOutputBtn').addEventListener('click', () => {
+      if (!outputText.value) return;
+      navigator.clipboard.writeText(outputText.value).then(() => showToast('✅ 已复制结果'));
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      matchCount.textContent = '';
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: 'base64', i: '🔐', n: 'Base64 编解码' },
+      { h: 'regex-tester', i: '.*', n: '正则测试器' },
+      { h: 'password-generator', i: '🔑', n: '密码生成器' },
+      { h: 'timestamp', i: '⏰', n: '时间戳转换' },
+      { h: 'uuid-generator', i: '🆔', n: 'UUID 生成器' },
+      { h: 'random-picker', i: '🎯', n: '随机点名' },
+      { h: 'word-count', i: '📊', n: '字数统计' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>

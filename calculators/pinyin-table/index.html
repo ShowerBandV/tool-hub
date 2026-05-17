@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="汉语拼音字母表完整版，包含声母表、韵母表、整体认读音节及声调标注规则，适合小学生学习拼音和语文教学参考。">
+  <title>拼音字母表 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .py-section { margin-top: 20px; }
+    .py-section h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .py-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .py-chip { padding: 10px 16px; background: #fff; border: 2px solid var(--border);
+      border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: var(--transition); text-align: center; min-width: 60px; }
+    .py-chip:hover { border-color: var(--accent); background: #eef2ff; transform: scale(1.05); }
+    .py-chip:active { transform: scale(0.95); }
+    .tone-info { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
+      padding: 14px 18px; margin-top: 16px; font-size: 0.9rem; line-height: 1.8; }
+    .tone-info strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 拼音字母表
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🔤 拼音字母表</h2>
+      <p class="panel-desc">汉语拼音字母表完整版，包含声母表（23个）、韵母表（24个）、整体认读音节（16个）及声调标注规则。点击音节可听取发音，适合小学生学习拼音和教师备课参考。</p>
+
+      <div class="py-section">
+        <h3>🗣️ 声母表 <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);">（23个）</span></h3>
+        <div class="py-grid" id="shengmuGrid"></div>
+      </div>
+
+      <div class="py-section">
+        <h3>📢 韵母表 <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);">（24个）</span></h3>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">单韵母（6个）</div>
+        <div class="py-grid" id="danYunmuGrid"></div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin:12px 0 8px;">复韵母（9个）</div>
+        <div class="py-grid" id="fuYunmuGrid"></div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin:12px 0 8px;">前鼻韵母（5个）</div>
+        <div class="py-grid" id="qianBiyunmuGrid"></div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin:12px 0 8px;">后鼻韵母（4个）</div>
+        <div class="py-grid" id="houBiyunmuGrid"></div>
+      </div>
+
+      <div class="py-section">
+        <h3>📖 整体认读音节 <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);">（16个）</span></h3>
+        <div class="py-grid" id="zhengtiGrid"></div>
+      </div>
+
+      <div class="tone-info">
+        <strong>📌 声调规则：</strong><br>
+        一声（阴平）：<strong>ā ō ē ī ū ǖ</strong> — 高而平<br>
+        二声（阳平）：<strong>á ó é í ú ǘ</strong> — 由中升高<br>
+        三声（上声）：<strong>ǎ ǒ ě ǐ ǔ ǚ</strong> — 先降后升<br>
+        四声（去声）：<strong>à ò è ì ù ǜ</strong> — 由高降低<br>
+        <span style="color:var(--text-muted);">标调口诀：有a标a上，无a找o e，i u并列标在后。</span>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const shengmu = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
+    const danYunmu = ['a','o','e','i','u','ü'];
+    const fuYunmu = ['ai','ei','ui','ao','ou','iu','ie','üe','er'];
+    const qianBiyunmu = ['an','en','in','un','ün'];
+    const houBiyunmu = ['ang','eng','ing','ong'];
+    const zhengti = ['zhi','chi','shi','ri','zi','ci','si','yi','wu','yu','ye','yue','yuan','yin','yun','ying'];
+
+    function renderChips(arr, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = arr.map(py =>
+        `<span class="py-chip" data-py="${py}" title="点击听发音：${py}">${py}</span>`
+      ).join('');
+    }
+
+    renderChips(shengmu, 'shengmuGrid');
+    renderChips(danYunmu, 'danYunmuGrid');
+    renderChips(fuYunmu, 'fuYunmuGrid');
+    renderChips(qianBiyunmu, 'qianBiyunmuGrid');
+    renderChips(houBiyunmu, 'houBiyunmuGrid');
+    renderChips(zhengti, 'zhengtiGrid');
+
+    // Click to pronounce using Web Speech API
+    document.querySelectorAll('.py-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const py = chip.dataset.py;
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(py);
+          utter.lang = 'zh-CN';
+          utter.rate = 0.7;
+          speechSynthesis.cancel();
+          speechSynthesis.speak(utter);
+          // Flash effect
+          chip.style.background = '#eef2ff';
+          chip.style.borderColor = 'var(--accent)';
+          setTimeout(() => {
+            chip.style.background = '';
+            chip.style.borderColor = '';
+          }, 300);
+        }
+      });
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'length-converter', i: '📏', n: '长度换算' },
+      { h: 'weight-converter', i: '⚖️', n: '重量换算' },
+      { h: 'temperature-converter', i: '🌡️', n: '温度转换' },
+      { h: 'area-converter', i: '📐', n: '面积换算' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'rmb-convert', i: '💴', n: '人民币大小写' },
+      { h: 'kinship-calculator', i: '👨‍👩‍👧‍👦', n: '家庭称谓计算器' },
+      { h: 'grade-converter', i: '🔄', n: '成绩转换器' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>

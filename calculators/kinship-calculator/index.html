@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="家庭称谓计算器，通过叠加关系路径自动计算亲属称呼。点击爸爸、妈妈、哥哥、姐姐等按钮构建关系链，系统自动推算最终称谓。">
+  <title>家庭称谓计算器 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .path-display { display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      min-height: 56px; padding: 16px; background: var(--bg); border-radius: 14px;
+      margin-top: 8px; font-size: 1rem; }
+    .path-node { padding: 8px 14px; background: #eef2ff; border-radius: 20px;
+      font-weight: 700; color: var(--accent); }
+    .path-arrow { color: var(--text-muted); font-weight: 700; }
+    .rel-btn-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+    @media (max-width: 500px) { .rel-btn-grid { grid-template-columns: repeat(3, 1fr); } }
+    .rel-btn { padding: 14px 8px; border-radius: 14px; border: 2px solid var(--border);
+      background: #fff; cursor: pointer; font-size: 1rem; font-weight: 700;
+      transition: var(--transition); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .rel-btn:hover { border-color: var(--accent); background: #eef2ff; transform: translateY(-2px); }
+    .rel-btn .emoji { font-size: 1.5rem; }
+    .result-card { text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #eef2ff, #faf5ff);
+      border-radius: 20px; margin-top: 16px; }
+    .result-title { font-size: 2.5rem; font-weight: 800; }
+    .result-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .playful-msg { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 10px;
+      padding: 14px 18px; margin-top: 12px; font-size: 0.9rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> 家庭称谓计算器
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">👨‍👩‍👧‍👦 家庭称谓计算器</h2>
+      <p class="panel-desc">不知道怎么称呼某位亲戚？通过点击关系按钮，从"我"出发一步步叠加亲属关系，系统自动为你算出最终称谓。支持父子、兄弟、夫妻等关系的任意组合。</p>
+
+      <div class="form-label">🔗 从"我"出发的关系链</div>
+      <div class="path-display" id="pathDisplay">
+        <span style="color:var(--text-muted);">点击下方按钮构建关系链…</span>
+      </div>
+
+      <div class="rel-btn-grid">
+        <button class="rel-btn" data-rel="father"><span class="emoji">👨</span>爸爸</button>
+        <button class="rel-btn" data-rel="mother"><span class="emoji">👩</span>妈妈</button>
+        <button class="rel-btn" data-rel="elder_brother"><span class="emoji">🙋‍♂️</span>哥哥</button>
+        <button class="rel-btn" data-rel="elder_sister"><span class="emoji">🙋‍♀️</span>姐姐</button>
+        <button class="rel-btn" data-rel="younger_brother"><span class="emoji">👦</span>弟弟</button>
+        <button class="rel-btn" data-rel="younger_sister"><span class="emoji">👧</span>妹妹</button>
+        <button class="rel-btn" data-rel="son"><span class="emoji">🧒</span>儿子</button>
+        <button class="rel-btn" data-rel="daughter"><span class="emoji">👶</span>女儿</button>
+        <button class="rel-btn" data-rel="husband"><span class="emoji">🤵</span>丈夫</button>
+        <button class="rel-btn" data-rel="wife"><span class="emoji">👰</span>妻子</button>
+      </div>
+
+      <div class="result-card" id="resultCard">
+        <div class="result-title">🤔</div>
+        <div class="result-sub">还未开始计算，请点击上方按钮添加关系</div>
+      </div>
+
+      <div class="playful-msg" id="playfulMsg" style="display:none;"></div>
+
+      <div class="action-row">
+        <button class="btn btn-outline" id="undoBtn">↩ 撤销一步</button>
+        <button class="btn btn-outline" id="resetBtn">🔄 重新开始</button>
+        <button class="btn btn-outline" id="flipBtn">🔄 切换方向（我→TA / TA→我）</button>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;font-size:0.78rem;color:var(--text-muted);">
+        💡 提示：从"我"出发，比如"爸爸的哥哥"=伯父，"妈妈的妈妈"=外婆，"爸爸的弟弟的儿子"=堂弟。
+        链条越长越复杂，算不出来时会给出俏皮提示哦～
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const relLabels = {
+      father: '爸爸', mother: '妈妈',
+      elder_brother: '哥哥', elder_sister: '姐姐',
+      younger_brother: '弟弟', younger_sister: '妹妹',
+      son: '儿子', daughter: '女儿',
+      husband: '丈夫', wife: '妻子'
+    };
+
+    let path = [];
+    let direction = 'me_to_them'; // 'me_to_them' or 'them_to_me'
+
+    const pathDisplay = document.getElementById('pathDisplay');
+    const resultCard = document.getElementById('resultCard');
+    const playfulMsg = document.getElementById('playfulMsg');
+
+    // Kinship lookup tables (path → title)
+    // We store canonical paths (sorted/merged) → result
+    // Key format: comma-separated relation IDs
+
+    function getKinshipResult(relPath) {
+      if (relPath.length === 0) return { title: '我', sub: '这就是你自己呀～', playful: null };
+
+      const key = relPath.join(',');
+
+      // Comprehensive lookup for common cases
+      const lookup = {
+        // 1-hop
+        'father': { title: '爸爸', sub: '口语也叫"爸"、"父亲"', playful: null },
+        'mother': { title: '妈妈', sub: '口语也叫"妈"、"母亲"', playful: null },
+        'elder_brother': { title: '哥哥', sub: '同辈年长男性', playful: null },
+        'elder_sister': { title: '姐姐', sub: '同辈年长女性', playful: null },
+        'younger_brother': { title: '弟弟', sub: '同辈年幼男性', playful: null },
+        'younger_sister': { title: '妹妹', sub: '同辈年幼女性', playful: null },
+        'son': { title: '儿子', sub: '直系下一代男性', playful: null },
+        'daughter': { title: '女儿', sub: '直系下一代女性', playful: null },
+        'husband': { title: '丈夫', sub: '口语也叫"老公"', playful: null },
+        'wife': { title: '妻子', sub: '口语也叫"老婆"', playful: null },
+
+        // 2-hop from father
+        'father,father': { title: '爷爷', sub: '父亲的父亲，也叫"祖父"', playful: null },
+        'father,mother': { title: '奶奶', sub: '父亲的母亲，也叫"祖母"', playful: null },
+        'father,elder_brother': { title: '伯父', sub: '父亲的哥哥，也叫"伯伯"', playful: null },
+        'father,younger_brother': { title: '叔叔', sub: '父亲的弟弟', playful: null },
+        'father,elder_sister': { title: '姑妈', sub: '父亲的姐姐', playful: null },
+        'father,younger_sister': { title: '姑姑', sub: '父亲的妹妹', playful: null },
+
+        // 2-hop from mother
+        'mother,father': { title: '外公', sub: '母亲的父亲，也叫"姥爷"', playful: null },
+        'mother,mother': { title: '外婆', sub: '母亲的母亲，也叫"姥姥"', playful: null },
+        'mother,elder_brother': { title: '舅舅', sub: '母亲的哥哥', playful: null },
+        'mother,younger_brother': { title: '舅舅', sub: '母亲的弟弟', playful: null },
+        'mother,elder_sister': { title: '姨妈', sub: '母亲的姐姐', playful: null },
+        'mother,younger_sister': { title: '姨妈', sub: '母亲的妹妹，也叫"小姨"', playful: null },
+
+        // 2-hop siblings
+        'elder_brother,son': { title: '侄子', sub: '哥哥的儿子', playful: null },
+        'elder_brother,daughter': { title: '侄女', sub: '哥哥的女儿', playful: null },
+        'younger_brother,son': { title: '侄子', sub: '弟弟的儿子', playful: null },
+        'younger_brother,daughter': { title: '侄女', sub: '弟弟的女儿', playful: null },
+        'elder_sister,son': { title: '外甥', sub: '姐姐的儿子', playful: null },
+        'elder_sister,daughter': { title: '外甥女', sub: '姐姐的女儿', playful: null },
+        'younger_sister,son': { title: '外甥', sub: '妹妹的儿子', playful: null },
+        'younger_sister,daughter': { title: '外甥女', sub: '妹妹的女儿', playful: null },
+
+        // 2-hop: my child's ...
+        'son,son': { title: '孙子', sub: '儿子的儿子', playful: null },
+        'son,daughter': { title: '孙女', sub: '儿子的女儿', playful: null },
+        'daughter,son': { title: '外孙', sub: '女儿的儿子', playful: null },
+        'daughter,daughter': { title: '外孙女', sub: '女儿的女儿', playful: null },
+
+        // 3-hop: father's side
+        'father,father,father': { title: '曾祖父', sub: '爷爷的爸爸，也叫"太爷爷"', playful: null },
+        'father,father,mother': { title: '曾祖母', sub: '爷爷的妈妈，也叫"太奶奶"', playful: null },
+        'father,elder_brother,son': { title: '堂兄/弟', sub: '伯父的儿子（比你大的叫堂哥，小的叫堂弟）', playful: null },
+        'father,elder_brother,daughter': { title: '堂姐/妹', sub: '伯父的女儿（比你大的叫堂姐，小的叫堂妹）', playful: null },
+        'father,younger_brother,son': { title: '堂兄/弟', sub: '叔叔的儿子', playful: null },
+        'father,younger_brother,daughter': { title: '堂姐/妹', sub: '叔叔的女儿', playful: null },
+
+        // 3-hop: mother's side
+        'mother,elder_brother,son': { title: '表兄/弟', sub: '舅舅的儿子（比你大的叫表哥，小的叫表弟）', playful: null },
+        'mother,elder_brother,daughter': { title: '表姐/妹', sub: '舅舅的女儿', playful: null },
+        'mother,younger_brother,son': { title: '表兄/弟', sub: '舅舅的儿子', playful: null },
+        'mother,younger_brother,daughter': { title: '表姐/妹', sub: '舅舅的女儿', playful: null },
+        'mother,elder_sister,son': { title: '表兄/弟', sub: '姨妈的儿子', playful: null },
+        'mother,elder_sister,daughter': { title: '表姐/妹', sub: '姨妈的女儿', playful: null },
+        'mother,younger_sister,son': { title: '表兄/弟', sub: '姨妈的儿子', playful: null },
+        'mother,younger_sister,daughter': { title: '表姐/妹', sub: '姨妈的女儿', playful: null },
+        'mother,mother,mother': { title: '外曾祖母', sub: '外婆的妈妈，也叫"太姥姥"', playful: null },
+        'mother,mother,father': { title: '外曾祖父', sub: '外婆的爸爸，也叫"太姥爷"', playful: null },
+
+        // 3-hop: parent's sibling's child
+        'father,elder_sister,son': { title: '表兄/弟', sub: '姑妈的儿子', playful: null },
+        'father,younger_sister,son': { title: '表兄/弟', sub: '姑姑的儿子', playful: null },
+        'father,elder_sister,daughter': { title: '表姐/妹', sub: '姑妈的女儿', playful: null },
+        'father,younger_sister,daughter': { title: '表姐/妹', sub: '姑姑的女儿', playful: null },
+
+        // Husband/wife relations
+        'wife,father': { title: '岳父', sub: '妻子的父亲，也叫"老丈人"', playful: null },
+        'wife,mother': { title: '岳母', sub: '妻子的母亲，也叫"丈母娘"', playful: null },
+        'wife,elder_brother': { title: '大舅子', sub: '妻子的哥哥', playful: null },
+        'wife,younger_brother': { title: '小舅子', sub: '妻子的弟弟', playful: null },
+        'husband,father': { title: '公公', sub: '丈夫的父亲', playful: null },
+        'husband,mother': { title: '婆婆', sub: '丈夫的母亲', playful: null },
+        'husband,elder_sister': { title: '大姑子', sub: '丈夫的姐姐', playful: null },
+        'husband,younger_sister': { title: '小姑子', sub: '丈夫的妹妹', playful: null },
+
+        // My sibling's spouse
+        'elder_brother,wife': { title: '嫂子', sub: '哥哥的妻子', playful: null },
+        'younger_brother,wife': { title: '弟媳', sub: '弟弟的妻子，也叫"弟妹"', playful: null },
+        'elder_sister,husband': { title: '姐夫', sub: '姐姐的丈夫', playful: null },
+        'younger_sister,husband': { title: '妹夫', sub: '妹妹的丈夫', playful: null },
+
+        // Reverse: parent's parent's other child
+        'father,father,elder_brother': { title: '伯祖父', sub: '爷爷的哥哥', playful: null },
+        'father,father,younger_brother': { title: '叔祖父', sub: '爷爷的弟弟', playful: null },
+        'mother,father,elder_brother': { title: '舅姥爷', sub: '外公的哥哥', playful: null },
+        'mother,father,younger_brother': { title: '舅姥爷', sub: '外公的弟弟', playful: null },
+      };
+
+      if (lookup[key]) return lookup[key];
+
+      // For unsupported paths, try to give a reasonable guess
+      const playfulMessages = [
+        '🤔 这个关系绕得有点远，微信家族群里都没人这么称呼～',
+        '🫠 好复杂的亲戚关系！建议直接叫"叔叔/阿姨"保平安…',
+        '😅 这关系链条太长了，过年走亲戚怕是走不到这一步…',
+        '🙈 计算器宕机了！这么远的关系，见面喊声"你好"就行…',
+        '👀 这要是在古代，你得行大礼才够得着这个关系～',
+        '🎭 亲戚关系计算器已经烧脑了，建议开启"微笑模式"蒙混过关！',
+        '🧬 DNA相似度可能已经低于1%了，就当是"远房亲戚"吧～',
+        '📏 关系链条长度已超过家谱厚度，建议先画个树状图…',
+      ];
+
+      const msg = playfulMessages[Math.floor(Math.random() * playfulMessages.length)];
+      return {
+        title: '🤷 算不出来啦',
+        sub: '关系链条太长或太复杂，暂时无法计算。试试更短的关系链吧！',
+        playful: msg
+      };
+    }
+
+    function renderPath() {
+      if (path.length === 0) {
+        pathDisplay.innerHTML = '<span style="color:var(--text-muted);">点击下方按钮构建关系链…</span>';
+      } else {
+        const parts = ['<span class="path-node">👤 我</span>'];
+        path.forEach(r => {
+          parts.push('<span class="path-arrow">›</span>');
+          parts.push(`<span class="path-node">${relLabels[r]}</span>`);
+        });
+        if (direction === 'them_to_me') {
+          parts.push('<span style="font-size:0.78rem;color:var(--text-muted);margin-left:4px;">（TA这样叫我）</span>');
+        } else {
+          parts.push('<span style="font-size:0.78rem;color:var(--text-muted);margin-left:4px;">（我这样叫TA）</span>');
+        }
+        pathDisplay.innerHTML = parts.join('');
+      }
+    }
+
+    function calculate() {
+      const result = getKinshipResult(path);
+      resultCard.querySelector('.result-title').textContent = result.title;
+      resultCard.querySelector('.result-sub').textContent = result.sub;
+
+      if (result.playful) {
+        playfulMsg.style.display = 'block';
+        playfulMsg.textContent = result.playful;
+      } else {
+        playfulMsg.style.display = 'none';
+      }
+    }
+
+    function update() {
+      renderPath();
+      calculate();
+    }
+
+    // Button clicks
+    document.querySelectorAll('.rel-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rel = btn.dataset.rel;
+        path.push(rel);
+        // Limit path length to prevent too much complexity
+        if (path.length > 6) {
+          path.pop();
+          showToast('😅 关系链条太长啦，最多6步哦～');
+          return;
+        }
+        update();
+      });
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', () => {
+      path.pop();
+      update();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      path = [];
+      direction = 'me_to_them';
+      document.getElementById('flipBtn').textContent = '🔄 切换方向（我→TA / TA→我）';
+      update();
+    });
+
+    document.getElementById('flipBtn').addEventListener('click', () => {
+      direction = direction === 'me_to_them' ? 'them_to_me' : 'me_to_them';
+      document.getElementById('flipBtn').textContent = direction === 'me_to_them'
+        ? '🔄 切换方向（我→TA / TA→我）'
+        : '🔄 切换方向（TA→我 / 我→TA）';
+      update();
+    });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'length-converter', i: '📏', n: '长度换算' },
+      { h: 'weight-converter', i: '⚖️', n: '重量换算' },
+      { h: 'temperature-converter', i: '🌡️', n: '温度转换' },
+      { h: 'area-converter', i: '📐', n: '面积换算' },
+      { h: 'zodiac-lookup', i: '🐲', n: '生肖查询' },
+      { h: 'rmb-convert', i: '💴', n: '人民币大小写' },
+      { h: 'pinyin-table', i: '🔤', n: '拼音字母表' },
+      { h: 'grade-converter', i: '🔄', n: '成绩转换器' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+
+    update();
+  </script>
+</body>
+</html>

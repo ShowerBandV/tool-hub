@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="在线随机点名工具，适用于课堂点名、抽奖、分组等场景。粘贴名单后点击开始，名字滚动抽取，支持去重、重新点名、清空名单等功能。">
+  <title>随机点名 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .picker-display { background: var(--bg); border-radius: 20px; padding: 40px 20px;
+      text-align: center; margin-top: 12px; min-height: 160px; display: flex;
+      align-items: center; justify-content: center; flex-direction: column;
+      position: relative; overflow: hidden; }
+    .name-display { font-size: 3rem; font-weight: 800; transition: transform 0.1s; }
+    .name-display.rolling { animation: nameShuffle 0.08s steps(1) infinite; }
+    @keyframes nameShuffle { 0% { transform: translateY(-5px); } 100% { transform: translateY(5px); } }
+    .name-display.picked { color: var(--accent); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .history-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .history-tag { background: #eef2ff; color: var(--accent); padding: 4px 12px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 600; }
+    .count-badge { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 随机点名
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🎯 随机点名</h2>
+      <p class="panel-desc">在线随机点名工具，适用于课堂点名、抽奖、分组等场景。每行一个名字粘贴到输入框，点击开始滚动抽取，支持去重模式和重新点名。</p>
+
+      <div class="form-group">
+        <label class="form-label">📝 名单（每行一个名字）</label>
+        <textarea class="form-input" id="nameList" rows="6" placeholder="张三&#10;李四&#10;王五&#10;赵六&#10;钱七&#10;孙八"></textarea>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="checkbox" id="noRepeat" checked> 不重复点名
+        </label>
+        <span class="count-badge" id="remainCount"></span>
+      </div>
+
+      <div class="picker-display" id="pickerDisplay">
+        <div class="name-display" id="nameDisplay">🎯</div>
+        <div class="count-badge" id="pickHint">点击「开始点名」随机抽取</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="startBtn">🎲 开始点名</button>
+        <button class="btn btn-outline" id="stopBtn" disabled>⏹ 停！</button>
+        <button class="btn btn-outline" id="resetBtn">🔄 重置已点</button>
+        <button class="btn btn-outline" id="clearBtn">🗑 清空名单</button>
+      </div>
+
+      <div class="history-tags" id="historyTags"></div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const nameList = document.getElementById('nameList');
+    const nameDisplay = document.getElementById('nameDisplay');
+    const pickHint = document.getElementById('pickHint');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const noRepeat = document.getElementById('noRepeat');
+    const remainCount = document.getElementById('remainCount');
+    const historyTags = document.getElementById('historyTags');
+
+    let rolling = false;
+    let rollTimer = null;
+    let pickedHistory = [];
+    let currentNames = [];
+
+    function getNames() {
+      return nameList.value.split(/[\n,，、]+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    function updateRemain() {
+      const all = getNames();
+      if (noRepeat.checked) {
+        const avail = all.filter(n => !pickedHistory.includes(n));
+        remainCount.textContent = `剩余 ${avail.length}/${all.length} 人`;
+      } else {
+        remainCount.textContent = `共 ${all.length} 人`;
+      }
+    }
+
+    function startRoll() {
+      currentNames = getNames();
+      if (currentNames.length === 0) {
+        showToast('⚠️ 请先输入名单');
+        return;
+      }
+      if (noRepeat.checked) {
+        const avail = currentNames.filter(n => !pickedHistory.includes(n));
+        if (avail.length === 0) {
+          showToast('🎉 所有人都点过啦！请重置已点名单');
+          return;
+        }
+      }
+      rolling = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      nameDisplay.classList.add('rolling');
+      nameDisplay.classList.remove('picked');
+      pickHint.textContent = '抽取中……';
+      shuffle();
+    }
+
+    function shuffle() {
+      if (!rolling) return;
+      const avail = noRepeat.checked
+        ? currentNames.filter(n => !pickedHistory.includes(n))
+        : currentNames;
+      if (avail.length === 0) {
+        stopRoll();
+        return;
+      }
+      const pick = avail[Math.floor(Math.random() * avail.length)];
+      nameDisplay.textContent = pick;
+      rollTimer = setTimeout(shuffle, 60);
+    }
+
+    function stopRoll() {
+      rolling = false;
+      clearTimeout(rollTimer);
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      nameDisplay.classList.remove('rolling');
+      nameDisplay.classList.add('picked');
+      const picked = nameDisplay.textContent;
+      if (picked && picked !== '🎯') {
+        pickedHistory.push(picked);
+        pickHint.textContent = `🎉 抽中了：${picked}`;
+        renderHistory();
+      }
+      updateRemain();
+    }
+
+    function resetHistory() {
+      pickedHistory = [];
+      historyTags.innerHTML = '';
+      nameDisplay.textContent = '🎯';
+      nameDisplay.classList.remove('picked');
+      pickHint.textContent = '点击「开始点名」随机抽取';
+      updateRemain();
+    }
+
+    function clearAll() {
+      nameList.value = '';
+      resetHistory();
+    }
+
+    function renderHistory() {
+      historyTags.innerHTML = pickedHistory.map((n, i) =>
+        `<span class="history-tag">${i + 1}. ${n}</span>`
+      ).join('');
+    }
+
+    startBtn.addEventListener('click', startRoll);
+    stopBtn.addEventListener('click', stopRoll);
+    resetBtn.addEventListener('click', resetHistory);
+    clearBtn.addEventListener('click', clearAll);
+    nameList.addEventListener('input', updateRemain);
+    noRepeat.addEventListener('change', updateRemain);
+
+    // Init with sample names
+    nameList.value = '张三\n李四\n王五\n赵六\n钱七\n孙八\n周九\n吴十';
+    updateRemain();
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: 'json-formatter', i: '{ }', n: 'JSON 格式化' },
+      { h: 'base64', i: '🔐', n: 'Base64 编解码' },
+      { h: 'regex-tester', i: '.*', n: '正则测试器' },
+      { h: 'password-generator', i: '🔑', n: '密码生成器' },
+      { h: 'timestamp', i: '⏰', n: '时间戳转换' },
+      { h: 'uuid-generator', i: '🆔', n: 'UUID 生成器' },
+      { h: 'hash', i: '#', n: '哈希计算' },
+      { h: 'batch-text-replace', i: '📝', n: '文本批量替换' },
+    ].map(t => `<a href="../${t.h}/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>${t.i}</span> ${t.n}</a>`).join('');
+  </script>
+</body>
+</html>
