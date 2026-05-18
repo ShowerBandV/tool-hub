@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' blob:; frame-src https://googleads.g.doubleclick.net; media-src 'self' blob:;">
+  <meta name="description" content="视频播放器 — 支持 MP4 / WebM / M3U8 / MPD (DASH) 多格式播放，支持本地文件与拖拽播放，数据完全在浏览器端处理。">
+  <title>视频播放器 · 视频盒子</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .player-card {
+      padding: 20px 24px;
+    }
+    .url-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .url-input-row .form-input {
+      flex: 1;
+      min-width: 200px;
+    }
+    .file-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .video-wrapper {
+      width: 100%;
+      background: #000;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    video {
+      width: 100%;
+      display: block;
+      max-height: 520px;
+      background: #000;
+    }
+    .info-bar {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .error-msg {
+      color: var(--danger);
+      margin-top: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      min-height: 22px;
+    }
+    .drop-hint {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(79,70,229,0.12);
+      border: 3px dashed var(--accent);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .drop-hint.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">🧰 首页</a> <span class="sep">›</span> 🎬 视频盒子
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">🎬</div>
+        <h1 class="app-title">视频播放器</h1>
+      </div>
+      <p class="app-subtitle">Video Player · 支持 MP4 / WebM / M3U8 / MPD (DASH) 多格式播放，支持本地文件与拖拽</p>
+    </header>
+
+    <div class="card player-card">
+      <div class="input-row url-input-row">
+        <input type="text" id="urlInput" class="form-input" placeholder="输入视频链接 (mp4 / m3u8 / mpd …)">
+        <button class="btn btn-primary" onclick="playUrl()">▶ 播放链接</button>
+        <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">📁 本地文件</button>
+        <input type="file" id="fileInput" accept="video/*,.m3u8,.mpd" style="display: none;" onchange="playFile(this.files[0])">
+      </div>
+      <div class="file-hint">也支持直接拖拽视频文件到下方播放区域</div>
+
+      <div class="video-wrapper" id="videoWrapper" style="position:relative;">
+        <video id="video" controls crossorigin="anonymous" playsinline></video>
+        <div class="drop-hint" id="dropHint">📥 松开鼠标播放文件</div>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="info-bar">MP4 / WebM / Ogg / M3U8 / MPD (DASH) ｜ 数据完全在浏览器端处理，不上传服务器</div>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+
+  <script src="../assets/lib/hls.min.js"></script>
+  <script src="../assets/lib/dash.all.min.js"></script>
+  <script src="../assets/js/common.js"></script>
+
+  <script>
+    const video = document.getElementById('video');
+    const urlInput = document.getElementById('urlInput');
+    const errorMsg = document.getElementById('errorMsg');
+    const dropHint = document.getElementById('dropHint');
+    const videoWrapper = document.getElementById('videoWrapper');
+
+    let hls = null;
+    let dashPlayer = null;
+
+    function resetPlayer() {
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+      if (dashPlayer) {
+        dashPlayer.reset();
+        dashPlayer = null;
+      }
+      video.src = '';
+      video.removeAttribute('src');
+      errorMsg.textContent = '';
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+    }
+
+    function playUrl() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        showError('请输入视频链接');
+        shakeElement(urlInput);
+        return;
+      }
+      resetPlayer();
+      loadVideo(url);
+    }
+
+    function loadVideo(source) {
+      // M3U8
+      if (source.endsWith('.m3u8') || source.includes('.m3u8?')) {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          hls = new Hls();
+          hls.loadSource(source);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+          });
+          hls.on(Hls.Events.ERROR, function(event, data) {
+            if (data.fatal) {
+              showError('M3U8 播放错误: ' + data.type);
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = source;
+          video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+        } else {
+          showError('当前浏览器不支持播放 M3U8 格式');
+        }
+        return;
+      }
+
+      // MPD (DASH)
+      if (source.endsWith('.mpd') || source.includes('.mpd?')) {
+        if (typeof dashjs !== 'undefined') {
+          dashPlayer = dashjs.MediaPlayer().create();
+          dashPlayer.initialize(video, source, true);
+          video.play().catch(() => {});
+        } else {
+          showError('当前浏览器不支持播放 MPD 格式');
+        }
+        return;
+      }
+
+      // 其他格式
+      video.src = source;
+      video.play().catch(() => {});
+    }
+
+    function playFile(file) {
+      if (!file) return;
+      resetPlayer();
+      const fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith('.m3u8')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const content = e.target.result;
+          const blob = new Blob([content], { type: 'application/vnd.apple.mpegurl' });
+          const blobUrl = URL.createObjectURL(blob);
+          loadVideo(blobUrl);
+          showError('⚠ 本地 M3U8 中的切片链接可能无法访问（需绝对路径）');
+        };
+        reader.readAsText(file);
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      loadVideo(url);
+    }
+
+    // 拖拽支持
+    videoWrapper.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropHint.classList.add('show');
+    });
+    videoWrapper.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      dropHint.classList.remove('show');
+    });
+    videoWrapper.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropHint.classList.remove('show');
+      const file = e.dataTransfer.files[0];
+      if (file) playFile(file);
+    });
+  </script>
+</body>
+</html>
