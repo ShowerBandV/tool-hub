@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="BMAD Method 深度介绍 — 一套提示词驱动的 AI 团队，让一个人拥有整个敏捷团队的力量。21 个专业代理、50+ 工作流、完整敏捷流程。">
+  <title>BMAD Method · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article h4 { font-size: 0.95rem; margin: 16px 0 6px; }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    .article table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+    .article table th, .article table td { padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+    .article table th { background: #f8fafd; font-weight: 700; font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .article table tr:nth-child(even) td { background: #fafbfc; }
+    .article strong { color: var(--text); }
+    .article blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 12px 0; background: var(--accent-light); border-radius: 0 var(--radius-xs) var(--radius-xs) 0; color: var(--text-secondary); font-size: 0.9rem; }
+    .article .highlight-box { background: var(--accent-light); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 20px; margin: 14px 0; }
+    .article .checklist { list-style: none; margin-left: 0; }
+    .article .checklist li { padding: 2px 0; }
+    .article .critique-box { background: var(--warning-light); border: 1px solid var(--warning-border); border-radius: var(--radius-sm); padding: 14px 20px; margin: 10px 0; }
+    .article .critique-box h4 { margin: 0 0 4px; color: #92400e; }
+    @media (max-width: 768px) {
+      .article { padding: 16px 14px; }
+      .article table { font-size: 0.75rem; }
+      .article table th, .article table td { padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      🤖 BMAD Method
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">🤖</div>
+        <h1 class="app-title">BMAD Method</h1>
+      </div>
+      <p class="app-subtitle">一套提示词，让你一个人顶一个敏捷团队 — Breakthrough Method of Agile AI-Driven Development</p>
+    </header>
+
+    <div class="article">
+      <blockquote>如果你是一个人开发者、或者只有两三个人的迷你团队，这篇文章可能会颠覆你对"组建开发团队"这件事的认知。</blockquote>
+
+      <h2>你做产品时，是不是也遇到过这种困境？</h2>
+      <p>在软件开发的世界里，敏捷开发方法已经成为主流。但是，组建一个完整的敏捷团队——产品经理、架构师、开发人员、测试人员、UX 设计师、Scrum Master——对于个人开发者或小团队来说，几乎是不可能完成的任务。</p>
+      <p>雇不起这么多人，就只能自己一个人身兼数职。但问题是：</p>
+      <ul>
+        <li>❌ 在需求分析、产品规划、架构设计、编码实现之间反复横跳，思维被切割成碎片，效率反而更低</li>
+        <li>❌ 没有产品经理写 PRD，需求全靠拍脑袋，做着做着就偏了</li>
+        <li>❌ 没有架构师把关，技术债越积越多</li>
+        <li>❌ 没有 QA 系统测试，上线后 bug 不断</li>
+        <li>❌ 文档总是滞后于实现，甚至根本不写，下次接手一头雾水</li>
+      </ul>
+      <p>这些痛点，正是 BMAD Method 要解决的。</p>
+
+      <h2>BMAD Method 是什么？</h2>
+      <p><strong>BMAD Method</strong>，全称 <strong>Breakthrough Method of Agile AI-Driven Development</strong>（突破性敏捷 AI 驱动开发方法），也有解读为 <strong>Build More, Architect Dreams</strong>（多构建，架构梦想），是一个开源的 AI 驱动的敏捷开发框架。</p>
+      <p>它的核心思路非常直接：<strong>用专门的 AI 代理来模拟一个完整的敏捷开发团队</strong>。换句话说，你在 Claude Code 里跟 AI 对话，相当于同时拥有了分析师、产品经理、架构师、UX 设计师、开发、测试和 Scrum Master 的协作支持。</p>
+
+      <div class="highlight-box">
+        <p style="margin:0;text-align:center;font-weight:700;">一套提示词驱动的 AI 团队，让一个人拥有整个敏捷团队的力量。</p>
+      </div>
+
+      <p>该框架 100% 开源（MIT 协议），通过一行命令即可安装：</p>
+      <pre><code>npx bmad-method install</code></pre>
+      <p>这行命令会在你的项目中安装框架，自动配置好所有 AI 代理角色和模板文件。</p>
+
+      <h2>你的"AI 团队"都有哪些成员？</h2>
+      <p>BMAD Method 定义了一套完整的角色体系，每个 AI 代理都有专属的名字、职责和交付物。这不是简单的"换个人设跟 AI 聊天"，而是每个角色都有严格的<strong>角色卡（persona）</strong>、<strong>任务清单</strong>、<strong>模板文件</strong>和<strong>检查清单</strong>。</p>
+      <p>目前主版本包含 <strong>21 个专业代理</strong>和 <strong>50+ 引导式工作流</strong>。核心角色如下：</p>
+
+      <table>
+        <tr><th>角色</th><th>代理名称</th><th>职责</th></tr>
+        <tr><td>🕵️ 业务分析师</td><td>Wendy</td><td>项目发现、需求收集、生成项目简报</td></tr>
+        <tr><td>📋 产品经理</td><td>Sarah</td><td>PRD 创建、功能优先级排序、产品路线图</td></tr>
+        <tr><td>🏗️ 技术架构师</td><td>Marcus</td><td>系统架构设计、技术栈选择、集成规划</td></tr>
+        <tr><td>🎨 设计架构师</td><td>Alex</td><td>UI/UX 规范、前端架构、组件库规划</td></tr>
+        <tr><td>👑 产品负责人</td><td>Jordan</td><td>验收标准定义、主验证报告</td></tr>
+        <tr><td>🏃 Scrum Master</td><td>Casey</td><td>故事准备、Sprint 规划、开发工作流管理</td></tr>
+        <tr><td>💻 开发人员</td><td>Taylor</td><td>故事实现、代码生成、测试与验证</td></tr>
+        <tr><td>🧪 QA 专家</td><td>Quinn</td><td>代码审查、测试设计、质量门控</td></tr>
+        <tr><td>🎯 UX 专家</td><td>Sally</td><td>前端规格说明、UI 提示生成</td></tr>
+      </table>
+
+      <p>以及 <strong>BMAD Orchestrator</strong>——负责协调所有代理、按需切换角色的"总指挥"。</p>
+
+      <h2>BMAD 是怎么工作的？——核心工作流详解</h2>
+      <p>BMAD Method 严格遵循敏捷方法论的完整流程，按四个阶段推进。</p>
+
+      <h3>第一阶段：分析（Analyst）</h3>
+      <p><strong>启动角色：分析师 Wendy</strong></p>
+      <p>在 Claude Code 中输入 <code>/analyst</code> 命令，AI 会切换为分析师角色，与你进行深度头脑风暴对话。它会系统性地探讨：</p>
+      <ul>
+        <li>项目背景和要解决的问题</li>
+        <li>目标用户画像</li>
+        <li>核心需求和业务价值</li>
+        <li>技术挑战和潜在风险</li>
+      </ul>
+      <p>分析师内置了 <strong>150+ 种创意技术</strong>（brainstorming 工作流），能够从你碎片化的描述中提取关键信息，识别潜在需求。输出成果是一份完整的<strong>项目简报</strong>。</p>
+
+      <h3>第二阶段：规划（PM）</h3>
+      <p><strong>启动角色：产品经理 Sarah</strong></p>
+      <p>使用 <code>/pm</code> 命令呼唤产品经理。Sarah 会基于项目简报进行深度分析，自动生成结构化的 <strong>PRD（产品需求文档）</strong>，包含：</p>
+      <ul>
+        <li>核心概念与目标用户</li>
+        <li>MVP 范围定义</li>
+        <li>功能优先级排序</li>
+        <li>非功能性需求（NFRs）</li>
+        <li>UX 设计目标</li>
+        <li>产品路线图</li>
+      </ul>
+      <p>BMAD Method 会<strong>自动检测项目类型</strong>（Web 应用、移动应用、游戏等）并调整文档结构以适应不同领域。</p>
+
+      <h3>第三阶段：架构（Architecture）</h3>
+      <p><strong>启动角色：架构师 Marcus + 设计架构师 Alex</strong></p>
+      <p>使用 <code>/architect</code> 命令启动架构设计。Marcus 基于 PRD 生成完整的<strong>系统架构文档</strong>，包括技术栈推荐、数据库设计、API 结构、集成规划等。</p>
+      <p>对于中大型项目，系统会自动执行 <strong>solutioning-gate-check</strong>（方案门控检查）工作流，验证架构设计与需求文档的一致性，替代传统开发中的架构评审会议。</p>
+      <p>如果需要 UI/UX 设计，可以使用 UX 专家 Sally（<code>/ux-expert</code>）生成前端规格说明文档，包括设计 token、组件状态定义、用户流程等。</p>
+
+      <h3>第四阶段：实施（Implementation）</h3>
+      <p><strong>启动角色：Scrum Master Casey + 开发 Taylor + QA Quinn</strong></p>
+      <p>实施阶段是一个持续的迭代循环：</p>
+      <ol>
+        <li><strong>SM 创建故事</strong>：<code>/sm</code> 命令启动 Scrum Master，基于 PRD 和架构文档，创建下一个待开发的用户故事，定义验收标准和故事点数</li>
+        <li><strong>DEV 实现故事</strong>：<code>/dev</code> 命令启动开发者，接收故事后进行编码实现、单元测试、集成测试</li>
+        <li><strong>QA 代码审查</strong>：开发完成后，系统自动触发 <code>code-review</code> 工作流进行质量检查</li>
+        <li><strong>循环迭代</strong>：SM 创建下一个故事 → DEV 实现 → QA 审查 → 下一个故事……直到项目完成</li>
+      </ol>
+
+      <h3>重要特性：Party Mode（派对模式）</h3>
+      <p>这不是普通的串行工作流。BMAD Method 支持 <strong>Party Mode</strong>——你可以<strong>同时激活多个 AI 代理</strong>进入同一会话，让它们像真实团队一样现场讨论、互相质疑、共同决策。</p>
+      <p>比如你在架构设计上犹豫不决时，可以一次性拉入 PM（需求视角）、Architect（技术视角）、QA（质量视角）、PO（业务价值视角）——四个角色同时给你建议，不同角度碰撞出的答案远比单一视角要全面。</p>
+
+      <h2>BMAD 生态有多丰富？——主流实现与工具矩阵</h2>
+      <p>BMAD Method 不是一个孤立的项目，围绕它已经形成了丰富的工具生态：</p>
+
+      <table>
+        <tr><th>工具/模块</th><th>定位</th><th>核心特色</th></tr>
+        <tr><td><strong>BMAD Method（核心）</strong></td><td>基础框架</td><td>21 个代理、50+ 工作流、完整敏捷流程</td></tr>
+        <tr><td><strong>BMAD-HARDENED</strong></td><td>安全加固分支</td><td>新增 3 个安全代理 + 安全审查工作流</td></tr>
+        <tr><td><strong>BMAD-Speckit-SDD-Flow</strong></td><td>规范驱动整合版</td><td>BMAD + Spec-Kit，五层架构 + 关键审计员</td></tr>
+        <tr><td><strong>bmad-workflow CLI</strong></td><td>自动化引擎</td><td>一行命令跑通 PRD→史诗→故事→开发→QA</td></tr>
+        <tr><td><strong>BMAD-Harmony</strong></td><td>自主开发插件</td><td>TDD + 可视化 QA + "睡着也能发版"循环</td></tr>
+        <tr><td><strong>bmad-skills</strong></td><td>自然对话版</td><td>无需命令切换，纯对话式驱动</td></tr>
+      </table>
+
+      <h3>BMAD-HARDENED（安全加固社区分支）</h3>
+      <ul>
+        <li><strong>3 个新安全代理</strong>：网络安全专家 Nyx（漏洞分析、OWASP、CVE 跟踪）、安全架构师 Bastion（STRIDE/DREAD 威胁建模、零信任架构）、技术天才 Zero（前沿技术监控）</li>
+        <li><strong>24 个通用安全数据文件</strong>：覆盖 11 种攻击模式（LLM 注入、供应链攻击、权限提升等）和 10 种防御模式（加密、认证、OS 隔离、审计日志等）</li>
+        <li><strong>安全审查工作流</strong>：在实施阶段前进行全面的安全审计</li>
+      </ul>
+
+      <h3>BMAD-Speckit-SDD-Flow（规范驱动开发整合版）</h3>
+      <ul>
+        <li><strong>五层架构</strong>：产品简报 → PRD → 架构 → Epic/Story → Speckit specify/plan/GAPS/tasks → TDD 实现 → PR + 人工审查</li>
+        <li><strong>强制审计循环</strong>：每个阶段都必须通过代码审查才能进入下一阶段</li>
+        <li><strong>关键审计员</strong>：独立挑战者角色，在 Party Mode 中占比 > 60%</li>
+        <li><strong>评分系统</strong>：多阶段加权评分，一票否决制，AI Coach 诊断</li>
+      </ul>
+
+      <h3>bmad-workflow CLI（一键自动化引擎）</h3>
+      <ul>
+        <li><strong>一条命令跑完整流程</strong>：<code>bmad-workflow workflow PRD-my-feature.md</code>，从 PRD 到可运行代码一气呵成</li>
+        <li><strong>Decompose 命令</strong>：将大目标分解为依赖管理的任务图</li>
+        <li><strong>流水线执行</strong>：故事创建和开发并发执行，比串行快 44%</li>
+        <li><strong>多提供商支持</strong>：Claude 和 Gemini 双 AI 提供商</li>
+      </ul>
+
+      <h3>BMAD-Harmony（"睡着也能发版"）</h3>
+      <ul>
+        <li><strong>Ralph Wiggum 无限循环模式</strong>：自动选取下一个 feature → 实现 → 跑测试 → 可视化 QA → Git commit → 下一个……真正实现"睡觉时也能发版"</li>
+        <li><strong>结构化状态管理</strong>：JSON 文件跟踪所有 feature 和 bug 状态，即使上下文窗口衰退也不丢失进度</li>
+        <li><strong>原子化 Feature 周期</strong>：每次只处理一个 feature，强制 Git commit</li>
+      </ul>
+
+      <h3>bmad-skills（最简体验版）</h3>
+      <p>如果你觉得命令太多太复杂，bmad-skills 是最简体验版。不需要记任何命令，只需要像平时一样跟 AI 对话：</p>
+      <p><em>"我想做一个预算追踪 App"</em> → Claude（分析师）进行头脑风暴 → <em>"帮我写个 PRD"</em> → Claude（PM）自动生成 → <em>"怎么实现？"</em> → Claude（架构师）生成架构文档 → <em>"拆成开发故事"</em> → Claude（SM）生成 12 个带验收标准的开发故事 → <em>"实现故事 1"</em> → Claude（DEV）自动写代码 + 测试</p>
+      <p>整个过程通过自然对话驱动，无需手动切换命令。</p>
+
+      <h2>争议与批评：BMAD 并不是银弹</h2>
+
+      <div class="critique-box">
+        <h4>批评一："新型瀑布流"——先规划，再实施，水多了加面？</h4>
+        <p style="margin:0;">这是最核心的质疑。BMAD 的主流流程是"先规划，再实施"——在规划阶段把 PRD、架构、故事全部生成完，再进入开发。这在结构上非常像<strong>经典瀑布模型</strong>，只是把文档生成工作交给了 AI。批评者的论点是：一个通过反复协作和实际实现中浮现出来的领域模型，能捕捉到那些任何前期访谈流程都无法可靠发现的细微洞见。</p>
+      </div>
+
+      <div class="critique-box">
+        <h4>批评二："花在 babysitting AI 上的时间，还不如自己写"</h4>
+        <p style="margin:0;">一位被公司强制推广 BMAD 的工程师的真实体验："我的工作一直在强推 BMAD Method 给我们软件工程师……虽然我同意，使用那些提示词、脚手架和大量 babysitting，你可以得到相当好的结果——但它花的时间比直接自己写代码还要多。"这一批评点出了 BMAD 的核心矛盾：对简单任务来说，投入产出比可能不划算。这也是为什么 BMAD 最新版本区分了 <strong>Quick Flow</strong>（3 个命令搞定 Bug 修复和小功能）和 <strong>Full Planning Path</strong>。</p>
+      </div>
+
+      <div class="critique-box">
+        <h4>批评三："规范只和房间里的人一样聪明"</h4>
+        <p style="margin:0;">INNOQ 的技术顾问指出，BMAD 的规范层<strong>完全依赖于人类带到访谈中的领域知识质量</strong>。AI 代理可以问出很好的问题，但没办法凭空变出你团队里本来就不存在的领域专业知识。<strong>BMAD 在你一个人同时扮演领域专家、产品负责人和开发者时最闪耀。</strong></p>
+      </div>
+
+      <div class="critique-box">
+        <h4>批评四：文档容易变成"文档屎山"</h4>
+        <p style="margin:0;">因为 BMAD 生成的文档量巨大（PRD、架构文档、Front-End Spec、Epic、Story、Sprint Status……），如果方法不对，AI 生成文档的质量高度依赖于你的输入质量——Garbage In, Garbage Out。</p>
+      </div>
+
+      <h2>谁最适合用 BMAD Method？</h2>
+      <ul class="checklist">
+        <li>✅ <strong>独立开发者 / Solo Founder</strong> — 你是产品经理、设计师、开发、测试、运维的集合体。BMAD 让你能用 AI 填补那些你没时间或没精力深入的角色。</li>
+        <li>✅ <strong>2-5 人的迷你团队</strong> — 有分工但没有完整职能的团队，BMAD 可以作为"编外成员"补上缺失的架构评审、QA 流程、文档管理等环节。</li>
+        <li>✅ <strong>快速原型和 MVP 验证</strong> — 需要快速把一个想法变成可运行的产品来验证市场。有 SaaS 创业团队用 BMAD 将传统 6 周的设计周期压缩至 3 周。</li>
+      </ul>
+      <p><strong>不太适合的场景</strong>：大型组织的复杂系统（领域知识分散）、已有成熟开发流程的团队（引入 BMAD 可能更多是负担）、简单 bug 修复或小改动（用 Quick Flow 即可）。</p>
+
+      <h2>与同类工具的对比速览</h2>
+      <table>
+        <tr><th>维度</th><th>BMAD Method</th><th>Spec-Kit</th><th>OpenSpec</th></tr>
+        <tr><td><strong>定位</strong></td><td>大而全的 AI 敏捷团队模拟</td><td>轻量级规范驱动流程</td><td>极简风格，最少 token 消耗</td></tr>
+        <tr><td><strong>角色模拟</strong></td><td>12+ 专业 AI 代理</td><td>无角色模拟</td><td>无角色模拟</td></tr>
+        <tr><td><strong>工作流</strong></td><td>4 阶段完整流程</td><td>4 步：/specify → /plan → /tasks → /impl</td><td>3 步：提案 → 任务 → 应用</td></tr>
+        <tr><td><strong>Party Mode</strong></td><td>✅ 多代理同时协作</td><td>❌</td><td>❌</td></tr>
+        <tr><td><strong>学习成本</strong></td><td>高（功能多，文档量大）</td><td>中</td><td>低</td></tr>
+        <tr><td><strong>最适合</strong></td><td>复杂项目、独立开发者</td><td>个人/小团队加结构化流程</td><td>极速开发、简单项目</td></tr>
+        <tr><td><strong>生成文档量</strong></td><td>大</td><td>中</td><td>小</td></tr>
+        <tr><td><strong>开源协议</strong></td><td>MIT</td><td>MIT</td><td>MIT</td></tr>
+      </table>
+
+      <h2>总结：BMAD Method 到底值不值得学？</h2>
+      <p>BMAD Method 的价值，在于它<strong>把 AI 辅助开发从"对话式编码"升级为了"方法论驱动的工程流程"</strong>。</p>
+      <p>它的优点很明显：结构化的流程让 AI 产出更可控、更可预测；多角色协作弥补了一个人做产品的认知盲区；生态丰富，从核心框架到安全、规范驱动、自动化引擎都有社区实现。</p>
+      <p>但它也有不可忽视的局限性：学习曲线不低；对简单任务来说偏重；文档量巨大，管理不好反而增加负担；只在"领域知识在房间里"的前提下才能真正发挥价值。</p>
+
+      <div class="highlight-box">
+        <p style="margin:0;"><strong>最后的建议</strong>：不要把 BMAD 当成一个"装上就能用"的傻瓜工具。它是一套方法论的框架，需要你理解敏捷开发的核心逻辑才能用好。如果你本身就是一个人做产品、脑子里对要做什么很清楚，那 BMAD 可能是你最好的"虚拟合伙人"。如果你只是想要一个快一点的代码补全助手，那它可能不是你要的。</p>
+      </div>
+
+      <blockquote><strong>快速上手：</strong><code>npx bmad-method install</code>，然后试试输入 <code>/analyst</code> 跟你的 AI 分析师聊聊你的下一个产品想法。说不定，一个人也能搭起一个敏捷团队的台子。</blockquote>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>
