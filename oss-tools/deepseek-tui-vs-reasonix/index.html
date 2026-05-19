@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="DeepSeek-TUI vs Reasonix 全面对比 — 两款终端 AI 编程助手的技术架构、成本控制、工作模式、功能生态详细分析。">
+  <title>DeepSeek-TUI vs Reasonix · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article h4 { font-size: 0.95rem; margin: 16px 0 6px; }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    .article table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+    .article table th, .article table td { padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+    .article table th { background: #f8fafd; font-weight: 700; font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .article table tr:nth-child(even) td { background: #fafbfc; }
+    .article strong { color: var(--text); }
+    .article .highlight-box { background: var(--accent-light); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 20px; margin: 14px 0; }
+    .article .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+    .article .summary-card { border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 18px 20px; }
+    .article .summary-card h4 { margin: 0 0 8px; font-size: 1rem; }
+    .article .summary-card.rec-dstui { border-color: #6366f1; background: #eef2ff; }
+    .article .summary-card.rec-reasonix { border-color: #10b981; background: #ecfdf5; }
+    @media (max-width: 768px) {
+      .article { padding: 16px 14px; }
+      .article .summary-grid { grid-template-columns: 1fr; }
+      .article table { font-size: 0.75rem; }
+      .article table th, .article table td { padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      ⚡ DeepSeek-TUI vs Reasonix
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">⚡</div>
+        <h1 class="app-title">DeepSeek-TUI vs Reasonix</h1>
+      </div>
+      <p class="app-subtitle">两款终端 AI 编程助手全面对比 — 技术架构 · 成本控制 · 工作模式 · 功能生态</p>
+    </header>
+
+    <div class="article">
+      <h2>一、工具简介</h2>
+      <p><strong>DeepSeek-TUI</strong> 是由美国独立开发者 Hunter Bown（GitHub 账号 Hmbown）从 2026 年 1 月启动的项目，采用 Rust 语言编写，MIT 协议开源。它本质上是一个将 DeepSeek V4 大模型完整带入终端的"编码代理"（Coding Agent），被社区称为 <strong>"DeepSeek 版 Claude Code"</strong>。项目目前已在 GitHub 获得 <strong>23.3k Star</strong>。</p>
+      <p><strong>Reasonix</strong> 由国内开发者创建（<a href="https://github.com/esengine/reasonix" target="_blank" rel="noopener">GitHub: esengine/reasonix</a>），同样采用 MIT 协议开源，核心语言为 TypeScript。它以 <strong>npm 包</strong> 形式分发，定位是 <strong>"DeepSeek 原生 AI 编程 CLI"</strong>，被 DeepSeek 官方文档收录，与 Claude Code、Cursor 定位类似，但只对接 DeepSeek API，无需额外转换层。</p>
+
+      <h2>二、核心差异速览</h2>
+      <p>快速对比表（供忙碌的读者参考）</p>
+      <table>
+        <tr><th>维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td><strong>开发者</strong></td><td>美国独立开发者 Hunter Bown</td><td>国内开发者</td></tr>
+        <tr><td><strong>主语言</strong></td><td>Rust</td><td>TypeScript</td></tr>
+        <tr><td><strong>安装方式</strong></td><td>npm / Cargo / 二进制</td><td>npx / npm</td></tr>
+        <tr><td><strong>分发形态</strong></td><td>单二进制文件</td><td>npm 包</td></tr>
+        <tr><td><strong>Star 数</strong></td><td>~23.3k</td><td>相对较少，关注度稳步增长</td></tr>
+        <tr><td><strong>核心优势</strong></td><td>功能全面、生态丰富、社区活跃</td><td>极致缓存优化、成本极低、官方收录</td></tr>
+        <tr><td><strong>核心短板</strong></td><td>文档不足、学习门槛较高</td><td>功能范围相对聚焦、社区体量较小</td></tr>
+        <tr><td><strong>最适合谁</strong></td><td>希望拥有全功能终端 IDE 体验的开发者</td><td>追求极致成本控制的 DeepSeek 用户</td></tr>
+      </table>
+
+      <h2>三、多维度对比分析</h2>
+
+      <h3>1. 技术架构与安装体验</h3>
+      <table>
+        <tr><th>对比维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td>编程语言</td><td>Rust</td><td>TypeScript</td></tr>
+        <tr><td>安装方式</td><td>npm / Cargo / 预编译二进制</td><td>npx / npm</td></tr>
+        <tr><td>运行时依赖</td><td>无（单二进制）</td><td>Node.js ≥ 20.10</td></tr>
+      </table>
+      <p><strong>DeepSeek-TUI</strong> 编译为单个二进制文件，不依赖 Node.js 运行时或 Python 虚拟环境，复制到任何支持的平台就能直接运行，这在 SSH 远程服务器或低配云服务器上优势明显。其安装方式有三种：npm 一键安装（推荐）、Cargo 编译安装、直接下载预编译二进制。</p>
+      <p><strong>Reasonix</strong> 则拥抱 Node.js 生态，<strong>推荐使用 <code>npx reasonix code</code> 免全局安装</strong>运行，首次启动通过内置向导配置 API Key，不需要手动设置环境变量。对前端和 Node.js 开发者来说几乎零门槛。</p>
+
+      <h3>2. 核心机制与成本控制</h3>
+      <table>
+        <tr><th>对比维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td>缓存策略</td><td>前缀缓存感知的成本报告</td><td>Cache-First Loop（命中率 85-99%）</td></tr>
+        <tr><td>模型路由</td><td><code>--model auto</code> 自动选择</td><td><code>/pro</code> 手动切换 Pro，<code>/preset max</code> 全局 Pro</td></tr>
+        <tr><td>成本相对 Claude</td><td>较低（DeepSeek API 原生低价）</td><td>极致：比 Claude Sonnet 低 93-99%</td></tr>
+      </table>
+      <p><strong>Reasonix 的核心设计哲学是"Cache-First Loop"</strong>。DeepSeek 的自动前缀缓存有一个关键特性：命中的 token 只按原价的 <strong>10%</strong> 计费。但通用框架每轮都会重排历史、注入时间戳，导致缓存命中率常低于 20%。Reasonix 将上下文拆成<strong>三个严格不变性的区域</strong>：</p>
+      <ul>
+        <li><strong>IMMUTABLE PREFIX</strong>：会话启动时哈希锁定，包括 system、工具定义等，是整个缓存的靶子。</li>
+        <li><strong>APPEND-ONLY LOG</strong>：只能追加，旧 turn 作为新 turn 的前缀。</li>
+        <li><strong>VOLATILE SCRATCH</strong>：R1 思考等临时状态，每轮重置，永不上传。</li>
+      </ul>
+      <p>这套设计保证了在多轮对话中前缀的字节稳定性，从而让缓存持续命中。实测数据令人印象深刻：<strong>某真实用户单日 4.35 亿 input token，缓存命中率高达 99.82%，费用仅约 $12</strong>（相同工作负载如果不命中缓存，成本约 $61）。另有测试显示，5 轮中文多轮对话，缓存命中率 85.2%，成本仅 $0.000923，比 Claude Sonnet 4.6 节省 93.9%。</p>
+      <p>此外，Reasonix 还具备 <strong>R1 思考提取</strong> 功能：将 deepseek-reasoner 的长推理链通过一次便宜的 V3 调用，提取为结构化的 <code>TypedPlanState</code>（子目标、假设、不确定点、已放弃路径），让规划信号真正可用，而非直接丢弃。</p>
+      <p><strong>DeepSeek-TUI</strong> 同样具备前缀缓存感知，会在界面中<strong>实时显示本轮消耗的 token 和费用</strong>，让你心里有数避免意外超支。它还提供了一个独特功能：<code>--model auto</code> 参数开启后，系统会为每轮对话在 Flash 和 Pro 之间自动选择模型，根据任务复杂度动态平衡效果和成本。</p>
+
+      <h3>3. 工作模式与人机交互</h3>
+      <table>
+        <tr><th>对比维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td>运行模式</td><td>Plan（只读分析）/ Agent（交互审批）/ YOLO（全自动）</td><td>plan 模式（自动进入）/ chat 模式（纯对话）</td></tr>
+        <tr><td>界面类型</td><td>完整 TUI（ratatui 控件库）</td><td>CLI + TUI</td></tr>
+        <tr><td>子代理协调</td><td>✅ 可启动多个子代理</td><td>❌（设计中）</td></tr>
+        <tr><td>会话管理</td><td>保存/恢复 + 工作区回滚</td><td>持久化历史</td></tr>
+      </table>
+      <p>DeepSeek-TUI 设计了三种运行模式覆盖不同场景：</p>
+      <ul>
+        <li><strong>Plan 模式</strong>：Agent 只分析代码，给出修改建议和计划，但不会真的动手改，适合先审视 AI 的思路。</li>
+        <li><strong>Agent 模式</strong>（默认）：Agent 提出每一个动作都需要你按 <code>y</code> 批准后才执行，可控性最强。</li>
+        <li><strong>YOLO 模式</strong>：全自动审批，一次性批量任务直接跑到底。官方提示用此模式前最好先备份。</li>
+      </ul>
+      <p>Reasonix 也支持 <strong>plan 模式</strong>：在发送 prompt 前加上"plan"标记，AI 会先生成完整计划并暂停等待用户审批，审批通过后才开始修改文件。它还有独立的 <strong>chat 模式</strong>：纯对话，无文件系统工具，适合非编码类问答场景。</p>
+      <p>值得一提的是，DeepSeek-TUI 使用 Rust 的 <strong>ratatui 库</strong>构建了丰富的 TUI 交互控件，支持语法高亮的 Markdown 渲染、命令面板、可搜索帮助系统等，交互体验远超一般人对终端界面的想象。而 Reasonix 也内置了 <code>/help</code> 命令和完整的 CLI 参考文档。</p>
+
+      <h3>4. 功能广度与工具生态</h3>
+      <table>
+        <tr><th>对比维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td>文件操作</td><td>读、写、编辑、Apply Patch</td><td>文件系统工具 + edit_file + SEARCH/REPLACE</td></tr>
+        <tr><td>Shell 命令</td><td>✅ 完整支持</td><td>✅ gated 模式（安全门控）</td></tr>
+        <tr><td>Git 管理</td><td>✅ 内置 side-git 快照</td><td>❌</td></tr>
+        <tr><td>Web 搜索</td><td>✅ 需要配置</td><td>✅ 内置 Mojeek / 可选 SearXNG</td></tr>
+        <tr><td>MCP 协议</td><td>✅ 可连接数据库、Jira 等</td><td>✅</td></tr>
+        <tr><td>图片理解</td><td>✅</td><td>❌（聚焦文本）</td></tr>
+        <tr><td>子代理协调</td><td>✅</td><td>❌</td></tr>
+        <tr><td>工作区回滚</td><td>✅ side-git 快照机制</td><td>✅ /undo 一键回退</td></tr>
+      </table>
+      <p>在 <strong>Git 管理和代码安全</strong>方面，DeepSeek-TUI 内置了 <strong>side-git 快照机制</strong>，每次修改前自动创建快照，支持一键回滚到之前的状态。Reasonix 则采用 <strong>SEARCH/REPLACE 预览 + <code>/apply</code> 写入 + <code>/undo</code> 回退</strong> 的机制，先显示修改块，用户确认后才真正写入磁盘，同样能有效防止错误修改。</p>
+      <p><strong>Web 搜索</strong>方面，Reasonix 默认集成 Mojeek 搜索引擎（无需额外配置），也支持切换到自托管的 SearXNG 实例，通过 <code>/search-engine</code> 命令切换即生效，无需重启。DeepSeek-TUI 同样支持 Web 搜索和网页浏览功能，但需要额外配置。</p>
+
+      <h3>5. 社区活跃度与迭代速度</h3>
+      <table>
+        <tr><th>对比维度</th><th>DeepSeek-TUI</th><th>Reasonix</th></tr>
+        <tr><td>GitHub Star</td><td>~23.3k</td><td>增长中</td></tr>
+        <tr><td>贡献者</td><td>~50 人</td><td>相对较少</td></tr>
+        <tr><td>迭代速度</td><td>极快（4 天 10 个版本）</td><td>稳定迭代</td></tr>
+        <tr><td>官方背书</td><td>社区驱动</td><td>被 DeepSeek 官方文档收录</td></tr>
+      </table>
+      <p>DeepSeek-TUI 在 GitHub 拥有显著的社区优势。作者 Hunter Bown 在项目爆火后迭代速度惊人，4 天连续发布 10 个版本（从 v0.8.1 到 v0.8.10），响应迅速。项目目前已有约 50 名贡献者、330 个 Issues、2k Forks，生态活跃度极高。腾讯云轻量应用服务器甚至为其推出了专用一键部署镜像模板。</p>
+      <p>Reasonix 作为较新的项目，社区体量虽小，但已被 <strong>DeepSeek 官方文档</strong>收录推荐，这为其带来了重要的信任背书和官方流量入口。同时，作者在 Cocos 开发者社区等垂直领域积极推广，解决了特定场景下的真实痛点。</p>
+
+      <h3>6. 使用成本对比</h3>
+      <p>两者都基于 DeepSeek API，相对于 Claude Code 等工具具备显著成本优势。但在优化深度上，Reasonix 的 <strong>专一性</strong> 带来了额外的成本节约。实测对比显示：</p>
+      <table>
+        <tr><th>场景</th><th>Reasonix</th><th>等效 Claude Sonnet</th><th>节省比例</th></tr>
+        <tr><td>多轮对话（5 轮）</td><td>$0.000923</td><td>$0.015174</td><td>93.9%</td></tr>
+        <tr><td>工具调用（2 轮）</td><td>$0.001247</td><td>$0.003351</td><td>95.8%</td></tr>
+        <tr><td>R1 推理</td><td>$0.006478</td><td>$0.044484</td><td>85.4%</td></tr>
+      </table>
+      <p>两者均自带 Token 用量统计功能。Reasonix 内置 <code>reasonix stats</code> 命令，可按天/周/月查看缓存命中率和费用；DeepSeek-TUI 则在界面内实时显示每轮消耗的 Token 和费用。DeepSeek-TUI 在此基础上，还提供了智能的 <code>--model auto</code> 自动模型路由功能，在效果和成本之间动态平衡。</p>
+
+      <h2>四、选择建议：如何决策？</h2>
+      <div class="summary-grid">
+        <div class="summary-card rec-dstui">
+          <h4>✅ 选择 DeepSeek-TUI 如果你：</h4>
+          <ol>
+            <li>想要一个功能全面、集成度高的 AI 编程代理，能一站式完成读文件、写代码、跑测试、管 Git 等完整工作流。</li>
+            <li>偏好 Rust 单二进制带来的部署便利性和低资源消耗，尤其在远程服务器或低配设备上工作。</li>
+            <li>需要 <strong>百万 Token 上下文窗口</strong> 处理超长代码库或复杂项目文件。</li>
+            <li>重视社区活跃度和更新频率，希望工具快速进化。</li>
+            <li>需要 <strong>子代理协调、MCP 扩展、图片理解</strong> 等进阶功能。</li>
+            <li>希望通过 <code>--model auto</code> 自动模型路由功能来智能控制成本。</li>
+            <li>希望先在 Plan 模式中审查 AI 计划再动手执行，或使用 YOLO 模式全自动批量处理。</li>
+          </ol>
+        </div>
+        <div class="summary-card rec-reasonix">
+          <h4>✅ 选择 Reasonix 如果你：</h4>
+          <ol>
+            <li>成本是第一优先级，<strong>极致缓存优化</strong>能带来显著的成本节约。</li>
+            <li>已是 Node.js 开发者，<code>npx</code> 运行对你来说毫无负担。</li>
+            <li>主要做长会话调试，需要长时间开着 Agent 不关。</li>
+            <li>在中国大陆使用，无需额外的网络代理来访问。</li>
+            <li>看重 <strong>官方文档收录</strong> 带来的信任度。</li>
+            <li>希望直接使用 <strong>R1 推理链的结构化提取</strong> 来提升复杂任务的决策质量。</li>
+          </ol>
+        </div>
+      </div>
+
+      <h2>五、总结</h2>
+      <div class="highlight-box">
+        <p style="margin:0;">DeepSeek-TUI 和 Reasonix 代表着终端 AI 编程工具两种不同的设计哲学。<strong>DeepSeek-TUI 追求"大而全"</strong>，试图用一个工具覆盖开发全流程，成为终端里的全能开发伴侣；<strong>Reasonix 追求"小而精"</strong>，把一件事做到极致——让 DeepSeek 的缓存机制发挥最大价值，从而提供最低的成本和最稳定的长会话体验。</p>
+      </div>
+      <p>好消息是，两者并不互斥。不少开发者的实际做法是<strong>两个工具交替使用</strong>：在需要全面功能、复杂工作流时使用 DeepSeek-TUI，在长会话调试或预算紧张时切换到 Reasonix。</p>
+      <p>随着 DeepSeek 模型的持续进化，这两款工具都将随之受益。建议开发者根据自身工作场景和预算情况，选择最适合自己的终端 AI 助手，或者像我一样，两个都试试，在不同场景下灵活切换。</p>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="hatch-pet 完全指南 — 从安装到打造专属编程宠物，OpenAI Codex 桌面宠物技能详解。">
+  <title>hatch-pet 完全指南 · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐕</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 12px 0; background: var(--accent-light); border-radius: 0 var(--radius-xs) var(--radius-xs) 0; color: var(--text-secondary); font-size: 0.9rem; }
+    .article strong { color: var(--text); }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    @media (max-width: 768px) { .article { padding: 16px 14px; } }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      🐕 hatch-pet 完全指南
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">🐕</div>
+        <h1 class="app-title">hatch-pet 完全指南</h1>
+      </div>
+      <p class="app-subtitle">从安装到打造专属编程宠物 — OpenAI Codex 桌面宠物技能</p>
+    </header>
+
+    <div class="article">
+      <h2>1.1 准备工作</h2>
+      <p>你需要拥有 <strong>OpenAI Codex 访问权限</strong>。请确保你的 Codex 客户端已升级到最新版（建议 v0.12+）。</p>
+      <p>网络环境：技能安装和宠物生成都需要访问 GitHub 以及 OpenAI API。如果你处于网络受限环境，请提前为终端和 Codex 配置好代理（见下文「常见问题」）。</p>
+
+      <h2>1.2 安装技能</h2>
+      <p>打开 Codex，在对话输入框中输入以下命令：</p>
+      <pre><code>$skill-installer hatch-pet</code></pre>
+      <p>系统会自动从官方技能库拉取 hatch-pet 技能。等待终端输出 <code>Skill installed successfully</code>。</p>
+      <p><strong>必须重启 Codex。</strong>关闭客户端并重新打开，否则技能无法加载。</p>
+
+      <h3>如果安装失败？</h3>
+      <p>常见原因是 Git 无法连接 GitHub。请打开你的终端（PowerShell / zsh 等），执行：</p>
+      <pre><code>git config --global http.proxy http://127.0.0.1:你的代理端口
+git config --global https.proxy http://127.0.0.1:你的代理端口</code></pre>
+      <p>配置完成后，重新执行安装命令。</p>
+
+      <h2>1.3 召唤你的第一只宠物</h2>
+      <p>重启 Codex 后，在输入框里输入：</p>
+      <pre><code>/pet</code></pre>
+      <p>此时你的屏幕上会出现一只默认宠物（通常是柴犬 Hachi）。它会停留在桌面右下角，并随着 Codex 的工作状态改变表情和动作。</p>
+      <p>再次输入 <code>/pet</code> 可以隐藏宠物。</p>
+
+      <h2>1.4 深入定制：生成你的专属像素宠物</h2>
+      <p>这是 hatch-pet 最有趣的功能。你可以用自然语言描述你想要的宠物，AI 会自动生成对应的像素动画和配置文件。</p>
+
+      <h3>步骤详解</h3>
+      <p>在 Codex 输入框中键入 <code>/hatch-pet</code>，然后空一格，接着输入描述。例如：</p>
+      <pre><code>/hatch-pet A cyberpunk samurai cat with neon blue eyes, wearing a tiny katana on its back, pixel art style</code></pre>
+      <p>按下回车后，Codex 会调用 DALL·E 或其他图像模型生成宠物精灵图（sprite sheet），并根据你的描述自动生成动画配置文件 <code>animations.json</code>。</p>
+      <p>整个过程大约需要 <strong>30~90 秒</strong>，期间你会看到进度提示："Hatching your pet..."。</p>
+      <p>生成完成后，你可以在 <code>Settings → Appearance → Pets</code> 中找到刚刚生成的作品，它会被自动添加到"自定义宠物"列表。点击选中即可切换。</p>
+
+      <h3>写好描述的技巧</h3>
+      <ul>
+        <li><strong>风格限定词：</strong>务必加上 <code>pixel art</code>，因为宠物是以像素动图呈现的。</li>
+        <li><strong>明确特征：</strong>颜色、配饰、姿态。避免过于复杂的背景或细节，AI 在处理 32×32 或 64×64 精灵时细节过多会模糊。</li>
+        <li><strong>多尝试：</strong>如果不满意，可以调整描述重新生成，每次生成都会覆盖之前同名宠物的文件（可手动重命名保留）。</li>
+      </ul>
+
+      <h2>1.5 管理你的宠物库</h2>
+      <p>所有宠物数据都保存在本地目录：</p>
+      <ul>
+        <li><strong>Windows:</strong> <code>%APPDATA%\Codex\pets\</code></li>
+        <li><strong>macOS:</strong> <code>~/Library/Application Support/Codex/pets/</code></li>
+        <li><strong>Linux:</strong> <code>~/.config/Codex/pets/</code></li>
+      </ul>
+      <p>你可以：</p>
+      <ul>
+        <li><strong>手动备份：</strong>直接复制整个 pets 文件夹。</li>
+        <li><strong>手动添加第三方宠物：</strong>从 PetDex（见下）下载的宠物文件夹放入该目录，重启 Codex 即可识别。</li>
+        <li><strong>删除宠物：</strong>直接删除对应文件夹，然后重启。</li>
+      </ul>
+
+      <h2>1.6 探索 PetDex 社区</h2>
+      <p>PetDex 是官方推出的宠物分享平台，地址：<a href="https://github.com/crafter-station/petdex" target="_blank" rel="noopener">github.com/crafter-station/petdex</a>。</p>
+      <p>你可以浏览其他用户上传的宠物，下载 ZIP 包。解压后确保文件夹内包含 <code>sprite.png</code> 和 <code>animations.json</code>（这是宠物生效的两个核心文件）。将整个文件夹放入本地 pets 目录即可。</p>
+
+      <h2>1.7 性能调优</h2>
+      <p>如果宠物在你打字或运行大型模型时出现卡顿，或者你觉得它占用了过多 GPU 资源，可以尝试以下设置：</p>
+      <p>打开 Codex 的 <code>settings.json</code>（通常在配置文件夹内），添加或修改：</p>
+      <pre><code>"hatch-pet": {
+  "enableShadows": false,
+  "animationFPS": 12,
+  "renderScale": 0.8
+}</code></pre>
+      <p>保存并重启 Codex。关闭阴影能显著降低渲染负担，降低 FPS 和缩放可进一步减少资源占用。</p>
+
+      <h2>1.8 常见问题</h2>
+      <p><strong>Q：输入 /pet 无反应。</strong><br>
+      A：确认技能已安装并重启。在 <code>Settings → Skills</code> 中查看 hatch-pet 是否显示为"已启用"。如果显示错误，点击"修复"或重装。</p>
+      <p><strong>Q：生成宠物时卡在 "Hatching..." 超过 5 分钟。</strong><br>
+      A：大概率是 API 调用超时。检查代理，或缩小描述长度重试。</p>
+      <p><strong>Q：宠物显示为白块或乱码。</strong><br>
+      A：更新显卡驱动。如果是 Linux，确保已安装 Vulkan 驱动。</p>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>

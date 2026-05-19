@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="Aseprite 源码编译完全指南 — Windows / macOS / Linux 全平台编译，免费使用专业像素绘画工具。">
+  <title>Aseprite 源码编译指南 · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article .error-box { background: var(--danger-light); border: 1px solid var(--danger-border); border-radius: var(--radius-sm); padding: 12px 18px; margin: 10px 0; }
+    .article .error-box strong { color: var(--danger); }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    @media (max-width: 768px) { .article { padding: 16px 14px; } }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      🎨 Aseprite 源码编译指南
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">🎨</div>
+        <h1 class="app-title">Aseprite 源码编译指南</h1>
+      </div>
+      <p class="app-subtitle">Windows / macOS / Linux 全平台编译 — 免费使用专业像素绘画工具</p>
+    </header>
+
+    <div class="article">
+      <h2>3.1 为什么要自己编译？</h2>
+      <p>Aseprite 官方商店付费，但其代码完全开源，允许个人编译使用。自己编译不仅能免费获得最新功能，还能按需启用 Lua 脚本、WebSocket 等特性。下面提供各平台最详细的步骤，适合没有编译经验的新手。</p>
+
+      <h2>3.2 通用准备（所有平台）</h2>
+      <h3>安装 Git</h3>
+      <ul>
+        <li><strong>Windows:</strong> 下载 <a href="https://git-scm.com/download/win" target="_blank" rel="noopener">Git for Windows</a>，安装时选择"Git from the command line"。</li>
+        <li><strong>macOS:</strong> 通常预装，或 <code>brew install git</code>。</li>
+        <li><strong>Linux:</strong> <code>sudo apt install git</code>。</li>
+      </ul>
+
+      <h3>安装 CMake 和 Ninja</h3>
+      <p>这是构建系统的核心。版本要求 CMake ≥ 3.15，Ninja 任意新版。</p>
+      <ul>
+        <li><strong>Windows:</strong> 下载 <a href="https://cmake.org/download/" target="_blank" rel="noopener">CMake installer</a>，安装时勾选"Add CMake to system PATH"。Ninja 可单独下载 <code>ninja.exe</code> 放入 <code>C:\Windows</code> 或某个 PATH 目录。</li>
+        <li><strong>macOS:</strong> <code>brew install cmake ninja</code></li>
+        <li><strong>Linux:</strong> <code>sudo apt install cmake ninja-build</code></li>
+      </ul>
+
+      <h3>获取 Aseprite 源码</h3>
+      <p>仓库地址：<a href="https://github.com/aseprite/aseprite" target="_blank" rel="noopener">github.com/aseprite/aseprite</a></p>
+      <pre><code>git clone --recursive https://github.com/aseprite/aseprite.git
+cd aseprite</code></pre>
+      <p><code>--recursive</code> 非常重要，否则子模块不会下载。</p>
+
+      <h2>3.3 关键依赖：Skia 库的获取</h2>
+      <p>Aseprite 依赖 Google 的 Skia 图形库，编译它非常耗时，官方提供了预编译包。</p>
+      <ol>
+        <li>访问 <a href="https://github.com/aseprite/skia/releases" target="_blank" rel="noopener"><strong>aseprite/skia releases</strong></a></li>
+        <li>下载与你平台匹配的版本：例如 <code>Skia-m124-Windows-x64.zip</code>、<code>Skia-m124-macOS-15.2.zip</code>、<code>Skia-m124-Linux-x64.zip</code>。</li>
+        <li>解压到固定目录，建议路径：
+          <ul>
+            <li><strong>Windows:</strong> <code>C:\deps\skia</code></li>
+            <li><strong>macOS:</strong> <code>~/deps/skia</code></li>
+            <li><strong>Linux:</strong> <code>~/deps/skia</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <h2>3.4 平台详细编译指南</h2>
+
+      <h3>Windows 11 (使用 Visual Studio 2022)</h3>
+      <p><strong>安装 <a href="https://visualstudio.microsoft.com/zh-hans/downloads/" target="_blank" rel="noopener">Visual Studio 2022 Community</a>（免费）</strong><br>
+      下载时，务必在"工作负荷"选项卡中勾选<strong>"使用 C++ 的桌面开发"</strong>，右侧确保勾选：</p>
+      <ul>
+        <li>MSVC v143 编译器</li>
+        <li>Windows 10/11 SDK</li>
+        <li>C++ CMake 工具</li>
+      </ul>
+      <p><strong>配置环境</strong><br>
+      打开 <strong>x64 Native Tools Command Prompt for VS 2022</strong>（在开始菜单搜索），这个终端已自动设置了所有编译环境变量。后面所有操作都在此终端进行。</p>
+      <p><strong>构建</strong></p>
+      <pre><code>mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=C:\deps\skia -G Ninja ..
+ninja</code></pre>
+      <p>注意：<code>SKIA_DIR</code> 路径必须与你解压的位置匹配，且不要带空格。</p>
+      <p>生成的可执行文件位于 <code>build\bin\aseprite.exe</code>。可直接双击运行，或将其路径加入环境变量方便调用。</p>
+
+      <h3>macOS 15+ (使用 Xcode)</h3>
+      <p>从 App Store 安装 Xcode，并至少运行一次以接受许可，确保 <code>xcode-select --install</code> 已安装命令行工具。</p>
+      <p>打开终端，设置 SDK 路径变量（非常重要）：</p>
+      <pre><code>export CMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk</code></pre>
+      <p>你可以先验证该路径是否存在：<code>ls $CMAKE_OSX_SYSROOT</code>。</p>
+      <pre><code>mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=$HOME/deps/skia -DCMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT -G Ninja ..
+ninja</code></pre>
+      <p>完成后，<code>build/bin/aseprite</code> 即可使用。你可以将它拖入"应用程序"文件夹创建快捷方式。</p>
+
+      <h3>Linux (Ubuntu 22.04+ 示例)</h3>
+      <p><strong>安装编译工具链和依赖库：</strong></p>
+      <pre><code>sudo apt update
+sudo apt install -y clang-12 libc++-dev libc++abi-dev libfreetype-dev libharfbuzz-dev libjpeg-dev libpng-dev libwebp-dev libssl-dev</code></pre>
+      <p>（不同发行版包名可能略不同，请参考 INSTALL.md）</p>
+      <p><strong>设置编译器为 clang：</strong></p>
+      <pre><code>export CC=clang-12
+export CXX=clang++-12</code></pre>
+      <pre><code>mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=$HOME/deps/skia -G Ninja ..
+ninja</code></pre>
+
+      <h2>3.5 启用高级功能（可选）</h2>
+      <p>在运行 cmake 时，你可以通过添加 <code>-D</code> 参数来开启更多功能：</p>
+      <ul>
+        <li><strong>启用 Lua 脚本：</strong><code>-DENABLE_SCRIPTING=ON</code></li>
+        <li><strong>启用 WebSocket：</strong><code>-DENABLE_WEBSOCKET=ON</code></li>
+        <li><strong>启用 WebP 导出：</strong><code>-DENABLE_WEBP=ON</code>（默认可能已开启）</li>
+      </ul>
+      <p>完整命令示例：</p>
+      <pre><code>cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DENABLE_SCRIPTING=ON -DENABLE_WEBSOCKET=ON -G Ninja ..</code></pre>
+
+      <h2>3.6 常见编译错误及解决办法</h2>
+
+      <div class="error-box">
+        <strong>错误 1：</strong>ninja: error: loading 'build.ninja': 系统找不到指定的文件。<br>
+        这表示 CMake 配置步骤失败。往上翻错误日志，最常见的是找不到 Skia 或依赖。检查 SKIA_DIR 路径是否正确，以及该目录下有 skia.lib（Windows）或 libskia.a（其他系统）。
+      </div>
+
+      <div class="error-box">
+        <strong>错误 2：</strong>CMake Error: CMake was unable to find a build program corresponding to "Ninja".<br>
+        没有安装 Ninja 或 Ninja 不在 PATH 中。执行 <code>ninja --version</code> 测试。
+      </div>
+
+      <div class="error-box">
+        <strong>错误 3：</strong>error: no member named 'format' in namespace 'std' 或大量 C++ 标准库错误<br>
+        编译器版本过低。确保使用 Visual Studio 2022、Xcode 16+、或 clang-12+。
+      </div>
+
+      <div class="error-box">
+        <strong>错误 4：</strong>fatal error: 'freetype/freetype.h' file not found<br>
+        缺少系统依赖。Linux 用户需运行上述 apt 安装命令；macOS 用户 brew install freetype；Windows 通常由 Skia 自带，若出现则检查 Skia 包完整性。
+      </div>
+
+      <div class="error-box">
+        <strong>错误 5：</strong>The procedure entry point could not be located in the dynamic link library<br>
+        运行时错误，通常是缺少 VC++ 运行库。下载安装 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist" target="_blank" rel="noopener">Visual C++ Redistributable</a> 即可解决。
+      </div>
+
+      <h2>3.7 保持更新</h2>
+      <p>当官方发布新版本，你只需进入源码目录执行：</p>
+      <pre><code>git pull --recurse-submodules</code></pre>
+      <p>然后重新进入 build 目录执行 <code>ninja</code> 即可增量编译，速度会快很多。</p>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>

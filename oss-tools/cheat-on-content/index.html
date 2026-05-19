@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="cheat-on-content 深度教程 — 从零构建 AI 内容策略引擎，13 个技能的量化闭环系统详解。">
+  <title>cheat-on-content 深度教程 · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 12px 0; background: var(--accent-light); border-radius: 0 var(--radius-xs) var(--radius-xs) 0; color: var(--text-secondary); font-size: 0.9rem; }
+    .article .workflow { background: var(--accent-light); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 20px; margin: 14px 0; text-align: center; font-weight: 700; font-size: 0.92rem; }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    @media (max-width: 768px) { .article { padding: 16px 14px; } }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      📊 cheat-on-content 深度教程
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">📊</div>
+        <h1 class="app-title">cheat-on-content 深度教程</h1>
+      </div>
+      <p class="app-subtitle">从零构建你的 AI 内容策略引擎 — 13 个技能的量化闭环系统</p>
+    </header>
+
+    <div class="article">
+      <h2>2.1 理解核心概念（非常重要）</h2>
+      <p>在你动手安装前，务必理解这个工具<strong>不是帮你写文案的</strong>，而是帮你优化整个内容运营策略的<strong>量化闭环系统</strong>。它由 13 个子技能组成，每个子技能负责一个环节，但它们必须串联使用才会产生最大价值。</p>
+
+      <div class="workflow">
+        预测 (Predict) → 发布前评分 (Score) → 发布 → 真实数据复盘 (Review) → 修正评估标准 (Rubric Evolution)
+      </div>
+
+      <p>简单说：</p>
+      <ol>
+        <li>你写一篇文章前，先让 AI <strong>预测</strong>它的各项指标（点击率、转化率等）。</li>
+        <li>然后用内置的<strong>评分标准</strong>为文章打分。</li>
+        <li>发布后，收集<strong>真实数据</strong>。</li>
+        <li>让 AI <strong>复盘</strong>：预测准不准？评分标准是否有效？</li>
+        <li>如果某条评分标准总是预测失败，系统会自动建议修改标准，并重新为历史内容打分来验证新标准，最终决定是否启用。</li>
+      </ol>
+      <p>经过多次循环，你的评估标准会越来越贴合你自己的账号受众，相当于训练出了一个<strong>专属的内容策略师</strong>。</p>
+
+      <h2>2.2 安装与初始化</h2>
+      <h3>前置条件</h3>
+      <p>你必须在本地安装好 Claude Code 并完成 <code>claude login</code>。确认终端输入 <code>claude --version</code> 能返回版本号。</p>
+
+      <h3>克隆仓库并安装技能包</h3>
+      <p>仓库地址：<a href="https://github.com/XBuilderLAB/cheat-on-content" target="_blank" rel="noopener">github.com/XBuilderLAB/cheat-on-content</a></p>
+      <pre><code>git clone https://github.com/XBuilderLAB/cheat-on-content.git
+cd cheat-on-content
+bash install.sh</code></pre>
+      <p>脚本会将 13 个技能以符号链接的方式注册到 <code>~/.claude/skills/</code>。</p>
+      <p>如果你希望固定版本（不跟随上游更新），使用 <code>bash install.sh --copy</code> 会复制文件而不是链接。</p>
+
+      <h3>验证安装</h3>
+      <p>在终端输入 <code>claude</code> 进入会话，然后输入 <code>/skills</code>。你会看到一个列表，包含 coc-predict、coc-score、coc-review、coc-rubric 等技能，说明安装成功。</p>
+
+      <h2>2.3 创建你的第一个内容项目</h2>
+      <p>启动 Claude Code，输入：</p>
+      <pre><code>/coc-init</code></pre>
+      <p>系统会询问你一系列问题，包括：</p>
+      <ul>
+        <li>项目名称（用于存储数据）</li>
+        <li>你的内容领域（如"SaaS 产品博客"）</li>
+        <li>主要目标指标（点击率、注册率、购买率等）</li>
+        <li>历史内容数据来源（可直接提供 CSV 或 JSON 文件路径）</li>
+      </ul>
+      <p>回答完毕后，一个项目配置文件会在 <code>~/.cheat-on-content/</code> 下生成，后续所有分析数据都会保存于此。</p>
+
+      <h2>2.4 完整工作流操作详解</h2>
+      <p>假设你即将发布一篇新文章 <code>article-draft.md</code>。</p>
+
+      <h3>第一步：预测 (Predict)</h3>
+      <pre><code>/coc-predict article-draft.md</code></pre>
+      <p>AI 会读取你的文章，结合历史数据，输出预测值，例如：</p>
+      <pre><code>预测点击率：2.3%
+预测转化率：0.8%
+预测分享量：15</code></pre>
+      <p>这些数据会被存入项目数据库。</p>
+
+      <h3>第二步：发布前评分 (Score)</h3>
+      <pre><code>/coc-score article-draft.md</code></pre>
+      <p>系统使用当前的 Rubric（评估量表）打分，Rubric 初始是通用标准，如"标题吸引力"、"结构清晰度"、"CTA 强度"等，每项 1-5 分。输出示例：</p>
+      <pre><code>标题吸引力: 3
+结构清晰度: 4
+CTA 强度: 2
+总分: 9/15</code></pre>
+
+      <h3>第三步：发布并收集真实数据</h3>
+      <p>你照常发布文章。一周后，把真实点击率、转化率等数据整理成一个简单的 CSV：</p>
+      <pre><code>url,clicks,impressions,conversions
+https://your.blog/article-1,120,5000,3</code></pre>
+      <p>保存为 <code>real-data.csv</code>。</p>
+
+      <h3>第四步：复盘 (Review)</h3>
+      <pre><code>/coc-review article-draft.md --real-data real-data.csv</code></pre>
+      <p>AI 会对比预测值与真实值，并分析哪项评分标准与真实表现最相关或最不相关。输出可能包括：</p>
+      <pre><code>预测点击率 2.3%  vs 实际 2.4%  ✅
+预测转化率 0.8% vs 实际 0.6%  ⚠️
+评分项"结构清晰度"与转化率无显著相关性 (p=0.8)
+建议: 考虑降低该标准权重或替换为"信息密度"评分项。</code></pre>
+
+      <h3>第五步：进化评估标准 (Rubric)</h3>
+      <pre><code>/coc-rubric evolve</code></pre>
+      <p>系统会基于复盘记录提出具体的标准修改草案，并自动应用新标准重新为所有历史文章打分，展示新分数与实际数据的相关性报告。你可以选择接受或手动调整。</p>
+
+      <h2>2.5 与其他工具的对比与定位</h2>
+      <ul>
+        <li><strong>与 ChatGPT 写作提示的区别：</strong>这个是策略框架，不是写作助手。</li>
+        <li><strong>与 Google Analytics 的区别：</strong>GA 告诉你"发生了什么"，cheat-on-content 帮你"在发布前预测并持续优化决策逻辑"。</li>
+        <li><strong>适合谁用：</strong>需要稳定内容产出的独立开发者、内容站长、小型市场团队。</li>
+      </ul>
+
+      <h2>2.6 高级技巧</h2>
+      <ul>
+        <li><strong>批量预测：</strong>你可以对一个文件夹内的多篇草稿执行 <code>/coc-predict-batch drafts/</code>，一次生成所有稿件的预测值。</li>
+        <li><strong>历史数据回溯：</strong>如果你已有较多已发布内容，可以先用 <code>/coc-review-batch</code> 将历史文章和真实数据一次性录入，让系统快速建立初始基准。</li>
+        <li><strong>自定义评估维度：</strong>可以直接编辑 <code>~/.cheat-on-content/projects/&lt;项目名&gt;/rubric.json</code> 来添加你自己的评估项（如"SEO 友好度"、"社交货币"），然后运行 <code>/coc-rubric reload</code>。</li>
+      </ul>
+
+      <h2>2.7 常见问题</h2>
+      <p><strong>Q：安装时提示 permission denied。</strong><br>
+      A：执行 <code>chmod +x install.sh</code> 后重试。</p>
+      <p><strong>Q：技能列表能看到，但调用无反应。</strong><br>
+      A：检查是否在 Claude Code 会话内（不是普通终端）。确保路径没有中文字符。</p>
+      <p><strong>Q：数据隐私怎么保证？</strong><br>
+      A：所有数据均存储在本地 <code>~/.cheat-on-content</code> 文件夹内，不会上传到任何第三方服务器。与 Claude API 的交互内容遵循 Anthropic 的隐私政策，你可以选择不发送敏感数据。</p>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>

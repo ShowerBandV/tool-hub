@@ -84,4 +84,12 @@
 
   <!-- 视频盒子 -->
   <url><loc>https://www.xkitbox.xyz/media-player/</loc><priority>0.8</priority></url>
+
+  <!-- 开源工具箱 -->
+  <url><loc>https://www.xkitbox.xyz/oss-tools/</loc><priority>0.8</priority></url>
+  <url><loc>https://www.xkitbox.xyz/oss-tools/hatch-pet/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/oss-tools/cheat-on-content/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/oss-tools/aseprite/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/oss-tools/deepseek-tui-vs-reasonix/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/oss-tools/llm-wiki/</loc><priority>0.6</priority></url>
 </urlset>

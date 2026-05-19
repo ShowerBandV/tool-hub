@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="LLM Wiki 完全指南 — 让知识库从"死文档"变成"活维基"，Karpathy 提出的知识管理新范式。RAG vs LLM Wiki 深度对比、架构设计、六种落地方案。">
+  <title>LLM Wiki 完全指南 · 开源工具箱 · Tool Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .article { background: var(--card-bg); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .article h2 { font-size: 1.3rem; margin: 28px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+    .article h2:first-child { margin-top: 0; }
+    .article h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--accent); }
+    .article h4 { font-size: 0.95rem; margin: 16px 0 6px; }
+    .article p { margin-bottom: 10px; line-height: 1.75; }
+    .article ul, .article ol { margin: 6px 0 14px 20px; line-height: 1.75; }
+    .article li { margin-bottom: 4px; }
+    .article code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; color: #e11d48; }
+    .article pre { background: #1a1a2e; color: #e2e8f0; padding: 16px 20px; border-radius: var(--radius-sm); overflow-x: auto; margin: 12px 0; font-size: 0.84rem; line-height: 1.6; }
+    .article pre code { background: none; color: inherit; padding: 0; }
+    .article a { color: var(--accent); text-decoration: underline; }
+    .article a:hover { color: var(--accent-dark); }
+    .article table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+    .article table th, .article table td { padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+    .article table th { background: #f8fafd; font-weight: 700; font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .article table tr:nth-child(even) td { background: #fafbfc; }
+    .article strong { color: var(--text); }
+    .article blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 12px 0; background: var(--accent-light); border-radius: 0 var(--radius-xs) var(--radius-xs) 0; color: var(--text-secondary); font-size: 0.9rem; }
+    .article blockquote strong { color: var(--accent); }
+    .article .highlight-box { background: var(--accent-light); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 20px; margin: 14px 0; }
+    .article .checklist { list-style: none; margin-left: 0; }
+    .article .checklist li { padding: 2px 0; }
+    .article .warning-box { background: var(--warning-light); border: 1px solid var(--warning-border); border-radius: var(--radius-sm); padding: 14px 20px; margin: 14px 0; }
+    @media (max-width: 768px) {
+      .article { padding: 16px 14px; }
+      .article table { font-size: 0.75rem; }
+      .article table th, .article table td { padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📦 开源工具箱</a> <span class="sep">›</span>
+      📖 LLM Wiki 完全指南
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="logo-icon">📖</div>
+        <h1 class="app-title">LLM Wiki 完全指南</h1>
+      </div>
+      <p class="app-subtitle">让知识库从"死文档"变成"活维基" — Karpathy 提出的知识管理新范式</p>
+    </header>
+
+    <div class="article">
+      <blockquote><strong>核心结论：</strong>LLM Wiki 不是某个具体软件，而是一套由 Andrey Karpathy 提出的知识管理范式——让 LLM 像编译器一样把原始资料"编译"成结构化、可生长的维基页面，而不是像 RAG 那样每次临时去原始文档里翻碎片。</blockquote>
+
+      <h2>一、概念起源：Karpathy 为什么提出 LLM Wiki？</h2>
+      <p>2026 年 4 月，OpenAI 联合创始人之一 Andrey Karpathy 分享了他的个人知识管理思路，在开发者圈迅速走红——GitHub Gist 上线仅 <strong>2 天就获得 5000+ Star、1652+ Fork</strong>。</p>
+      <p>Karpathy 的观点相当直接：<strong>别再盲目堆 RAG（检索增强生成）了，你的知识库思路可能从根上就错了</strong>。在实际工作流中，他已经基本弃用传统 RAG，转而使用这套新范式。</p>
+
+      <h3>传统 RAG 的三个致命问题</h3>
+      <p>现有主流 AI 知识库产品大多基于 RAG：上传文档 → 切片向量化 → 存向量库 → 用户提问 → 召回相似片段 → 拼进上下文生成回答。Karpathy 指出这套方案存在三个本质缺陷：</p>
+      <ol>
+        <li><strong>没有知识积累，每次都在"重新发现"：</strong>不管问多少次同一个领域的问题，LLM 都是临时去原始文档里扒碎片，永远不会形成长期、结构化的知识沉淀。</li>
+        <li><strong>依赖碎片拼接，跨文档推理很弱：</strong>向量检索靠相似度召回零散段落，一旦问题需要跨多篇文档综合推理，很容易逻辑断裂、答不到点上。</li>
+        <li><strong>工程链路重，调参成本高：</strong>要搭向量库、调 chunk 大小、做召回优化、重排序、处理上下文长度限制……对个人开发者和轻量场景来说太臃肿了。</li>
+      </ol>
+
+      <h3>LLM Wiki 的核心思想</h3>
+      <p>Karpathy 的解法可以用一句话概括：<strong>把 LLM 当成一个编译器，而不是临时检索工具</strong>。让它把原始资料一次性"编译"成结构化、可链接、可维护的个人维基，后续查询直接从编译好的 wiki 中读取，不再反复扫描原始文档。</p>
+
+      <h2>二、RAG vs LLM Wiki：核心差异深度对比</h2>
+      <table>
+        <tr><th>维度</th><th>传统 RAG</th><th>LLM Wiki</th></tr>
+        <tr><td><strong>工作时机</strong></td><td>查询时临时拼接（运行时）</td><td>摄入时预先编译（编译时）</td></tr>
+        <tr><td><strong>知识状态</strong></td><td>无积累，每次"失忆"重新检索</td><td>持续沉淀，知识越用越丰富</td></tr>
+        <tr><td><strong>答案来源</strong></td><td>原始文档中召回的碎片片段</td><td>结构化的 wiki 页面，有上下文</td></tr>
+        <tr><td><strong>跨文档推理</strong></td><td>弱，依赖片段相似度拼接</td><td>强，LLM 在编译阶段已完成关联</td></tr>
+        <tr><td><strong>可读可编辑</strong></td><td>向量数据库是黑盒</td><td>纯 Markdown，人可直接读、直接改</td></tr>
+        <tr><td><strong>工程复杂度</strong></td><td>高（向量库、chunk、重排序）</td><td>低（文件夹 + LLM + Markdown）</td></tr>
+        <tr><td><strong>知识复利</strong></td><td>无</td><td>有：每次 ingest 都会丰富整个 wiki</td></tr>
+      </table>
+      <p>以 Karpathy 原话来说：<strong>LLM Wiki 是"知识预编译"——在 ingest 阶段就把知识结构化并存入 wiki，而 RAG 是"查询时拼凑"</strong>。</p>
+
+      <h2>三、架构设计：极简的三层目录 + 四大操作</h2>
+      <h3>3.1 目录结构</h3>
+      <p>Karpathy 的方案只使用三个目录：</p>
+      <pre><code>my-knowledge-base/
+├── raw/        # 原始资料（只进不出，只增不改）
+├── wiki/       # LLM 自动维护的结构化 Markdown 知识库
+└── schema/     # 模板、提示词、配置规则</code></pre>
+      <ul>
+        <li><strong>raw/：</strong>论文、PDF、网页、笔记、截图文字等全丢进去，不用手动分类整理。</li>
+        <li><strong>wiki/：</strong>LLM 自动生成的概念词条、摘要、索引、交叉引用、反向链接，全部是纯 Markdown 文件。</li>
+        <li><strong>schema/：</strong>存放页面模板、提示词和配置规则，用来规范 wiki 的格式和生成逻辑。</li>
+      </ul>
+
+      <h3>3.2 四大操作</h3>
+      <ol>
+        <li><strong>Ingest（导入）：</strong>看到好文章直接丢进 <code>raw/</code>，不需要手动整理。</li>
+        <li><strong>Compile（编译）：</strong>LLM 读取新增内容，自动提炼关键概念、撰写词条、建立页面间链接，更新总索引。</li>
+        <li><strong>Query（查询）：</strong>LLM 直接从 <code>wiki/</code> 里读取结构化内容回答，不再反复扫描原始文档。</li>
+        <li><strong>Lint / Heal（自检修复）：</strong>LLM 定期扫描整个 wiki，自动处理信息不一致、缺失概念页面、孤立无链接页面、过时或冗余内容。</li>
+      </ol>
+      <p>整个过程没有向量库、没有 embedding、没有复杂检索 pipeline。所有知识以纯 Markdown 文件存储，可用 Git 进行版本管理。</p>
+
+      <h2>四、主要实现工具：六种落地方案</h2>
+      <p>Karpathy 发布的实际上只是一个 Gist（概念性框架），而非一个开箱即用的工具。社区迅速跟进，出现了多个具体的实现版本。</p>
+
+      <h3>主流工具速览</h3>
+      <table>
+        <tr><th>工具</th><th>开发者</th><th>平台/语言</th><th>核心特色</th><th>社区数据</th></tr>
+        <tr><td><strong>@jupiterthewarlock/llm-wiki</strong></td><td>社区</td><td>Node.js/npm</td><td>功能最全面，Obsidian 兼容</td><td>npm 包 0.7.2</td></tr>
+        <tr><td><strong>@jackwener/llm-wiki</strong></td><td>社区</td><td>Node.js/npm</td><td>CLI + Agent 技能系统</td><td>npm</td></tr>
+        <tr><td><strong>llm-wiki-karpathy</strong></td><td>HarryLabs</td><td>Node.js/npm</td><td>可安装 CLI/MCP 工具链</td><td>npm 0.4.4</td></tr>
+        <tr><td><strong>kb-wiki</strong></td><td>社区</td><td>Node.js/npm</td><td>Local-first，混合语义+关键词搜索</td><td>npm</td></tr>
+        <tr><td><strong>llm-wiki-engine</strong></td><td>社区</td><td>Rust</td><td>单二进制，无内置 LLM，23 个 MCP 工具</td><td>lib.rs</td></tr>
+        <tr><td><strong>pwiki-cli</strong></td><td>社区</td><td>Python</td><td>Karpathy 原版，brew 可安装</td><td>piwheels</td></tr>
+      </table>
+      <p>其中，目前功能最完善的是 <code>@jupiterthewarlock/llm-wiki</code>。</p>
+
+      <h3>深度剖析：@jupiterthewarlock/llm-wiki</h3>
+      <p>这是社区中 Star 最多、功能最全面的实现，版本号 <code>0.7.2</code>，要求 Node.js ≥ 20。</p>
+
+      <h4>安装与初始化</h4>
+      <pre><code>npm install -g @jupiterthewarlock/llm-wiki
+mkdir my-wiki && cd my-wiki
+llm-wiki init</code></pre>
+      <p>初始化后会生成：</p>
+      <pre><code>my-wiki/
+├── wiki/                 # AI 维护的 wiki 页面（兼容 Obsidian）
+├── sources/              # 原始文档，按日期分区
+├── .llm-wiki/            # 配置和同步状态
+├── .claude/skills/       # Claude Code 技能
+├── .agents/skills/       # Codex/OpenAI 技能
+├── wiki-purpose.md       # Wiki 范围和受众定义
+├── wiki-schema.md        # 页面类型、命名规范、frontmatter 格式
+├── wiki-agent.md         # Agent 身份和 ingest 规则
+├── wiki-log.md           # 追加式操作日志
+├── CLAUDE.md             # Claude Code 引导指令
+└── AGENTS.md             # Codex/OpenAI 引导指令</code></pre>
+
+      <h4>六大核心功能</h4>
+      <ol>
+        <li><strong>搜索（<code>llm-wiki search &lt;query&gt;</code>）：</strong>支持 BM25 关键词搜索，配置 DB9 后支持向量相似搜索，通过 RRF（倒数排名融合）合并结果，支持中文/日文/韩文分词。</li>
+        <li><strong>图谱分析（<code>llm-wiki graph</code>）：</strong>分析 wikilink 图谱，检测社群结构（标签传播算法）、枢纽页面、孤立页面、缺失页面。</li>
+        <li><strong>健康状态（<code>llm-wiki status</code>）：</strong>显示 vault 统计和健康摘要——页面数、源文件数、链接数、日志条目，以及健康检查（缺失文件、断链、无源页面、旧文件名检测）。</li>
+        <li><strong>同步跟踪（<code>llm-wiki sync</code>）：</strong>通过 mtime + SHA-256 内容哈希跟踪文件变更，自动追加同步摘要到 wiki-log.md。</li>
+        <li><strong>操作日志（<code>llm-wiki log &lt;verb&gt; &lt;subject&gt;</code>）：</strong>追加结构化条目到 wiki-log.md，支持额外细节行和最大条目限制。</li>
+        <li><strong>技能管理（<code>llm-wiki skill</code>）：</strong>安装/升级 AI 编程代理技能到 Claude Code 或 Codex 工作区。</li>
+      </ol>
+
+      <h4>与 Obsidian 的深度集成</h4>
+      <p>LLM Wiki 生成的所有 wiki 页面都兼容 Obsidian，你可以直接用 Obsidian 打开 <code>wiki/</code> 目录作为 vault，利用 Obsidian 的可视化图谱、反向链接面板来浏览和编辑 LLM 编译生成的知识网络。此外，还有专门的 <code>mindloom</code> 工具，可以将原始知识编织成 Obsidian 结构化的 wiki。</p>
+
+      <h3>其他实现简介</h3>
+      <ul>
+        <li><strong>@jackwener/llm-wiki：</strong>定位为 CLI 工具 + AI Agent 技能系统，维护一个不断进化、互联的 Markdown 知识库。核心思路是 AI agent 编译生成结构化 wiki 页面并持续维护。</li>
+        <li><strong>llm-wiki-karpathy：</strong>由 HarryLabs 维护的运行时工具链，可作为可安装的 CLI/MCP 工具链使用，版本 0.4.4。</li>
+        <li><strong>llm-wiki-engine：</strong>用 Rust 编写的单二进制引擎，内置 <strong>23 个 MCP 工具</strong>，无内置 LLM（由外部 AI 调用），MIT 和 Apache 2.0 双许可证。</li>
+      </ul>
+
+      <h2>五、LLM Wiki 的局限与批评</h2>
+      <p>LLM Wiki 虽然思路巧妙，但在实际落地中存在不可忽视的短板。一位博主用自己的五六年积累的 Obsidian 知识库（几千个文件、十几个领域）进行了实测，指出了几个关键问题：</p>
+
+      <h3>1. 百页规模瓶颈</h3>
+      <p>Karpathy 的原设计依赖一个 <code>index.md</code> 文件作为导航中枢：每次查询 LLM 先读它来定位相关页面，再深入阅读。这套方法在"约 100 个源、数百页"的规模下运行良好。但 wiki 增长到两三百页以上时，<code>index.md</code> 本身的长度就逼近 LLM 的上下文窗口，LLM 一次读不完，整个导航机制就失效了。</p>
+
+      <h3>2. 缺乏领域隔离</h3>
+      <p>真实的知识库大多是多领域的混合体——编程笔记、游戏攻略、设计素材、项目管理模板、个人健康记录、读书笔记混在一起。Karpathy 的 demo 场景（读一本书、研究一个课题）都是单一领域、天然内聚。但在多领域混合的 vault 中，跨领域的 wikilink 只会制造噪音。</p>
+
+      <h3>3. Ingest 受限于上下文窗口</h3>
+      <p>Ingest 流程有一个隐含假设：LLM 能一次性读完原始文档。但一本 400 页的书、一个数万文件的代码库、一套数千页的技术文档，LLM 一次读不完，提炼和整合就无从谈起——而这恰恰是 RAG 的用武之地。</p>
+
+      <h3>4. 内容类型单一</h3>
+      <p>真实知识库包含多种内容类型：周计划适合保持原样当工作记录，会议纪要需要完整存档，调试时的挫败感只有亲自经历才有意义。并非所有内容都适合被提炼成交叉引用的结构化知识。</p>
+
+      <h2>六、适用场景与选择建议</h2>
+      <h3>LLM Wiki 最适合</h3>
+      <ul class="checklist">
+        <li>✅ 研究一个特定课题（读书、写论文、竞品分析）</li>
+        <li>✅ 对单一领域做深度知识梳理</li>
+        <li>✅ 需要透明、可 Git 管理的知识库结构</li>
+        <li>✅ 偏好 Obsidian + Markdown 工作流</li>
+        <li>✅ 知识库规模在百页以内，领域相对集中</li>
+        <li>✅ 希望有 CLI 工具+AI 代理技能系统深度集成的开发者</li>
+      </ul>
+
+      <h3>传统 RAG 更适合</h3>
+      <ul class="checklist">
+        <li>✅ 知识库规模超大（数千文档、多领域）</li>
+        <li>✅ 原始文档超出 LLM 单次上下文窗口（大部头书籍、大型代码库）</li>
+        <li>✅ 需要快速部署，不想花时间"编译"知识</li>
+        <li>✅ 主要用于问答式检索，而非深度知识积累</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p style="margin:0;"><strong>务实建议：</strong>两者并非互斥。比较务实的做法是：<strong>用 RAG 处理发现和检索层，用 LLM Wiki 的思路处理提炼和积累层</strong>。或者借用 LLM Wiki 的"知识预编译"思路来优化 RAG 的 ingestion 环节，而在查询环节仍采用混合检索方案。</p>
+      </div>
+
+      <h2>七、总结</h2>
+      <p>LLM Wiki 的核心价值不在于它是不是一个完美的"下一代知识库方案"，而在于它<strong>重新定义了 AI 知识管理的思路</strong>：从"查询时拼凑碎片"转向"编译时构建结构化知识"。</p>
+      <p>这个范式有三个关键启发：</p>
+      <ol>
+        <li><strong>知识预编译 > 查询时检索：</strong>让 AI 在摄入阶段就把知识结构化，是比 RAG 更可持续的思路。</li>
+        <li><strong>透明胜过黑盒：</strong>纯 Markdown + Git 管理，完全透明——你知道知识库"记住了什么"，也能直接编辑修正。</li>
+        <li><strong>知识可以复利：</strong>每一次 ingest、每一次查询，都在丰富整个知识网络，越用越聪明。</li>
+      </ol>
+
+      <div class="warning-box">
+        <p style="margin:0;">同时需要清醒认识到它的现实局限：在当前 LLM 上下文窗口和推理成本的约束下，纯 LLM Wiki 方案能稳定运行的规模是有上限的。对于百页规模、单一领域的场景效果不错，但对于数千文件、跨领域的真实个人知识库，还需要配合 RAG 的检索能力和更精细的领域隔离策略。</p>
+      </div>
+      <p style="margin-top:14px;">社区目前已有多个可用工具——对于想体验的开发者，推荐从 <code>@jupiterthewarlock/llm-wiki</code> 入手；对于偏好 Rust 和性能的用户，可以尝试 <code>llm-wiki-engine</code>；对于想体验 Karpathy 原版的用户，可以用 <code>pwiki-cli</code> 一键安装。</p>
+    </div>
+
+    <div class="ad-unit ad-footer">
+      <span>📢 广告位</span>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+</body>
+</html>
