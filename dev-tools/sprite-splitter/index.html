@@ -7,337 +7,176 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
   <meta name="description" content="在线Sprite Sheet切割工具 — 将精灵图/雪碧图按行列自动切割为单张图片，支持JSZip打包下载，纯前端处理。">
   <title>Sprite Sheet 切割 · 图片盒子</title>
-  <!-- 引入 JSZip 用于打包下载 -->
+  <link rel="stylesheet" href="../../assets/css/main.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    :root {
-      --bg: #1e1e2e;
-      --panel: #282840;
-      --border: #3b3b5c;
-      --text: #cdd6f4;
-      --accent: #89b4fa;
-      --accent-hover: #74c7ec;
-      --input-bg: #313150;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .app {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      max-width: 1400px;
-      width: 100%;
-    }
-    .panel {
-      background: var(--panel);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-    .left-panel {
-      flex: 1 1 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-width: 350px;
-    }
-    .right-panel {
-      flex: 1 1 400px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-width: 300px;
-    }
-    h2 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--accent);
-      letter-spacing: 0.5px;
-    }
-    .upload-area {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 30px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      background: var(--input-bg);
-    }
-    .upload-area:hover {
-      border-color: var(--accent);
-      background: #2a2a45;
-    }
-    .upload-area input {
-      display: none;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-    }
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    label {
-      font-size: 0.9rem;
-      color: #a6adc8;
-    }
-    input[type="number"], select {
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: var(--text);
-      font-size: 0.9rem;
-      width: 80px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="number"]:focus, select:focus {
-      border-color: var(--accent);
-    }
-    button {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-weight: 600;
-      color: #1e1e2e;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      font-size: 0.9rem;
-    }
-    button:hover {
-      background: var(--accent-hover);
-    }
-    button:active {
-      transform: scale(0.97);
-    }
-    button.secondary {
-      background: var(--border);
-      color: var(--text);
-    }
-    button.secondary:hover {
-      background: #4c4c7a;
-    }
-    .canvas-container {
-      background: #0f0f1a;
-      border-radius: 12px;
-      overflow: auto;
-      max-height: 500px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid var(--border);
-      position: relative;
-      min-height: 200px;
-    }
-    canvas#mainCanvas {
-      display: block;
-      max-width: 100%;
-      height: auto;
-    }
-    .preview-box {
-      background: #0f0f1a;
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .frames-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-      padding-right: 6px;
-    }
-    .frame-item {
-      background: var(--input-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .frame-item:hover {
-      border-color: var(--accent);
-      transform: scale(1.03);
-    }
-    .frame-item canvas {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: auto;
-    }
-    .info-text {
-      font-size: 0.85rem;
-      color: #a6adc8;
-      margin-top: 4px;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #1e1e2e;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #4c4c7a;
-      border-radius: 3px;
-    }
+    .upload-zone { border: 3px dashed var(--border); border-radius: 16px; padding: 30px 20px;
+      text-align: center; cursor: pointer; transition: var(--transition); background: #fafbfc; margin-bottom: 14px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: #eef2ff; }
+    .config-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+    .config-row label { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+    .config-row input, .config-row select { padding: 6px 8px; border: 2px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+    .config-row input:focus, .config-row select:focus { border-color: var(--accent); outline: none; }
+    .main-canvas-wrap { background: #f8fafc; border-radius: 12px; overflow: auto; max-height: 500px;
+      display: flex; justify-content: center; align-items: center; border: 2px solid var(--border);
+      min-height: 200px; margin: 10px 0; }
+    .main-canvas-wrap canvas { display: block; max-width: 100%; height: auto; }
+    .preview-box { background: #f8fafc; border-radius: 12px; padding: 10px;
+      text-align: center; border: 2px solid var(--border); margin: 8px 0; }
+    .preview-box canvas { max-width: 100%; height: auto; }
+    .frames-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px; margin: 8px 0; }
+    .frame-item { background: #f8fafc; border-radius: 8px; overflow: hidden; cursor: pointer;
+      border: 2px solid var(--border); transition: var(--transition); }
+    .frame-item:hover { border-color: var(--accent); transform: scale(1.03); box-shadow: var(--shadow-sm); }
+    .frame-item.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .frame-item canvas { width: 100%; height: auto; display: block; }
+    .info-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-<div class="app">
-  <!-- 左侧：原图与切割网格 -->
-  <div class="panel left-panel">
-    <h2>📁 上传 Sprite Sheet</h2>
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept="image/*">
-      <span id="uploadText">点击或拖拽图片到此处</span>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../../image-tools/index.html">🖼️ 图片盒子</a> <span class="sep">›</span> Sprite Sheet 切割
     </div>
-    <div class="controls">
-      <div class="control-group">
-        <label>模式</label>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🧩 Sprite Sheet 切割</h2>
+      <p class="panel-desc">在线精灵图/雪碧图切割工具。上传Sprite Sheet，按行列或像素自动切割为单帧，支持动画预览、单帧导出和JSZip打包下载。纯前端处理，图片不上传服务器。</p>
+
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+      <div class="upload-zone" id="uploadZone">
+        <span style="font-size:2rem;display:block;margin-bottom:4px;">📁</span>
+        <span style="font-size:0.9rem;" id="uploadLabel">点击或拖拽 Sprite Sheet 图片到此处</span>
+      </div>
+
+      <div class="config-row">
+        <label>切割模式：</label>
         <select id="splitMode">
-          <option value="grid" selected>按行/列</option>
+          <option value="grid">按行列</option>
           <option value="pixel">按像素</option>
         </select>
+        <span id="gridInputs">
+          <label style="margin-left:8px;">列</label>
+          <input type="number" id="cols" value="4" min="1" max="100" style="width:60px;">
+          <label style="margin-left:4px;">行</label>
+          <input type="number" id="rows" value="4" min="1" max="100" style="width:60px;">
+        </span>
+        <span id="pixelInputs" style="display:none;">
+          <label style="margin-left:8px;">帧宽</label>
+          <input type="number" id="frameW" value="32" min="1" style="width:60px;">
+          <label style="margin-left:4px;">帧高</label>
+          <input type="number" id="frameH" value="32" min="1" style="width:60px;">
+        </span>
+        <button class="btn btn-primary btn-sm" id="applyBtn" style="margin-left:4px;">✂️ 应用切割</button>
       </div>
-      <div class="control-group" id="gridInputs">
-        <label>列</label>
-        <input type="number" id="cols" value="4" min="1" max="100">
-        <label>行</label>
-        <input type="number" id="rows" value="4" min="1" max="100">
+
+      <div class="two-col">
+        <div>
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:6px;">🖼️ 原始图 & 网格</h3>
+          <div class="main-canvas-wrap" id="mainContainer">
+            <canvas id="mainCanvas"></canvas>
+          </div>
+          <div class="info-text" id="imageInfo"></div>
+        </div>
+        <div>
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:6px;">🎞️ 帧列表</h3>
+          <div class="frames-grid" id="framesContainer">
+            <div style="font-size:0.82rem;color:var(--text-muted);padding:20px;text-align:center;">请先上传图片</div>
+          </div>
+          <div class="info-text" id="frameCountText"></div>
+
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:6px;margin-top:12px;">▶️ 动画预览</h3>
+          <div class="preview-box">
+            <canvas id="previewCanvas" width="200" height="200"></canvas>
+          </div>
+          <div class="config-row">
+            <label>FPS</label>
+            <input type="number" id="fps" value="8" min="1" max="60" style="width:55px;">
+            <button class="btn btn-primary btn-sm" id="playBtn">▶ 播放</button>
+            <button class="btn btn-sm" id="stopBtn">⏹️ 停止</button>
+          </div>
+
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-primary btn-sm" id="exportFrameBtn">⬇️ 导出当前帧</button>
+            <button class="btn btn-primary btn-sm" id="exportAllBtn">📦 导出全部帧 (ZIP)</button>
+          </div>
+        </div>
       </div>
-      <div class="control-group" id="pixelInputs" style="display: none;">
-        <label>帧宽</label>
-        <input type="number" id="frameW" value="32" min="1">
-        <label>帧高</label>
-        <input type="number" id="frameH" value="32" min="1">
-      </div>
-      <button id="applyBtn">应用切割</button>
     </div>
-    <h2>🖼️ 原始图 & 网格</h2>
-    <div class="canvas-container" id="mainContainer">
-      <canvas id="mainCanvas"></canvas>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🖼️ 更多图片工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
     </div>
-    <div class="info-text" id="imageInfo"></div>
   </div>
 
-  <!-- 右侧：帧列表与动画预览 -->
-  <div class="panel right-panel">
-    <h2>🎞️ 帧列表</h2>
-    <div class="frames-grid" id="framesContainer"></div>
-    <div class="info-text" id="frameCountText"></div>
-    
-    <h2>▶️ 动画预览</h2>
-    <div class="preview-box">
-      <canvas id="previewCanvas"></canvas>
-    </div>
-    <div class="controls" style="margin-top: 10px;">
-      <div class="control-group">
-        <label>FPS</label>
-        <input type="number" id="fps" value="8" min="1" max="60" style="width:70px;">
-      </div>
-      <button id="playBtn">▶ 播放</button>
-      <button id="stopBtn" class="secondary">⏹️ 停止</button>
-    </div>
-
-    <div class="actions">
-      <button id="exportFrameBtn">⬇️ 导出当前帧</button>
-      <button id="exportAllBtn">📦 导出全部帧 (ZIP)</button>
-    </div>
-  </div>
-</div>
-
-<script>
+  <script src="../../assets/js/common.js"></script>
+  <script>
   (function() {
-    // ---------- DOM 元素 ----------
-    const fileInput = document.getElementById('fileInput');
-    const uploadArea = document.getElementById('uploadArea');
-    const uploadText = document.getElementById('uploadText');
-    const splitMode = document.getElementById('splitMode');
-    const gridInputs = document.getElementById('gridInputs');
-    const pixelInputs = document.getElementById('pixelInputs');
-    const colsInput = document.getElementById('cols');
-    const rowsInput = document.getElementById('rows');
-    const frameWInput = document.getElementById('frameW');
-    const frameHInput = document.getElementById('frameH');
-    const applyBtn = document.getElementById('applyBtn');
-    const mainCanvas = document.getElementById('mainCanvas');
-    const mainCtx = mainCanvas.getContext('2d');
-    const framesContainer = document.getElementById('framesContainer');
-    const frameCountText = document.getElementById('frameCountText');
-    const previewCanvas = document.getElementById('previewCanvas');
-    const previewCtx = previewCanvas.getContext('2d');
-    const fpsInput = document.getElementById('fps');
-    const playBtn = document.getElementById('playBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const exportFrameBtn = document.getElementById('exportFrameBtn');
-    const exportAllBtn = document.getElementById('exportAllBtn');
-    const imageInfo = document.getElementById('imageInfo');
-    const mainContainer = document.getElementById('mainContainer');
+    var fileInput = document.getElementById('fileInput');
+    var uploadZone = document.getElementById('uploadZone');
+    var uploadLabel = document.getElementById('uploadLabel');
+    var splitMode = document.getElementById('splitMode');
+    var gridInputs = document.getElementById('gridInputs');
+    var pixelInputs = document.getElementById('pixelInputs');
+    var colsInput = document.getElementById('cols');
+    var rowsInput = document.getElementById('rows');
+    var frameWInput = document.getElementById('frameW');
+    var frameHInput = document.getElementById('frameH');
+    var applyBtn = document.getElementById('applyBtn');
+    var mainCanvas = document.getElementById('mainCanvas');
+    var mainCtx = mainCanvas.getContext('2d');
+    var framesContainer = document.getElementById('framesContainer');
+    var frameCountText = document.getElementById('frameCountText');
+    var previewCanvas = document.getElementById('previewCanvas');
+    var previewCtx = previewCanvas.getContext('2d');
+    var fpsInput = document.getElementById('fps');
+    var playBtn = document.getElementById('playBtn');
+    var stopBtn = document.getElementById('stopBtn');
+    var exportFrameBtn = document.getElementById('exportFrameBtn');
+    var exportAllBtn = document.getElementById('exportAllBtn');
+    var imageInfo = document.getElementById('imageInfo');
+    var mainContainer = document.getElementById('mainContainer');
 
-    // ---------- 状态 ----------
-    let spriteImage = new Image();
-    let frames = [];                // 存储每帧 { canvas, index }
-    let currentFrameIndex = 0;
-    let animationId = null;
-    let isPlaying = false;
-    let imageLoaded = false;
+    var spriteImage = new Image();
+    var frames = [];
+    var currentFrameIndex = 0;
+    var animationId = null;
+    var isPlaying = false;
+    var imageLoaded = false;
 
-    // ---------- 初始化事件 ----------
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => {
+    uploadZone.addEventListener('click', function() { fileInput.click(); });
+    uploadZone.addEventListener('dragover', function(e) {
       e.preventDefault();
-      uploadArea.style.borderColor = 'var(--accent)';
+      uploadZone.classList.add('dragover');
     });
-    uploadArea.addEventListener('dragleave', () => {
-      uploadArea.style.borderColor = 'var(--border)';
+    uploadZone.addEventListener('dragleave', function() {
+      uploadZone.classList.remove('dragover');
     });
-    uploadArea.addEventListener('drop', (e) => {
+    uploadZone.addEventListener('drop', function(e) {
       e.preventDefault();
-      uploadArea.style.borderColor = 'var(--border)';
-      const file = e.dataTransfer.files[0];
+      uploadZone.classList.remove('dragover');
+      var file = e.dataTransfer.files[0];
       if (file) loadImage(file);
     });
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+    fileInput.addEventListener('change', function() {
+      var file = fileInput.files[0];
       if (file) loadImage(file);
     });
 
-    splitMode.addEventListener('change', () => {
+    splitMode.addEventListener('change', function() {
       if (splitMode.value === 'grid') {
-        gridInputs.style.display = 'flex';
+        gridInputs.style.display = '';
         pixelInputs.style.display = 'none';
       } else {
         gridInputs.style.display = 'none';
-        pixelInputs.style.display = 'flex';
+        pixelInputs.style.display = '';
       }
     });
 
@@ -347,15 +186,14 @@
     exportFrameBtn.addEventListener('click', exportCurrentFrame);
     exportAllBtn.addEventListener('click', exportAllFrames);
 
-    // ---------- 图片加载 ----------
     function loadImage(file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        spriteImage.onload = () => {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        spriteImage.onload = function() {
           imageLoaded = true;
           displayMainImage();
           cutSprite();
-          uploadText.textContent = file.name;
+          uploadLabel.textContent = file.name;
         };
         spriteImage.src = e.target.result;
       };
@@ -367,19 +205,15 @@
       mainCanvas.height = spriteImage.height;
       mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
       mainCtx.drawImage(spriteImage, 0, 0);
-      imageInfo.textContent = `尺寸: ${spriteImage.width} x ${spriteImage.height} px`;
+      imageInfo.textContent = '尺寸: ' + spriteImage.width + ' × ' + spriteImage.height + ' px';
     }
 
-    // ---------- 切割核心 ----------
     function cutSprite() {
-      if (!imageLoaded) {
-        alert('请先上传一张图片');
-        return;
-      }
+      if (!imageLoaded) { showToast('请先上传一张图片'); return; }
 
-      const imgW = spriteImage.width;
-      const imgH = spriteImage.height;
-      let frameWidth, frameHeight, cols, rows;
+      var imgW = spriteImage.width;
+      var imgH = spriteImage.height;
+      var frameWidth, frameHeight, cols, rows;
 
       if (splitMode.value === 'grid') {
         cols = parseInt(colsInput.value, 10) || 1;
@@ -388,7 +222,6 @@
         if (rows < 1) rows = 1;
         frameWidth = Math.floor(imgW / cols);
         frameHeight = Math.floor(imgH / rows);
-        // 同步像素输入框
         frameWInput.value = frameWidth;
         frameHInput.value = frameHeight;
       } else {
@@ -402,64 +235,65 @@
         rowsInput.value = rows;
       }
 
-      // 清除旧帧
       frames = [];
       framesContainer.innerHTML = '';
 
-      // 重新绘制主画布及网格
+      mainCanvas.width = imgW;
+      mainCanvas.height = imgH;
       mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
       mainCtx.drawImage(spriteImage, 0, 0);
-      mainCtx.strokeStyle = '#ff5555';
+      mainCtx.strokeStyle = '#ef4444';
       mainCtx.lineWidth = 2;
 
-      // 遍历切割
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = c * frameWidth;
-          const y = r * frameHeight;
-          // 绘制网格
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var x = c * frameWidth;
+          var y = r * frameHeight;
           mainCtx.strokeRect(x, y, frameWidth, frameHeight);
-          
-          // 创建帧 canvas
-          const frameCanvas = document.createElement('canvas');
+
+          var frameCanvas = document.createElement('canvas');
           frameCanvas.width = frameWidth;
           frameCanvas.height = frameHeight;
-          const fCtx = frameCanvas.getContext('2d');
+          var fCtx = frameCanvas.getContext('2d');
           fCtx.drawImage(spriteImage, x, y, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
-          
+
           frames.push({ canvas: frameCanvas, index: frames.length });
-          
-          // 创建缩略图元素
-          const thumbWrapper = document.createElement('div');
+
+          var thumbWrapper = document.createElement('div');
           thumbWrapper.className = 'frame-item';
-          const thumbCanvas = document.createElement('canvas');
+          var thumbCanvas = document.createElement('canvas');
           thumbCanvas.width = frameWidth;
           thumbCanvas.height = frameHeight;
-          const thumbCtx = thumbCanvas.getContext('2d');
+          var thumbCtx = thumbCanvas.getContext('2d');
           thumbCtx.drawImage(frameCanvas, 0, 0);
           thumbWrapper.appendChild(thumbCanvas);
-          thumbWrapper.addEventListener('click', () => {
-            currentFrameIndex = frames.findIndex(f => f.canvas === frameCanvas);
-            drawPreviewFrame(currentFrameIndex);
-          });
+          thumbWrapper.addEventListener('click', (function(idx) {
+            return function() {
+              currentFrameIndex = idx;
+              drawPreviewFrame(idx);
+              var prevSelected = framesContainer.querySelector('.frame-item.selected');
+              if (prevSelected) prevSelected.classList.remove('selected');
+              thumbWrapper.classList.add('selected');
+            };
+          })(frames.length - 1));
           framesContainer.appendChild(thumbWrapper);
         }
       }
 
-      frameCountText.textContent = `共 ${frames.length} 帧，每帧 ${frameWidth}x${frameHeight} px`;
-      
-      // 重置预览到第一帧并停止动画
+      frameCountText.textContent = '共 ' + frames.length + ' 帧，每帧 ' + frameWidth + '×' + frameHeight + ' px';
+
       stopAnimation();
       currentFrameIndex = 0;
       if (frames.length > 0) {
         drawPreviewFrame(0);
+        var firstThumb = framesContainer.querySelector('.frame-item');
+        if (firstThumb) firstThumb.classList.add('selected');
       }
     }
 
-    // ---------- 预览 ----------
     function drawPreviewFrame(index) {
       if (frames.length === 0) return;
-      const frame = frames[index];
+      var frame = frames[index];
       previewCanvas.width = frame.canvas.width;
       previewCanvas.height = frame.canvas.height;
       previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
@@ -467,20 +301,17 @@
     }
 
     function playAnimation() {
-      if (frames.length === 0) {
-        alert('没有帧可播放');
-        return;
-      }
+      if (frames.length === 0) { showToast('没有帧可播放'); return; }
       if (isPlaying) return;
       isPlaying = true;
-      const fps = Math.max(1, parseInt(fpsInput.value, 10) || 8);
-      const interval = 1000 / fps;
-      let lastTime = 0;
+      var fps = Math.max(1, parseInt(fpsInput.value, 10) || 8);
+      var interval = 1000 / fps;
+      var lastTime = 0;
 
       function step(timestamp) {
         if (!isPlaying) return;
         if (!lastTime) lastTime = timestamp;
-        const elapsed = timestamp - lastTime;
+        var elapsed = timestamp - lastTime;
         if (elapsed >= interval) {
           drawPreviewFrame(currentFrameIndex);
           currentFrameIndex = (currentFrameIndex + 1) % frames.length;
@@ -499,75 +330,66 @@
       }
     }
 
-    // ---------- 导出 ----------
     function exportCurrentFrame() {
-      if (frames.length === 0) {
-        alert('没有可导出的帧');
-        return;
-      }
-      const frame = frames[currentFrameIndex];
-      downloadCanvas(frame.canvas, `frame_${currentFrameIndex}.png`);
+      if (frames.length === 0) { showToast('没有可导出的帧'); return; }
+      var frame = frames[currentFrameIndex];
+      downloadCanvas(frame.canvas, 'frame_' + currentFrameIndex + '.png');
     }
 
     async function exportAllFrames() {
-      if (frames.length === 0) {
-        alert('没有可导出的帧');
-        return;
-      }
-      if (typeof JSZip === 'undefined') {
-        alert('JSZip 库加载失败，请检查网络连接');
-        return;
-      }
-      const zip = new JSZip();
-      frames.forEach((frame, idx) => {
-        // 将 canvas 转为 blob 再添加到 zip
-        return new Promise(resolve => {
-          frame.canvas.toBlob(blob => {
-            zip.file(`frame_${idx}.png`, blob);
+      if (frames.length === 0) { showToast('没有可导出的帧'); return; }
+      if (typeof JSZip === 'undefined') { showToast('JSZip 库加载失败，请检查网络连接'); return; }
+      var zip = new JSZip();
+      await Promise.all(frames.map(function(frame, idx) {
+        return new Promise(function(resolve) {
+          frame.canvas.toBlob(function(blob) {
+            zip.file('frame_' + idx + '.png', blob);
             resolve();
           }, 'image/png');
         });
-      });
-
-      // 等待所有帧添加完毕
-      await Promise.all(frames.map((frame, idx) => 
-        new Promise(resolve => {
-          frame.canvas.toBlob(blob => {
-            zip.file(`frame_${idx}.png`, blob);
-            resolve();
-          }, 'image/png');
-        })
-      ));
-
-      const content = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(content);
-      const a = document.createElement('a');
+      }));
+      var content = await zip.generateAsync({ type: 'blob' });
+      var url = URL.createObjectURL(content);
+      var a = document.createElement('a');
       a.href = url;
       a.download = 'sprites.zip';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      showToast('✅ 已导出: sprites.zip');
     }
 
     function downloadCanvas(canvas, filename) {
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+      canvas.toBlob(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        showToast('✅ 已导出: ' + filename);
       }, 'image/png');
     }
 
-    // 清理动画（页面卸载时）
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', function() {
       stopAnimation();
     });
+
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../color-picker', i: '💉', n: '图片颜色拾取' },
+      { h: '../color-convert', i: '🎨', n: '颜色转换' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../watermark-removal', i: '🖌️', n: '水印去除' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
   })();
-</script>
+  </script>
 </body>
 </html>
