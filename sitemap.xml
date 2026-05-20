@@ -78,6 +78,7 @@
 
   <!-- 图片盒子 -->
   <url><loc>https://www.xkitbox.xyz/image-tools/</loc><priority>0.8</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/sprite-splitter/</loc><priority>0.6</priority></url>
 
   <!-- 文件盒子 -->
   <url><loc>https://www.xkitbox.xyz/file-tools/</loc><priority>0.8</priority></url>
