@@ -71,7 +71,6 @@
           <label style="margin-left:4px;">帧高</label>
           <input type="number" id="frameH" value="32" min="1" style="width:60px;">
         </span>
-        <button class="btn btn-primary btn-sm" id="applyBtn" style="margin-left:4px;">✂️ 应用切割</button>
       </div>
 
       <div class="two-col">
@@ -129,7 +128,6 @@
     var rowsInput = document.getElementById('rows');
     var frameWInput = document.getElementById('frameW');
     var frameHInput = document.getElementById('frameH');
-    var applyBtn = document.getElementById('applyBtn');
     var mainCanvas = document.getElementById('mainCanvas');
     var mainCtx = mainCanvas.getContext('2d');
     var framesContainer = document.getElementById('framesContainer');
@@ -170,7 +168,7 @@
       if (file) loadImage(file);
     });
 
-    splitMode.addEventListener('change', function() {
+    function onCutParamChange() {
       if (splitMode.value === 'grid') {
         gridInputs.style.display = '';
         pixelInputs.style.display = 'none';
@@ -178,9 +176,22 @@
         gridInputs.style.display = 'none';
         pixelInputs.style.display = '';
       }
+      if (imageLoaded) cutSprite();
+    }
+
+    splitMode.addEventListener('change', onCutParamChange);
+    colsInput.addEventListener('input', onCutParamChange);
+    rowsInput.addEventListener('input', onCutParamChange);
+    frameWInput.addEventListener('input', onCutParamChange);
+    frameHInput.addEventListener('input', onCutParamChange);
+
+    fpsInput.addEventListener('input', function() {
+      if (isPlaying) {
+        stopAnimation();
+        playAnimation();
+      }
     });
 
-    applyBtn.addEventListener('click', cutSprite);
     playBtn.addEventListener('click', playAnimation);
     stopBtn.addEventListener('click', stopAnimation);
     exportFrameBtn.addEventListener('click', exportCurrentFrame);
