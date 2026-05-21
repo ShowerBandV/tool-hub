@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <meta name="description" content="骰子与幸运抽签 — 3D骰子掷点数和幸运签文，休闲娱乐小工具。">
+  <title>骰子/抽签 · 游戏盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .dice-scene { perspective: 600px; width: 120px; height: 120px; margin: 0 auto; }
+    .dice-cube {
+      width: 100px; height: 100px; position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.25,0.1,0.1,1);
+      margin: 10px auto;
+    }
+    .dice-cube.rolling { animation: diceRoll 0.7s ease-out; }
+    @keyframes diceRoll {
+      0%   { transform: rotateX(0) rotateY(0) rotateZ(0); }
+      30%  { transform: rotateX(520deg) rotateY(380deg) rotateZ(200deg); }
+      60%  { transform: rotateX(800deg) rotateY(640deg) rotateZ(400deg); }
+      85%  { transform: rotateX(940deg) rotateY(780deg) rotateZ(500deg); }
+      100% { transform: rotateX(900deg) rotateY(720deg) rotateZ(480deg); }
+    }
+    .dice-face {
+      position: absolute; width: 100px; height: 100px;
+      background: #fff; border: 3px solid #333; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; font-weight: 900; color: #222;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.08);
+    }
+    .dice-face.front  { transform: translateZ(50px); }
+    .dice-face.back   { transform: rotateY(180deg) translateZ(50px); }
+    .dice-face.right  { transform: rotateY(90deg) translateZ(50px); }
+    .dice-face.left   { transform: rotateY(-90deg) translateZ(50px); }
+    .dice-face.top    { transform: rotateX(90deg) translateZ(50px); }
+    .dice-face.bottom { transform: rotateX(-90deg) translateZ(50px); }
+    .output-area {
+      background: #f8fafc; border: 2px solid var(--border);
+      border-radius: var(--radius-xs); padding: 14px 16px;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      line-height: 1.6; min-height: 80px;
+      color: var(--text); margin-top: 6px;
+    }
+    @media (max-width: 768px) {
+      .dice-scene { width: 90px; height: 90px; }
+      .dice-cube { width: 70px; height: 70px; }
+      .dice-face { width: 70px; height: 70px; font-size: 28px; border-radius: 10px; }
+      .dice-face.front  { transform: translateZ(35px); }
+      .dice-face.back   { transform: rotateY(180deg) translateZ(35px); }
+      .dice-face.right  { transform: rotateY(90deg) translateZ(35px); }
+      .dice-face.left   { transform: rotateY(-90deg) translateZ(35px); }
+      .dice-face.top    { transform: rotateX(90deg) translateZ(35px); }
+      .dice-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🎮 游戏盒子</a> <span class="sep">›</span> 骰子/抽签
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🎯</span>
+        <span class="app-title">骰子 / 幸运抽签</span>
+      </div>
+      <p class="app-subtitle">3D骰子掷点数，或求签获取幸运指引</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="input-row" style="justify-content:center;">
+        <button class="btn btn-primary" onclick="rollDice()" id="diceBtn">🎲 掷骰子</button>
+        <button class="btn btn-outline" onclick="drawLottery()" id="lotteryBtn">🏮 求签</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;margin-top:10px;">
+        <div style="text-align:center;">
+          <div class="dice-scene">
+            <div class="dice-cube" id="diceCube">
+              <div class="dice-face front">⚀</div>
+              <div class="dice-face back">⚀</div>
+              <div class="dice-face right">⚀</div>
+              <div class="dice-face left">⚀</div>
+              <div class="dice-face top">⚀</div>
+              <div class="dice-face bottom">⚀</div>
+            </div>
+          </div>
+          <div style="font-size:1.2rem;font-weight:700;margin-top:4px;" id="diceResult">1 ⚀</div>
+        </div>
+        <div style="flex:1;min-width:200px;text-align:center;">
+          <div class="output-area" id="lotteryResult" style="min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <span style="font-size:1.2rem;">🏮 点击求签</span>
+          </div>
+          <div id="lotteryHistory" style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;text-align:center;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+    const diceRot = {1:'rotateX(0deg) rotateY(0deg)',2:'rotateX(-90deg) rotateY(0deg)',3:'rotateX(0deg) rotateY(90deg)',4:'rotateX(0deg) rotateY(-90deg)',5:'rotateX(90deg) rotateY(0deg)',6:'rotateX(180deg) rotateY(0deg)'};
+    const LOTTERY = [
+      { level:'上上签', icon:'🌟', color:'#dc2626', desc:'大吉大利，万事如意！运势极佳，逢凶化吉。' },
+      { level:'上签', icon:'⭐', color:'#ea580c', desc:'吉星高照，运势顺畅。努力可成，贵人相助。' },
+      { level:'中上签', icon:'✨', color:'#ca8a04', desc:'渐入佳境，平稳向上。虽有波折，终有收获。' },
+      { level:'中签', icon:'🌿', color:'#4f46e5', desc:'平平稳稳，顺其自然。不急不躁，静待时机。' },
+      { level:'中下签', icon:'🍂', color:'#6b7280', desc:'稍有不顺，宜守不宜攻。忍耐为上，等待转机。' },
+      { level:'下签', icon:'🌧️', color:'#64748b', desc:'低谷时期，小心行事。塞翁失马，焉知非福。' }
+    ];
+    let history = [];
+
+    function rollDice() {
+      const btn = document.getElementById('diceBtn'); btn.disabled = true;
+      const cube = document.getElementById('diceCube');
+      cube.classList.remove('rolling'); void cube.offsetWidth;
+      cube.classList.add('rolling');
+      const r = Math.floor(Math.random() * 6) + 1;
+      setTimeout(() => {
+        cube.classList.remove('rolling');
+        cube.style.transform = diceRot[r];
+        document.getElementById('diceResult').textContent = r + ' ' + diceFaces[r - 1];
+        btn.disabled = false;
+      }, 750);
+    }
+
+    function drawLottery() {
+      const btn = document.getElementById('lotteryBtn'); btn.disabled = true;
+      const el = document.getElementById('lotteryResult');
+      el.innerHTML = '🏮 正在求签...';
+      const idx = Math.floor(Math.random() * LOTTERY.length);
+      const r = LOTTERY[idx];
+      setTimeout(() => {
+        el.innerHTML = '<div style="font-size:2rem;">' + r.icon + '</div><div style="font-size:1.2rem;font-weight:700;color:' + r.color + ';">' + r.level + '</div><div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">' + r.desc + '</div>';
+        history.unshift(r.level);
+        if (history.length > 8) history.pop();
+        document.getElementById('lotteryHistory').textContent = '历史：' + history.join(' → ');
+        btn.disabled = false;
+      }, 1200);
+    }
+
+    document.getElementById('diceCube').style.transform = diceRot[1];
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>">
+  <meta name="description" content="CSS渐变生成器 — 可视化生成线性/径向渐变CSS代码，支持多色标。">
+  <title>渐变生成器 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .output-area {
+      background: #f8fafc; border: 2px solid var(--border);
+      border-radius: var(--radius-xs); padding: 14px 16px;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      line-height: 1.6; color: var(--text); margin-top: 6px;
+    }
+    .gradient-preview {
+      width: 100%; height: 140px;
+      border-radius: var(--radius-sm);
+      border: 2px dashed var(--border); transition: all 0.3s;
+      margin-top: 10px;
+    }
+    .color-stop-row {
+      display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap;
+    }
+    .color-stop-row input[type="color"] {
+      width: 38px; height: 32px; border: 2px solid var(--border);
+      border-radius: 6px; cursor: pointer; background: transparent; padding: 2px;
+    }
+    .color-stop-row input[type="range"] { flex: 1; min-width: 80px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 渐变生成器
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🌈</span>
+        <span class="app-title">CSS渐变生成器</span>
+      </div>
+      <p class="app-subtitle">可视化生成线性/径向渐变CSS代码，支持多色标拖拽</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="input-row">
+        <div class="form-group">
+          <label class="form-label">渐变类型</label>
+          <select class="form-select" id="grad-type" onchange="updateGradient()">
+            <option value="linear">线性渐变 (linear)</option>
+            <option value="radial">径向渐变 (radial)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">角度 <span id="angleLabel" style="font-weight:400;">135°</span></label>
+          <input type="range" class="form-input" id="grad-angle" min="0" max="360" value="135" oninput="updateGradient()" style="padding:4px 0;border:none;">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+        <label class="form-label" style="margin:0;">色标</label>
+        <button class="btn btn-outline btn-sm" onclick="addStop()">+ 添加色标</button>
+      </div>
+      <div id="stops">
+        <div class="color-stop-row">
+          <input type="color" value="#4f46e5" onchange="updateGradient()">
+          <input type="range" min="0" max="100" value="0" oninput="updateGradient()">
+          <span class="text-sm" style="min-width:35px;font-size:0.78rem;color:var(--text-muted);">0%</span>
+          <button class="btn btn-sm btn-danger" onclick="removeStop(this)">✕</button>
+        </div>
+        <div class="color-stop-row">
+          <input type="color" value="#a78bfa" onchange="updateGradient()">
+          <input type="range" min="0" max="100" value="100" oninput="updateGradient()">
+          <span class="text-sm" style="min-width:35px;font-size:0.78rem;color:var(--text-muted);">100%</span>
+          <button class="btn btn-sm btn-danger" onclick="removeStop(this)">✕</button>
+        </div>
+      </div>
+      <div class="gradient-preview" id="gradPreview"></div>
+      <label class="form-label" style="margin-top:10px;">CSS代码</label>
+      <div class="output-area" id="cssOutput">background: linear-gradient(135deg, #4f46e5 0%, #a78bfa 100%);</div>
+      <button class="btn btn-outline btn-sm" onclick="copyCSS()" style="margin-top:6px;">📋 复制CSS</button>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function updateGradient() {
+      const type = document.getElementById('grad-type').value;
+      const angle = parseInt(document.getElementById('grad-angle').value);
+      document.getElementById('angleLabel').textContent = angle + '°';
+      const rows = document.querySelectorAll('#stops .color-stop-row');
+      const stops = [];
+      rows.forEach(row => {
+        const color = row.querySelector('input[type="color"]').value;
+        const pos = parseInt(row.querySelector('input[type="range"]').value);
+        row.querySelector('.text-sm').textContent = pos + '%';
+        stops.push(color + ' ' + pos + '%');
+      });
+      const css = type === 'linear'
+        ? 'background: linear-gradient(' + angle + 'deg, ' + stops.join(', ') + ');'
+        : 'background: radial-gradient(circle, ' + stops.join(', ') + ');';
+      document.getElementById('cssOutput').textContent = css;
+      document.getElementById('gradPreview').style.background = type === 'linear'
+        ? 'linear-gradient(' + angle + 'deg, ' + stops.join(', ') + ')'
+        : 'radial-gradient(circle, ' + stops.join(', ') + ')';
+    }
+    function addStop() {
+      const container = document.getElementById('stops');
+      const rows = container.querySelectorAll('.color-stop-row');
+      let pos = 50;
+      if (rows.length > 1) {
+        const last = rows[rows.length-1];
+        pos = Math.min(100, parseInt(last.querySelector('input[type="range"]').value) + 10);
+      }
+      const div = document.createElement('div'); div.className = 'color-stop-row';
+      div.innerHTML = '<input type="color" value="#4f46e5" onchange="updateGradient()"><input type="range" min="0" max="100" value="' + pos + '" oninput="updateGradient()"><span class="text-sm" style="min-width:35px;font-size:0.78rem;color:var(--text-muted);">' + pos + '%</span><button class="btn btn-sm btn-danger" onclick="removeStop(this)">✕</button>';
+      container.appendChild(div);
+      updateGradient();
+    }
+    function removeStop(btn) {
+      if (document.querySelectorAll('#stops .color-stop-row').length <= 2) { showToast('⚠️ 至少需要2个色标'); return; }
+      btn.closest('.color-stop-row').remove();
+      updateGradient();
+    }
+    function copyCSS() {
+      navigator.clipboard.writeText(document.getElementById('cssOutput').textContent).then(() => showToast('✅ CSS已复制'));
+    }
+    updateGradient();
+  </script>
+</body>
+</html>

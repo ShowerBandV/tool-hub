@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+  <meta name="description" content="随机测试数据生成器 — 在线生成中文姓名和手机号等测试数据，支持导出CSV。">
+  <title>随机数据生成 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .output-area {
+      background: #f8fafc; border: 2px solid var(--border);
+      border-radius: var(--radius-xs); padding: 14px 16px;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      line-height: 1.6; min-height: 80px;
+      white-space: pre-wrap; word-break: break-all;
+      color: var(--text); max-height: 400px; overflow-y: auto;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 随机数据生成
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🎲</span>
+        <span class="app-title">随机测试数据生成</span>
+      </div>
+      <p class="app-subtitle">快速生成中文姓名、手机号等测试数据，支持导出CSV</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="input-row">
+        <div class="form-group">
+          <label class="form-label">生成数量</label>
+          <input type="number" class="form-input" id="rd-count" value="10" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">数据类型</label>
+          <select class="form-select" id="rd-type">
+            <option value="both">姓名 + 手机号</option>
+            <option value="name">仅姓名</option>
+            <option value="phone">仅手机号</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;min-width:100px;">
+          <button class="btn btn-primary btn-block" onclick="generateData()">🎲 生成数据</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <button class="btn btn-outline btn-sm" onclick="copyResult('rd-result')">📋 复制全部</button>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 导出CSV</button>
+      </div>
+      <div class="output-area" id="rd-result">点击"生成数据"按钮开始生成...</div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const SURNAMES = '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄';
+    const GIVEN_NAMES = ['伟','芳','娜','秀英','敏','静','丽','强','磊','军','洋','勇','艳','杰','娟','涛','明','超','辉','刚','桂英','文','华','飞','鹏','斌','宇','鑫','浩','雪','晨','悦','睿','博','涵','瀚','哲','萱','琳','瑶','琪','彤','骏','逸','宸','恺','韬','玥','梓','轩','宇轩','子涵','雨泽','沐辰','若曦','语嫣','天佑','静怡','思远','一鸣','诗涵','嘉琪','明哲','志远','文博','海燕','红梅','建华','国强','志强'];
+    const PHONE_PREFIX = ['130','131','132','133','134','135','136','137','138','139','150','151','152','153','155','156','157','158','159','176','177','178','180','181','182','183','185','186','187','188','189','198','199'];
+
+    function generateData() {
+      const count = parseInt(document.getElementById('rd-count').value) || 10;
+      const type = document.getElementById('rd-type').value;
+      const result = [];
+      for (let i = 0; i < count; i++) {
+        const surname = SURNAMES[Math.floor(Math.random() * SURNAMES.length)];
+        const given = GIVEN_NAMES[Math.floor(Math.random() * GIVEN_NAMES.length)];
+        const prefix = PHONE_PREFIX[Math.floor(Math.random() * PHONE_PREFIX.length)];
+        let phone = prefix;
+        for (let j = 0; j < 8; j++) phone += Math.floor(Math.random() * 10);
+        if (type === 'name') result.push(surname + given);
+        else if (type === 'phone') result.push(phone);
+        else result.push((surname + given) + '\t' + phone);
+      }
+      document.getElementById('rd-result').textContent = result.join('\n') + '\n\n共 ' + count + ' 条';
+    }
+
+    function copyResult(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const text = el.textContent || el.innerText;
+      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制'));
+    }
+
+    function exportCSV() {
+      const el = document.getElementById('rd-result');
+      const raw = el.textContent.split('\n').filter(l => l.trim() && !l.startsWith('共'));
+      if (raw.length === 0) { showToast('⚠️ 没有数据可导出'); return; }
+      const csv = '\uFEFF' + '姓名,手机号\n' + raw.map(l => l.includes('\t') ? l.replace('\t', ',') : l + ',').join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'test_data.csv';
+      a.click(); URL.revokeObjectURL(url);
+      showToast('📥 CSV已下载');
+    }
+
+    generateData();
+  </script>
+</body>
+</html>

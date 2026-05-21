@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+  <meta name="description" content="艺术字生成器 — 使用CSS特效生成彩虹、霓虹、阴影、描边、浮雕、火焰等风格艺术字。">
+  <title>艺术字生成器 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .art-text-box {
+      padding: 32px; text-align: center; min-height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); background: #fafbfc;
+      border: 2px solid var(--border); overflow: hidden; word-break: break-all;
+      margin-top: 10px; font-size: 2.6rem; font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> 艺术字生成器
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">✨</span>
+        <span class="app-title">艺术字生成器</span>
+      </div>
+      <p class="app-subtitle">使用CSS特效生成炫酷艺术字，支持6种风格</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="form-group">
+        <label class="form-label">输入文字</label>
+        <input type="text" class="form-input" id="artInput" value="精彩世界" oninput="updateArt()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">艺术字样式</label>
+        <select class="form-select" id="artStyle" onchange="updateArt()">
+          <option value="rainbow">🌈 彩虹渐变</option>
+          <option value="neon">💡 霓虹发光</option>
+          <option value="shadow">👻 多重阴影</option>
+          <option value="outline">🎨 描边空心</option>
+          <option value="emboss">🗿 浮雕效果</option>
+          <option value="fire">🔥 火焰文字</option>
+        </select>
+      </div>
+      <div class="art-text-box" id="artPreview">精彩世界</div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    const STYLES = {
+      rainbow: { background: 'linear-gradient(135deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#9b59b6)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' },
+      neon: { color: '#fff', textShadow: '0 0 7px #4f46e5,0 0 10px #4f46e5,0 0 21px #4f46e5,0 0 42px #4f46e5,0 0 82px #4f46e5', background: 'transparent', backgroundClip: 'unset', WebkitBackgroundClip: 'unset', WebkitTextFillColor: 'unset' },
+      shadow: { color: '#1a1a2e', textShadow: '3px 3px 0 #e2e8f0,6px 6px 0 #cbd5e1,9px 9px 0 #94a3b8', background: 'transparent', backgroundClip: 'unset', WebkitBackgroundClip: 'unset', WebkitTextFillColor: 'unset' },
+      outline: { color: '#fff', textShadow: '-2px -2px 0 #333,2px -2px 0 #333,-2px 2px 0 #333,2px 2px 0 #333,0 0 10px rgba(0,0,0,0.3)', background: 'transparent', backgroundClip: 'unset', WebkitBackgroundClip: 'unset', WebkitTextFillColor: 'unset' },
+      emboss: { color: '#e2e8f0', textShadow: '-1px -1px 1px #fff,1px 1px 1px #94a3b8,2px 2px 2px #64748b', background: 'transparent', backgroundClip: 'unset', WebkitBackgroundClip: 'unset', WebkitTextFillColor: 'unset', fontWeight: '700' },
+      fire: { color: '#fff', textShadow: '0 -1px 4px #ffd700,0 -2px 10px #ff8c00,0 -10px 20px #ff4500,0 -18px 40px #ff0000', background: 'transparent', backgroundClip: 'unset', WebkitBackgroundClip: 'unset', WebkitTextFillColor: 'unset' }
+    };
+    function updateArt() {
+      const text = document.getElementById('artInput').value || '艺术字';
+      const style = document.getElementById('artStyle').value;
+      const el = document.getElementById('artPreview');
+      el.textContent = text;
+      Object.assign(el.style, STYLES[style] || STYLES.rainbow);
+    }
+    updateArt();
+  </script>
+</body>
+</html>

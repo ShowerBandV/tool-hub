@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <meta name="description" content="API响应时间测试工具 — 在线测试任意API端点的响应时间、状态码和响应体。">
+  <title>API响应测试 · 开发者盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .output-area {
+      background: #f8fafc; border: 2px solid var(--border);
+      border-radius: var(--radius-xs); padding: 14px 16px;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      line-height: 1.6; min-height: 80px;
+      white-space: pre-wrap; word-break: break-all;
+      color: var(--text); max-height: 350px; overflow-y: auto;
+      margin-top: 10px;
+    }
+    .tag {
+      display: inline-block; padding: 3px 9px; border-radius: 12px;
+      font-size: 0.72rem; font-weight: 600; margin: 2px 3px;
+    }
+    .tag-accent { background: var(--accent-light); color: var(--accent); }
+    .tag-success { background: var(--success-light); color: #065f46; }
+    .tag-danger { background: var(--danger-light); color: #991b1b; }
+    .tag-warning { background: var(--warning-light); color: #92400e; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🛠️ 开发者盒子</a> <span class="sep">›</span> API响应测试
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="app-title">API响应时间测试</span>
+      </div>
+      <p class="app-subtitle">测试任意API端点的响应时间、状态码与响应内容</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="input-row">
+        <div class="form-group" style="flex:3;">
+          <label class="form-label">API URL</label>
+          <input type="url" class="form-input" id="api-url" value="https://api.github.com" placeholder="输入API URL...">
+        </div>
+        <div class="form-group" style="flex:0 0 100px;">
+          <label class="form-label">方法</label>
+          <select class="form-select" id="api-method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;flex:0 0 100px;">
+          <button class="btn btn-primary btn-block" onclick="testAPI()">🚀 发送</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+        <span style="font-size:0.78rem;color:var(--text-secondary);">快捷：</span>
+        <button class="btn btn-outline btn-xs" onclick="setURL('https://api.github.com')">GitHub API</button>
+        <button class="btn btn-outline btn-xs" onclick="setURL('https://httpbin.org/get')">httpbin</button>
+        <button class="btn btn-outline btn-xs" onclick="setURL('https://jsonplaceholder.typicode.com/posts/1')">JSONPlaceholder</button>
+      </div>
+      <div id="api-timing" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;"></div>
+      <div class="output-area" id="api-result">等待测试...</div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function setURL(url) {
+      document.getElementById('api-url').value = url;
+      testAPI();
+    }
+    function testAPI() {
+      const url = document.getElementById('api-url').value.trim();
+      const method = document.getElementById('api-method').value;
+      const resultEl = document.getElementById('api-result');
+      const timingEl = document.getElementById('api-timing');
+      if (!url) { resultEl.textContent = '⚠️ 请输入API URL'; return; }
+      resultEl.textContent = '⏳ 正在请求 ' + url + ' ...';
+      timingEl.innerHTML = '';
+      const start = performance.now();
+      fetch(url, { method, mode: 'cors' })
+        .then(res => {
+          const elapsed = Math.round(performance.now() - start);
+          const size = res.headers.get('content-length') || '?';
+          return res.text().then(body => {
+            const statusClass = res.ok ? 'tag-success' : 'tag-danger';
+            timingEl.innerHTML =
+              '<span class="tag ' + statusClass + '">状态 ' + res.status + '</span>' +
+              '<span class="tag tag-accent">⏱ ' + elapsed + 'ms</span>' +
+              '<span class="tag tag-warning">📦 ' + (size !== '?' ? (parseInt(size)/1024).toFixed(1) + 'KB' : '?') + '</span>';
+            resultEl.textContent = body.slice(0, 3000) + (body.length > 3000 ? '\n\n...（共' + body.length + '字符，已截断）' : '');
+          });
+        })
+        .catch(err => {
+          timingEl.innerHTML = '<span class="tag tag-danger">❌ 失败</span><span class="tag tag-accent">⏱ ' + Math.round(performance.now() - start) + 'ms</span>';
+          resultEl.textContent = '❌ 错误：' + err.message + '\n\n可能原因：目标API不支持CORS、网络问题或URL格式不正确。';
+        });
+    }
+  </script>
+</body>
+</html>

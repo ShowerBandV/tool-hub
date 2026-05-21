@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔤</text></svg>">
+  <meta name="description" content="在线字体预览 — 预览Google Fonts中文字体和系统字体的排版效果。">
+  <title>字体预览 · 速查盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    .font-preview-box {
+      padding: 28px; text-align: center; min-height: 100px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); background: #fafbfc;
+      border: 2px solid var(--border); overflow: hidden; word-break: break-all;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">📋 速查盒子</a> <span class="sep">›</span> 字体预览
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🔤</span>
+        <span class="app-title">字体预览</span>
+      </div>
+      <p class="app-subtitle">在线预览不同字体的效果，支持Google Fonts中文字体与系统字体</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="form-group">
+        <label class="form-label">输入预览文字</label>
+        <input type="text" class="form-input" id="font-text" value="天地玄黄 宇宙洪荒" oninput="updatePreview()">
+      </div>
+      <div class="input-row">
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">选择字体</label>
+          <select class="form-select" id="font-select" onchange="updatePreview()">
+            <optgroup label="📌 Google Fonts 中文字体">
+              <option value="'Noto Sans SC',sans-serif">Noto Sans SC (思源黑体)</option>
+              <option value="'Noto Serif SC',serif">Noto Serif SC (思源宋体)</option>
+              <option value="'ZCOOL XiaoWei',serif">ZCOOL XiaoWei (站酷小薇)</option>
+              <option value="'Ma Shan Zheng',cursive">Ma Shan Zheng (马山正)</option>
+              <option value="'Zhi Mang Xing',cursive">Zhi Mang Xing (志莽行)</option>
+              <option value="'Liu Jian Mao Cao',cursive">Liu Jian Mao Cao (柳建毛草)</option>
+              <option value="'Long Cang',cursive">Long Cang (龙藏)</option>
+              <option value="'ZCOOL KuaiLe',cursive">ZCOOL KuaiLe (站酷快乐)</option>
+            </optgroup>
+            <optgroup label="💻 系统中文字体">
+              <option value="'Microsoft YaHei','微软雅黑',sans-serif">微软雅黑</option>
+              <option value="'SimSun','宋体',serif">宋体</option>
+              <option value="'SimHei','黑体',sans-serif">黑体</option>
+              <option value="'KaiTi','楷体',serif">楷体</option>
+              <option value="'FangSong','仿宋',serif">仿宋</option>
+              <option value="'STXingkai','华文行楷',cursive">华文行楷</option>
+            </optgroup>
+            <optgroup label="🌐 英文/通用字体">
+              <option value="'Inter','Roboto',sans-serif">Inter / Roboto</option>
+              <option value="'Georgia','Times New Roman',serif">Georgia</option>
+              <option value="'Courier New','Consolas',monospace">Courier New (等宽)</option>
+              <option value="'Comic Sans MS',cursive">Comic Sans MS</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">字号 <span id="sizeLabel" style="font-weight:400;">48px</span></label>
+          <input type="range" class="form-input" id="font-size" min="16" max="120" value="48" oninput="updatePreview()" style="padding:4px 0;border:none;">
+        </div>
+      </div>
+      <div class="font-preview-box" id="fontPreview" style="font-size:48px;font-family:'Noto Sans SC',sans-serif;">天地玄黄 宇宙洪荒</div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function updatePreview() {
+      const text = document.getElementById('font-text').value || '预览文字';
+      const font = document.getElementById('font-select').value;
+      const size = parseInt(document.getElementById('font-size').value);
+      document.getElementById('sizeLabel').textContent = size + 'px';
+      const el = document.getElementById('fontPreview');
+      el.textContent = text;
+      el.style.fontFamily = font;
+      el.style.fontSize = size + 'px';
+    }
+  </script>
+</body>
+</html>

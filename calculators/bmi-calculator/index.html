@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+  <meta name="description" content="BMI计算器 — 在线计算身体质量指数，了解体重是否在健康范围内。">
+  <title>BMI计算器 · 计算器盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🧮 计算器盒子</a> <span class="sep">›</span> BMI计算器
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="app-title">BMI计算器</span>
+      </div>
+      <p class="app-subtitle">计算身体质量指数（BMI），了解体重是否在健康范围内</p>
+    </header>
+    <div class="card tool-panel">
+      <div class="input-row">
+        <div class="form-group">
+          <label class="form-label">身高 (cm)</label>
+          <input type="number" class="form-input" id="bmiHeight" value="170" step="0.1" min="50" max="250">
+        </div>
+        <div class="form-group">
+          <label class="form-label">体重 (kg)</label>
+          <input type="number" class="form-input" id="bmiWeight" value="65" step="0.1" min="10" max="300">
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;min-width:100px;">
+          <button class="btn btn-primary btn-block" onclick="calcBMI()">📊 计算</button>
+        </div>
+      </div>
+      <div class="result-box result-primary" id="bmiResult">请输入身高体重后点击计算</div>
+      <div style="margin-top:16px;padding:16px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid var(--border);">
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8;">
+          <strong>BMI 参考标准：</strong><br>
+          <span style="color:var(--warning);">偏瘦</span> &lt; 18.5 &nbsp;|&nbsp;
+          <span style="color:var(--success);font-weight:600;">正常</span> 18.5–23.9 &nbsp;|&nbsp;
+          <span style="color:var(--warning);">超重</span> 24–27.9 &nbsp;|&nbsp;
+          <span style="color:var(--danger);">肥胖</span> ≥ 28
+        </p>
+      </div>
+    </div>
+  </div>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    function calcBMI() {
+      const h = parseFloat(document.getElementById('bmiHeight').value);
+      const w = parseFloat(document.getElementById('bmiWeight').value);
+      const el = document.getElementById('bmiResult');
+      if (!h || !w || h < 1 || w < 1) {
+        el.className = 'result-box result-danger show';
+        el.innerHTML = '⚠️ 请输入有效的身高和体重'; return;
+      }
+      const bmi = w / ((h / 100) * (h / 100));
+      let level, color;
+      if (bmi < 18.5) { level = '偏瘦'; color = 'var(--warning)'; }
+      else if (bmi < 24) { level = '正常'; color = 'var(--success)'; }
+      else if (bmi < 28) { level = '超重'; color = 'var(--warning)'; }
+      else { level = '肥胖'; color = 'var(--danger)'; }
+      el.className = 'result-box result-primary show';
+      el.innerHTML = 'BMI <span class="result-big">' + preciseRound(bmi, 1) + '</span> &nbsp;·&nbsp; <span style="color:' + color + ';font-weight:700;">' + level + '</span>';
+    }
+  </script>
+</body>
+</html>
