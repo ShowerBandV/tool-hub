@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.opencv.org https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖌️</text></svg>">
+  <meta name="description" content="在线水印去除工具，支持手动涂抹修复（OpenCV inpaint）和 AI 水印模板去除两种模式，纯前端处理，图片不上传服务器。">
+  <title>水印去除 · 图片盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    .mode-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .mode-tab {
+      padding: 10px 24px; border: 2px solid var(--accent); background: white;
+      border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600;
+      transition: var(--transition);
+    }
+    .mode-tab:hover { background: #eef2ff; }
+    .mode-tab.active { background: var(--accent); color: white; }
+    .panel { display: none; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+    .panel.active { display: flex; }
+    canvas { border: 2px solid var(--border); max-width: 100%; cursor: crosshair; border-radius: 8px; }
+    .controls { display: flex; flex-direction: column; gap: 12px; min-width: 220px; }
+    .controls button { padding: 10px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid var(--border);
+      background: #fff; font-weight: 600; transition: var(--transition); }
+    .controls button:hover:not(:disabled) { border-color: var(--accent); background: #eef2ff; }
+    .controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .controls button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .controls button.primary:hover:not(:disabled) { opacity: 0.9; }
+    input[type="file"] { margin: 6px 0; }
+    .ctrl-label { font-size: 14px; display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text-muted); }
+    .status-note { color: var(--accent); font-size: 13px; margin-top: 5px; }
+    @media (max-width: 600px) {
+      .panel.active { flex-direction: column; }
+      .controls { min-width: auto; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../../image-tools/index.html">🖼️ 图片盒子</a> <span class="sep">›</span> 水印去除
+    </div>
+
+    <div class="card tool-panel">
+      <h2 class="panel-title">🖌️ 万能去水印工具</h2>
+      <p class="panel-desc">支持 <strong>普通水印</strong>（涂抹修复）和 <strong>AI 水印</strong>（提供样本自动剥离），纯前端处理，图片不上传服务器。</p>
+
+      <!-- 模式切换 -->
+      <div class="mode-tabs">
+        <div class="mode-tab active" data-mode="manual">✏️ 手动涂抹去除</div>
+        <div class="mode-tab" data-mode="template">🧠 AI 水印模板去除</div>
+      </div>
+
+      <!-- 手动模式面板 -->
+      <div class="panel active" id="manualPanel">
+        <canvas id="manualCanvas"></canvas>
+        <div class="controls">
+          <input type="file" id="uploadManual" accept="image/*" />
+          <label class="ctrl-label"><input type="checkbox" id="showMask" checked /> 显示涂抹蒙版</label>
+          <label class="ctrl-label">画笔大小: <input type="range" id="brushSize" min="5" max="50" value="20" /></label>
+          <button id="inpaintBtn" disabled class="primary">🚀 智能修复 (OpenCV)</button>
+          <button id="resetBtn">↩️ 重置涂抹</button>
+          <button id="downloadManual" disabled>⬇️ 下载结果</button>
+          <div class="status-note" id="manualStatus">等待 OpenCV.js 加载...</div>
+        </div>
+      </div>
+
+      <!-- 模板匹配模式面板 -->
+      <div class="panel" id="templatePanel">
+        <canvas id="templateCanvas"></canvas>
+        <div class="controls">
+          <div>
+            <label class="ctrl-label">📸 原始图片:</label>
+            <input type="file" id="uploadTemplate" accept="image/*" />
+          </div>
+          <div>
+            <label class="ctrl-label">🖼️ 水印样本:</label>
+            <input type="file" id="uploadSample" accept="image/*" />
+            <span class="status-note">请上传只包含水印图案的图片（背景尽量纯净）</span>
+          </div>
+          <button id="removeAIBtn" disabled class="primary">🧪 自动去除水印</button>
+          <button id="downloadTemplate" disabled>⬇️ 下载结果</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-unit ad-leaderboard"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多图片工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
+    </div>
+  </div>
+
+  <!-- OpenCV.js 异步加载 -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady()"></script>
+
+  <script src="../../assets/js/common.js"></script>
+  <script>
+    /******************** 全局状态 ********************/
+    let cvReady = false;
+    window.onOpenCvReady = function() {
+      cvReady = true;
+      document.getElementById('manualStatus').textContent = '✅ OpenCV 已就绪';
+      document.getElementById('inpaintBtn').disabled = false;
+    };
+
+    // 手动模式相关变量
+    let manualImg = null;
+    let manualMask = null;
+    let manualOriginalData = null;
+    let drawing = false;
+    let brushRadius = 20;
+
+    // 模板模式变量
+    let templateImg = null;
+    let sampleImg = null;
+
+    /******************** 工具函数 ********************/
+    function loadImageFromFile(file, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => callback(img);
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function getImageDataFromImage(img, w, h) {
+      const c = document.createElement('canvas');
+      c.width = w || img.width;
+      c.height = h || img.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      return ctx.getImageData(0, 0, c.width, c.height);
+    }
+
+    function putImageDataToCanvas(canvas, imageData) {
+      canvas.width = imageData.width;
+      canvas.height = imageData.height;
+      canvas.getContext('2d').putImageData(imageData, 0, 0);
+    }
+
+    /******************** 手动模式逻辑 ********************/
+    const manualCanvas = document.getElementById('manualCanvas');
+    const manualCtx = manualCanvas.getContext('2d', { willReadFrequently: true });
+
+    function initManualMask() {
+      manualMask = manualCtx.createImageData(manualCanvas.width, manualCanvas.height);
+      for (let i = 3; i < manualMask.data.length; i += 4) manualMask.data[i] = 0;
+    }
+
+    function redrawManual() {
+      if (!manualOriginalData) return;
+      manualCtx.putImageData(manualOriginalData, 0, 0);
+      if (document.getElementById('showMask').checked && manualMask) {
+        const display = manualCtx.getImageData(0, 0, manualCanvas.width, manualCanvas.height);
+        const d = display.data, m = manualMask.data;
+        for (let i = 0; i < m.length; i += 4) {
+          if (m[i + 3] > 0) {
+            d[i] = 255; d[i + 1] = 0; d[i + 2] = 0; d[i + 3] = 120;
+          }
+        }
+        manualCtx.putImageData(display, 0, 0);
+      }
+    }
+
+    function drawMaskBrush(x, y) {
+      if (!manualMask) return;
+      const w = manualCanvas.width, h = manualCanvas.height, r = brushRadius;
+      const m = manualMask.data;
+      const sx = Math.max(0, Math.floor(x - r)), sy = Math.max(0, Math.floor(y - r));
+      const ex = Math.min(w - 1, Math.floor(x + r)), ey = Math.min(h - 1, Math.floor(y + r));
+      for (let py = sy; py <= ey; py++) {
+        for (let px = sx; px <= ex; px++) {
+          if ((px - x) ** 2 + (py - y) ** 2 <= r * r) {
+            m[(py * w + px) * 4 + 3] = 255;
+          }
+        }
+      }
+    }
+
+    manualCanvas.addEventListener('mousedown', e => {
+      if (!manualImg) return;
+      drawing = true;
+      const rect = manualCanvas.getBoundingClientRect();
+      const scaleX = manualCanvas.width / rect.width;
+      const scaleY = manualCanvas.height / rect.height;
+      drawMaskBrush((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+      redrawManual();
+    });
+    manualCanvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
+      const rect = manualCanvas.getBoundingClientRect();
+      const scaleX = manualCanvas.width / rect.width;
+      const scaleY = manualCanvas.height / rect.height;
+      drawMaskBrush((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+      redrawManual();
+    });
+    manualCanvas.addEventListener('mouseup', () => drawing = false);
+    manualCanvas.addEventListener('mouseleave', () => drawing = false);
+
+    document.getElementById('brushSize').addEventListener('input', e => {
+      brushRadius = parseInt(e.target.value, 10);
+    });
+    document.getElementById('showMask').addEventListener('change', redrawManual);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      initManualMask();
+      redrawManual();
+    });
+
+    document.getElementById('uploadManual').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      loadImageFromFile(file, img => {
+        manualImg = img;
+        manualCanvas.width = img.width;
+        manualCanvas.height = img.height;
+        manualCtx.drawImage(img, 0, 0);
+        manualOriginalData = manualCtx.getImageData(0, 0, img.width, img.height);
+        initManualMask();
+        redrawManual();
+      });
+    });
+
+    document.getElementById('inpaintBtn').addEventListener('click', () => {
+      if (!cvReady || !manualOriginalData || !manualMask) return;
+      const src = cv.matFromImageData(manualOriginalData);
+      const mask = cv.matFromImageData(manualMask);
+      const grayMask = new cv.Mat();
+      cv.cvtColor(mask, grayMask, cv.COLOR_RGBA2GRAY);
+      const dst = new cv.Mat();
+      cv.inpaint(src, grayMask, dst, 3, cv.INPAINT_TELEA);
+      const resultData = new ImageData(new Uint8ClampedArray(dst.data), dst.cols, dst.rows);
+      manualOriginalData = resultData;
+      putImageDataToCanvas(manualCanvas, resultData);
+      initManualMask();
+      redrawManual();
+      document.getElementById('downloadManual').disabled = false;
+      src.delete(); mask.delete(); grayMask.delete(); dst.delete();
+    });
+
+    document.getElementById('downloadManual').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'no_watermark.png';
+      link.href = manualCanvas.toDataURL();
+      link.click();
+    });
+
+    /******************** 模板匹配模式逻辑 ********************/
+    const templateCanvas = document.getElementById('templateCanvas');
+    const templateCtx = templateCanvas.getContext('2d', { willReadFrequently: true });
+
+    document.getElementById('uploadTemplate').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      loadImageFromFile(file, img => {
+        templateImg = img;
+        templateCanvas.width = img.width;
+        templateCanvas.height = img.height;
+        templateCtx.drawImage(img, 0, 0);
+      });
+    });
+
+    document.getElementById('uploadSample').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      loadImageFromFile(file, img => {
+        sampleImg = img;
+        document.getElementById('removeAIBtn').disabled = false;
+      });
+    });
+
+    document.getElementById('removeAIBtn').addEventListener('click', () => {
+      if (!templateImg || !sampleImg) return;
+      const srcData = templateCtx.getImageData(0, 0, templateCanvas.width, templateCanvas.height);
+      const sampleData = getImageDataFromImage(sampleImg);
+      const result = removeWatermarkByTemplate(srcData, sampleData);
+      putImageDataToCanvas(templateCanvas, result);
+      document.getElementById('downloadTemplate').disabled = false;
+    });
+
+    function removeWatermarkByTemplate(srcImageData, sampleImageData) {
+      const src = srcImageData.data;
+      const srcW = srcImageData.width;
+      const srcH = srcImageData.height;
+      const sample = sampleImageData.data;
+      const sampleW = sampleImageData.width;
+      const sampleH = sampleImageData.height;
+
+      let sr = 0, sg = 0, sb = 0, count = 0;
+      const sx = Math.floor(sampleW / 4), sy = Math.floor(sampleH / 4);
+      const ex = Math.floor(sampleW * 3 / 4), ey = Math.floor(sampleH * 3 / 4);
+      for (let y = sy; y < ey; y++) {
+        for (let x = sx; x < ex; x++) {
+          const i = (y * sampleW + x) * 4;
+          sr += sample[i]; sg += sample[i + 1]; sb += sample[i + 2];
+          count++;
+        }
+      }
+      sr = Math.round(sr / count);
+      sg = Math.round(sg / count);
+      sb = Math.round(sb / count);
+
+      const bgGray = 200;
+      const watermarkGray = (sr * 0.299 + sg * 0.587 + sb * 0.114);
+      const alpha = Math.min(0.8, (bgGray - watermarkGray) / (255 - watermarkGray));
+
+      const resultData = new ImageData(srcW, srcH);
+      const out = resultData.data;
+      for (let i = 0; i < src.length; i += 4) {
+        const r = (src[i] - alpha * sr) / (1 - alpha);
+        const g = (src[i + 1] - alpha * sg) / (1 - alpha);
+        const b = (src[i + 2] - alpha * sb) / (1 - alpha);
+        out[i] = Math.max(0, Math.min(255, r));
+        out[i + 1] = Math.max(0, Math.min(255, g));
+        out[i + 2] = Math.max(0, Math.min(255, b));
+        out[i + 3] = 255;
+      }
+      return resultData;
+    }
+
+    document.getElementById('downloadTemplate').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'no_ai_watermark.png';
+      link.href = templateCanvas.toDataURL();
+      link.click();
+    });
+
+    /******************** 模式切换 UI ********************/
+    const tabs = document.querySelectorAll('.mode-tab');
+    const panels = document.querySelectorAll('.panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const mode = tab.dataset.mode;
+        document.getElementById(mode === 'manual' ? 'manualPanel' : 'templatePanel').classList.add('active');
+      });
+    });
+
+    /******************** 更多工具 ********************/
+    document.getElementById('moreTools').innerHTML = [
+      { h: '../svg-tool', i: '🎨', n: 'SVG 预览转换' },
+      { h: '../image-crop', i: '✂️', n: '图片裁剪缩放' },
+      { h: '../color-picker', i: '💉', n: '图片颜色拾取' },
+      { h: '../color-convert', i: '🎨', n: '颜色转换' },
+      { h: '../image-watermark', i: '💧', n: '图片水印平铺' },
+      { h: '../image-stitch', i: '🖼️', n: '图片拼长图' },
+    ].map(function(t) {
+      return '<a href="' + t.h + '/index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);transition:var(--transition);display:flex;align-items:center;gap:4px;"><span>' + t.i + '</span> ' + t.n + '</a>';
+    }).join('');
+  </script>
+</body>
+</html>
