@@ -28,10 +28,24 @@
       <div class="result-box show" id="hashResult" style="margin-top:8px;"><button class="copy-btn">📋</button></div>
     </div>
 
+    <div class="card">
+      <h3 class="panel-title">📖 哈希计算工具介绍</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">哈希函数（Hash Function）将任意长度的输入数据映射为固定长度的输出指纹（摘要），具有单向性（不可逆）、抗碰撞性等特点。本工具支持 SHA-256、SHA-1 和 MD5 三种主流哈希算法。输入文本实时计算哈希值，也支持拖拽文件计算文件的哈希指纹。哈希计算完全在浏览器本地执行，文件和数据不会上传至任何服务器。常用于数据完整性校验、密码存储、数字签名等场景。</p>
+      <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>输入文本</strong> — 在文本框中输入字符串，三种算法的哈希值实时同步显示。</li>
+        <li><strong>选择算法</strong> — 点击切换 SHA-256、SHA-1 或 MD5 标签查看对应结果。</li>
+        <li><strong>校验文件</strong> — 拖拽或选择文件，自动计算文件哈希值供校验比对。</li>
+      </ol>
+      <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+      <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>下载校验</strong> — 比对官方提供的 SHA-256 值确认下载文件完整性。</li>
+        <li><strong>密码安全</strong> — 对密码进行哈希处理，避免明文存储风险。</li>
+      </ul>
+    </div>
     <div class="ad-unit ad-leaderboard">
       <span>📢 广告位</span>
     </div>
-
     <div class="card" style="margin-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">

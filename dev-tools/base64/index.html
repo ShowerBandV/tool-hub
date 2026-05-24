@@ -35,10 +35,24 @@
       <div id="imgPreview" style="margin-top:8px;"></div>
     </div>
 
+    <div class="card">
+      <h3 class="panel-title">📖 Base64 编解码介绍</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">Base64 是一种将二进制数据转换为 ASCII 字符串的编码方式，广泛应用于网络数据传输、邮件附件（MIME）、HTML/CSS 中嵌入图片（data URI）等场景。本工具支持文本的 Base64 编码和解码，以及图片文件与 Base64 字符串之间的双向转换。编码过程是可逆的，解码后还原为原始数据。所有处理在浏览器本地完成，敏感数据不会上传至任何服务器。</p>
+      <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>选择模式</strong> — 切换「文本编码」「文本解码」「图片转Base64」或「Base64转图片」模式。</li>
+        <li><strong>输入数据</strong> — 在文本框中输入待处理的字符串或选择图片文件。</li>
+        <li><strong>复制结果</strong> — 编码/解码结果实时显示，点击复制按钮即可使用。</li>
+      </ol>
+      <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+      <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>前端开发</strong> — 将小图标转为 Base64 嵌入 CSS，减少 HTTP 请求。</li>
+        <li><strong>数据传输</strong> — 在 JSON 或 URL 中安全传输二进制数据。</li>
+      </ul>
+    </div>
     <div class="ad-unit ad-leaderboard">
       <span>📢 广告位</span>
     </div>
-
     <div class="card" style="margin-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
