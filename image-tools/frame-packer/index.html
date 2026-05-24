@@ -147,7 +147,47 @@
       <div class="frame-grid" id="frameList"><span style="font-size:0.85rem;color:var(--text-muted);padding:8px;">选择视频后点击"开始抽帧"</span></div>
     </div>
 
+    <!-- 功能介绍 -->
+    <div class="card">
+      <h3 class="panel-title">📖 帧打包工具功能介绍</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">帧打包工具是一个在线视频帧处理工具，支持从视频中按时间间隔提取帧画面、对绿幕背景进行颜色替换或透明处理、基于感知哈希算法（dHash）智能去除相似帧，以及将处理后的帧序列导出为 PNG 图片包（ZIP）或 GIF 动画。所有处理均在浏览器本地完成，视频数据不上传服务器，保护您的隐私安全。工具适用于游戏素材制作、动画帧编辑、视频内容分析等场景。</p>
+
+      <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>选择视频</strong> — 点击"选择视频文件"按钮，从本地选取一个视频文件（支持 MP4、WebM 等常见格式）。</li>
+        <li><strong>设置参数</strong> — 调整"抽帧间隔"（秒）控制抽帧密度，调整"去重敏感度"控制相似帧判定标准。</li>
+        <li><strong>开始抽帧</strong> — 点击"🎬 开始抽帧"按钮，工具会按设定间隔逐帧提取画面并显示缩略图。</li>
+        <li><strong>背景编辑（可选）</strong> — 选择背景色、替换色和容差，点击"应用于所有帧"进行绿幕抠像。</li>
+        <li><strong>智能去重（可选）</strong> — 点击"🔍 智能去重"按钮自动移除高度相似的帧。</li>
+        <li><strong>导出</strong> — 点击"📦 导出序列帧 (ZIP)"下载 PNG 序列帧，或点击"🎞️ 导出 GIF"生成动画 GIF。</li>
+      </ol>
+
+      <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+      <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>游戏素材</strong> — 从视频中提取角色动画帧，制作 2D 游戏精灵图或 Sprite Sheet。</li>
+        <li><strong>动画制作</strong> — 将视频片段转为 GIF 动画，用于产品展示、表情包或社交媒体内容。</li>
+        <li><strong>视频分析</strong> — 按时间间隔抽取关键帧，快速浏览视频内容或建立视频摘要。</li>
+        <li><strong>课件制作</strong> — 从教学视频中提取重点画面，制作图文教程或演示文稿素材。</li>
+      </ul>
+
+      <div style="margin-top:14px;padding:12px;border-radius:var(--radius-sm);background:var(--warning-light);border:1px solid var(--warning-border);font-size:0.82rem;color:#92400e;">
+        ⚠️ 处理大视频时建议降低抽帧密度（增大抽帧间隔）。GIF 生成较慢，帧数建议控制在 100 帧以内。导出透明背景的 GIF 时请确保已勾选"导出透明背景"。
+      </div>
+    </div>
+
     <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🖼️ 更多图片工具</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;">
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>🎨</span> SVG 预览转换</a>
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>✂️</span> 图片裁剪</a>
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>💧</span> 水印平铺</a>
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>🖌️</span> 水印去除</a>
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>🖼️</span> 图片拼长图</a>
+        <a href="../index.html" style="padding:6px 10px;border-radius:6px;font-size:0.78rem;color:var(--text);text-decoration:none;background:#f8fafc;border:1px solid var(--border);display:flex;align-items:center;gap:4px;"><span>🧩</span> Sprite 切割</a>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
