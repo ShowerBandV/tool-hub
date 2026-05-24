@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; media-src 'self' blob:;">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+  <meta name="description" content="帧打包工具 - 在线视频抽帧、绿幕背景编辑/替换、智能去重、导出序列帧PNG和GIF动画，纯前端处理。">
+  <title>帧打包工具 - 视频抽帧/背景编辑/去重/导出 · 图片盒子</title>
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <style>
+    /* ---- 视频与画布容器 ---- */
+    .media-row {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;
+    }
+    .media-row > div {
+      flex: 1; min-width: 200px;
+    }
+    video, canvas {
+      max-width: 100%; border-radius: var(--radius-xs);
+      border: 2px solid var(--border); margin-top: 4px;
+      background: #000;
+    }
+    canvas { background: #1a1a2e; }
+
+    /* ---- 帧缩略图 ---- */
+    .frame-grid {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;
+      max-height: 200px; overflow-y: auto;
+      padding: 8px; border: 2px solid var(--border);
+      border-radius: var(--radius-xs); background: #fafbfc;
+    }
+    .frame-grid img {
+      width: 72px; height: auto; border-radius: 4px;
+      border: 1px solid var(--border); cursor: pointer;
+      transition: var(--transition);
+    }
+    .frame-grid img:hover {
+      border-color: var(--accent); transform: scale(1.05);
+    }
+
+    /* ---- 滑块行 ---- */
+    .range-row {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+    .range-row input[type="range"] {
+      flex: 1; min-width: 80px;
+    }
+    .range-row .form-input { padding: 4px 0; border: none; }
+
+    /* ---- 颜色拾取器 ---- */
+    .color-row {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .color-row input[type="color"] {
+      width: 40px; height: 34px; border: 2px solid var(--border);
+      border-radius: 6px; cursor: pointer; background: transparent; padding: 2px;
+    }
+
+    /* ---- 状态文字 ---- */
+    .status-text {
+      font-size: 0.85rem; color: var(--text-secondary); margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .media-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="../index.html">🖼️ 图片盒子</a> <span class="sep">›</span> 帧打包工具
+    </div>
+
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">📦</span>
+        <span class="app-title">帧打包工具</span>
+      </div>
+      <p class="app-subtitle">视频抽帧 · 绿幕背景编辑 · 智能去重 · 导出序列帧PNG / GIF动画</p>
+    </header>
+
+    <div class="card tool-panel">
+      <!-- 第一步：加载视频 -->
+      <div class="form-group">
+        <label class="form-label">选择视频文件</label>
+        <input type="file" id="fileInput" accept="video/*" class="form-input" style="padding:8px 14px;">
+      </div>
+
+      <div class="input-row">
+        <div class="form-group">
+          <label class="form-label">抽帧间隔 (秒)</label>
+          <input type="number" class="form-input" id="interval" value="0.5" step="0.1" min="0.1">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">去重敏感度 (0-64，越小越严格)</label>
+          <input type="number" class="form-input" id="simThreshold" value="8" min="0" max="64">
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;min-width:100px;">
+          <button class="btn btn-primary btn-block" id="extractBtn">🎬 开始抽帧</button>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+
+      <!-- 第二步：背景编辑 -->
+      <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:6px;">🎨 背景编辑（绿幕抠像）</h3>
+      <div class="color-row">
+        <input type="color" id="bgColor" value="#00FF00">
+        <span style="font-size:0.8rem;color:var(--text-secondary);">背景色</span>
+        <input type="color" id="replaceColor" value="#FFFFFF">
+        <span style="font-size:0.8rem;color:var(--text-secondary);">替换色</span>
+        <label style="font-size:0.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
+          容差 <input type="range" id="tolerance" min="10" max="200" value="60" style="width:80px;">
+        </label>
+        <label style="font-size:0.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="alphaOut"> 导出透明背景
+        </label>
+        <button class="btn btn-outline btn-sm" id="applyBgBtn">应用于所有帧</button>
+        <button class="btn btn-outline btn-sm" id="dedupBtn">🔍 智能去重</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+
+      <!-- 第三步：预览 -->
+      <div class="media-row">
+        <div>
+          <label class="form-label">源视频</label>
+          <video id="video" controls style="max-height:260px;"></video>
+        </div>
+        <div>
+          <label class="form-label">选中帧预览 <span class="status-text" id="status"></span></label>
+          <canvas id="previewCanvas" style="max-height:260px;"></canvas>
+        </div>
+      </div>
+
+      <!-- 第四步：帧列表 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:10px;">
+        <label class="form-label" style="margin:0;">提取的帧（点击放大预览）</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" id="exportZipBtn" disabled>📦 导出序列帧 (ZIP)</button>
+          <button class="btn btn-primary btn-sm" id="exportGifBtn" disabled>🎞️ 导出 GIF</button>
+        </div>
+      </div>
+      <div class="frame-grid" id="frameList"><span style="font-size:0.85rem;color:var(--text-muted);padding:8px;">选择视频后点击"开始抽帧"</span></div>
+    </div>
+
+    <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="../../assets/js/common.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    // ---------- DOM ----------
+    const $ = id => document.getElementById(id);
+    const fileInput      = $('fileInput');
+    const intervalInput  = $('interval');
+    const simThreshold   = $('simThreshold');
+    const extractBtn     = $('extractBtn');
+    const bgColorInput   = $('bgColor');
+    const toleranceInput = $('tolerance');
+    const replaceColor   = $('replaceColor');
+    const applyBgBtn     = $('applyBgBtn');
+    const alphaOutCheck  = $('alphaOut');
+    const videoEl        = $('video');
+    const previewCanvas  = $('previewCanvas');
+    const exportZipBtn   = $('exportZipBtn');
+    const exportGifBtn   = $('exportGifBtn');
+    const statusSpan     = $('status');
+    const frameListDiv   = $('frameList');
+    const dedupBtn       = $('dedupBtn');
+
+    // ---------- 状态 ----------
+    let videoFileUrl = null;
+    let extractedFrames = [];    // { imageData, canvas }
+    let processedFrames = [];    // canvas[]
+    let frameThumbnails = [];    // dataURL[]
+
+    // ---------- 工具 ----------
+    function hexToRgb(hex) {
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return m ? { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) } : {r:0,g:0,b:0};
+    }
+
+    function updateThumbnails(canvases) {
+      frameThumbnails = canvases.map(c => {
+        const tc = document.createElement('canvas');
+        const r = c.height / c.width;
+        tc.width = 72; tc.height = 72 * r;
+        tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+        return tc.toDataURL();
+      });
+      frameListDiv.innerHTML = '';
+      frameThumbnails.forEach((url, i) => {
+        const img = document.createElement('img');
+        img.src = url; img.title = `帧 ${i+1}`;
+        frameListDiv.appendChild(img);
+      });
+    }
+
+    // ---------- 加载视频 ----------
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (videoFileUrl) URL.revokeObjectURL(videoFileUrl);
+      videoFileUrl = URL.createObjectURL(file);
+      videoEl.src = videoFileUrl;
+      extractedFrames = []; processedFrames = []; frameThumbnails = [];
+      frameListDiv.innerHTML = '<span style="font-size:0.85rem;color:var(--text-muted);padding:8px;">已加载视频，点击"开始抽帧"</span>';
+      exportZipBtn.disabled = true;
+      exportGifBtn.disabled = true;
+      statusSpan.textContent = '';
+    });
+
+    // ---------- 抽帧 ----------
+    extractBtn.addEventListener('click', async () => {
+      if (!videoFileUrl) { showToast('⚠️ 请先选择视频文件'); return; }
+      const interval = parseFloat(intervalInput.value) || 0.5;
+      if (interval <= 0) { showToast('⚠️ 请输入正确的抽帧间隔'); return; }
+
+      statusSpan.textContent = '正在抽帧...';
+      extractedFrames = [];
+
+      await new Promise((resolve, reject) => {
+        videoEl.onloadedmetadata = resolve;
+        videoEl.onerror = reject;
+        if (videoEl.readyState >= 1) resolve();
+      });
+
+      const duration = videoEl.duration;
+      const w = videoEl.videoWidth, h = videoEl.videoHeight;
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = w; offCanvas.height = h;
+      const ctx = offCanvas.getContext('2d');
+
+      let currentTime = 0;
+      while (currentTime < duration) {
+        await new Promise(resolve => {
+          videoEl.currentTime = currentTime;
+          videoEl.onseeked = () => {
+            ctx.drawImage(videoEl, 0, 0, w, h);
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const fc = document.createElement('canvas');
+            fc.width = w; fc.height = h;
+            fc.getContext('2d').putImageData(imageData, 0, 0);
+            extractedFrames.push({ imageData, canvas: fc });
+            resolve();
+          };
+        });
+        currentTime += interval;
+        await new Promise(r => setTimeout(r, 20));
+      }
+      videoEl.onseeked = null;
+
+      processedFrames = extractedFrames.map(f => f.canvas);
+      updateThumbnails(processedFrames);
+      statusSpan.textContent = `已提取 ${extractedFrames.length} 帧`;
+      exportZipBtn.disabled = false;
+      exportGifBtn.disabled = false;
+    });
+
+    // ---------- 背景编辑 ----------
+    function applyChromaKey(imageData, targetColor, tolerance, replaceColorVal, useAlpha) {
+      const data = imageData.data;
+      const t = hexToRgb(targetColor);
+      const r = hexToRgb(replaceColorVal);
+      const tolSq = tolerance * tolerance;
+      for (let i = 0; i < data.length; i += 4) {
+        const dr = data[i] - t.r, dg = data[i+1] - t.g, db = data[i+2] - t.b;
+        if (dr*dr + dg*dg + db*db <= tolSq) {
+          if (useAlpha) { data[i+3] = 0; }
+          else { data[i]=r.r; data[i+1]=r.g; data[i+2]=r.b; data[i+3]=255; }
+        }
+      }
+      return imageData;
+    }
+
+    applyBgBtn.addEventListener('click', () => {
+      if (!extractedFrames.length) { showToast('⚠️ 请先抽帧'); return; }
+      statusSpan.textContent = '正在处理背景...';
+      const bgColor   = bgColorInput.value;
+      const tol       = parseInt(toleranceInput.value);
+      const repColor  = replaceColor.value;
+      const useAlpha  = alphaOutCheck.checked;
+
+      processedFrames = extractedFrames.map(f => {
+        const c = document.createElement('canvas');
+        c.width = f.canvas.width; c.height = f.canvas.height;
+        const cx = c.getContext('2d');
+        const d = new ImageData(new Uint8ClampedArray(f.imageData.data), f.imageData.width, f.imageData.height);
+        cx.putImageData(applyChromaKey(d, bgColor, tol, repColor, useAlpha), 0, 0);
+        return c;
+      });
+      updateThumbnails(processedFrames);
+      statusSpan.textContent = '背景编辑完成';
+    });
+
+    // ---------- 智能去重 (dHash) ----------
+    function dHash(imgData, size) {
+      size = size || 16;
+      const oc = document.createElement('canvas');
+      oc.width = size + 1; oc.height = size;
+      const cx = oc.getContext('2d');
+      const tc = document.createElement('canvas');
+      tc.width = imgData.width; tc.height = imgData.height;
+      tc.getContext('2d').putImageData(imgData, 0, 0);
+      cx.drawImage(tc, 0, 0, size + 1, size);
+      const sd = cx.getImageData(0, 0, size + 1, size).data;
+      let hash = '';
+      for (let y = 0; y < size; y++)
+        for (let x = 0; x < size; x++)
+          hash += sd[(y * (size+1) + x) * 4] > sd[(y * (size+1) + x + 1) * 4] ? '1' : '0';
+      return hash;
+    }
+
+    function hammingDist(a, b) {
+      if (a.length !== b.length) return Infinity;
+      let d = 0;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+      return d;
+    }
+
+    function deduplicate(frames, threshold) {
+      if (!frames.length) return [];
+      const result = [frames[0]];
+      let lastHash = dHash(frames[0].imageData);
+      for (let i = 1; i < frames.length; i++) {
+        const h = dHash(frames[i].imageData);
+        if (hammingDist(lastHash, h) >= threshold) {
+          result.push(frames[i]);
+          lastHash = h;
+        }
+      }
+      return result;
+    }
+
+    dedupBtn.addEventListener('click', () => {
+      if (!extractedFrames.length) { showToast('⚠️ 请先抽帧'); return; }
+      const threshold = parseInt(simThreshold.value) || 8;
+      statusSpan.textContent = '正在进行智能去重...';
+      const deduped = deduplicate(extractedFrames, threshold);
+
+      // 如果用户已应用过背景编辑，重算
+      const bgColor  = bgColorInput.value;
+      const tol      = parseInt(toleranceInput.value);
+      const repColor = replaceColor.value;
+      const useAlpha = alphaOutCheck.checked;
+      // 简单判断：如果applyBgBtn曾被点击过，applyBgBtn._used = true
+      if (applyBgBtn._used) {
+        processedFrames = deduped.map(f => {
+          const c = document.createElement('canvas');
+          c.width = f.canvas.width; c.height = f.canvas.height;
+          const cx = c.getContext('2d');
+          const d = new ImageData(new Uint8ClampedArray(f.imageData.data), f.imageData.width, f.imageData.height);
+          cx.putImageData(applyChromaKey(d, bgColor, tol, repColor, useAlpha), 0, 0);
+          return c;
+        });
+      } else {
+        processedFrames = deduped.map(f => f.canvas);
+      }
+
+      updateThumbnails(processedFrames);
+      statusSpan.textContent = `去重完成，保留 ${processedFrames.length} 帧`;
+      exportZipBtn.disabled = false;
+      exportGifBtn.disabled = false;
+      showToast(`🔍 去重完成：${extractedFrames.length} → ${processedFrames.length} 帧`);
+    });
+
+    // 标记背景编辑已被使用
+    applyBgBtn.addEventListener('click', () => { applyBgBtn._used = true; });
+
+    // ---------- 导出 ZIP ----------
+    exportZipBtn.addEventListener('click', async () => {
+      if (!processedFrames.length) { showToast('⚠️ 没有可导出的帧'); return; }
+      statusSpan.textContent = '正在打包序列帧...';
+      const zip = new JSZip();
+      await Promise.all(processedFrames.map((c, i) =>
+        new Promise(resolve => c.toBlob(b => { zip.file(`frame_${String(i+1).padStart(4,'0')}.png`, b); resolve(); }, 'image/png'))
+      ));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'frames.zip';
+      a.click(); URL.revokeObjectURL(url);
+      statusSpan.textContent = '序列帧导出完成';
+      showToast('📦 序列帧已下载');
+    });
+
+    // ---------- 导出 GIF ----------
+    exportGifBtn.addEventListener('click', () => {
+      if (!processedFrames.length) { showToast('⚠️ 没有可导出的帧'); return; }
+      statusSpan.textContent = '正在生成 GIF...';
+      const gif = new GIF({
+        workers: 2, quality: 10,
+        width: processedFrames[0].width, height: processedFrames[0].height,
+        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+      });
+      const delay = Math.round(parseFloat(intervalInput.value) * 1000) || 500;
+      processedFrames.forEach(c => gif.addFrame(c, { delay, copy: true }));
+      gif.on('progress', p => { statusSpan.textContent = `GIF 生成中... ${Math.round(p*100)}%`; });
+      gif.on('finished', blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'animation.gif';
+        a.click(); URL.revokeObjectURL(url);
+        statusSpan.textContent = 'GIF 导出完成';
+        showToast('🎞️ GIF 已下载');
+      });
+      gif.render();
+    });
+
+    // ---------- 点击缩略图预览 ----------
+    frameListDiv.addEventListener('click', e => {
+      if (e.target.tagName !== 'IMG') return;
+      const idx = Array.from(frameListDiv.children).indexOf(e.target);
+      if (idx >= 0 && processedFrames[idx]) {
+        const c = processedFrames[idx];
+        previewCanvas.width = c.width; previewCanvas.height = c.height;
+        previewCanvas.getContext('2d').drawImage(c, 0, 0);
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
