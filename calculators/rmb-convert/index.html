@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
-  <meta name="description" content="在线人民币大小写转换工具，将阿拉伯数字金额转换为中文大写金额，支持元角分，适用于发票、支票、合同等财务场景。">
+  <meta name="description" content="在线人民币大小写转换工具 — 将阿拉伯数字金额(支持元角分精确到分)转换为中文大写金额（零壹贰叁肆伍陆柒捌玖拾佰仟万亿元整），支持负数处理，一键复制转换结果。适用于财务报销发票填写、银行支票大写金额、合同价款条款、会计记账等需要中文大写金额的正式场景。">
   <title>人民币大小写转换工具 - 在线阿拉伯数字转中文大写金额 · 计算器盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
@@ -59,6 +59,30 @@
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;" id="moreTools"></div>
     </div>
+  </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 人民币大小写转换说明</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">人民币大小写转换是将阿拉伯数字金额（如 12345.67）转换为中文大写金额（壹万贰仟叁佰肆拾伍元陆角柒分）的工具。中文大写金额是中国财务、金融和法律文书中的标准书写方式，具有不易篡改的特点，广泛用于发票、支票、合同、借据等正式凭证。转换规则遵循中国人民银行规定的标准格式：数字使用零壹贰叁肆伍陆柒捌玖，单位使用拾佰仟万亿元，末尾为零分时写"整"字。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>输入金额</strong> — 在输入框中输入数字金额（支持小数，如 1234.56）。</li>
+      <li><strong>自动转换</strong> — 输入的同时中文大写金额即时显示在下方结果区域。</li>
+      <li><strong>复制使用</strong> — 点击复制按钮将大写金额文本复制到剪贴板，用于填写凭证。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>财务报销</strong> — 填写报销单时快速生成发票金额的中文大写。</li>
+      <li><strong>合同条款</strong> — 在合同中撰写价款的大写金额条款。</li>
+      <li><strong>银行支票</strong> — 填写支票时确保金额书写规范、不易篡改。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🧮 更多计算器工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
   </div>
 
   <script src="../../assets/js/common.js"></script>

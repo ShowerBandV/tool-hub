@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
-  <meta name="description" content="随机测试数据生成器 — 在线生成中文姓名和手机号等测试数据，支持导出CSV。">
-  <title>随机数据生成 · 开发者盒子</title>
+  <meta name="description" content="随机测试数据生成器 — 在线批量生成中文姓名(百家姓+常用名)和手机号等测试数据，支持按类型筛选（仅姓名/仅手机号/组合），一键复制全部结果或导出CSV文件。纯前端生成，适合开发测试、数据填充和演示场景。">
+  <title>随机数据生成器 - 在线中文姓名手机号批量生成 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .output-area {
@@ -58,6 +58,31 @@
       <div class="output-area" id="rd-result">点击"生成数据"按钮开始生成...</div>
     </div>
   </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 随机数据生成功能介绍</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">在开发测试过程中，经常需要大量真实的测试数据来填充数据库或验证功能。本工具基于百家姓和中国常用名字库，结合真实手机号段前缀，可批量生成带有中文姓名和手机号的测试数据。支持仅生成姓名（用于用户列表）、仅生成手机号（用于号码测试）或姓名+手机号组合（用于完整用户档案）。生成的姓名覆盖常见姓氏和男女通用名字，手机号基于真实号段前缀随机生成后8位，格式符合中国大陆手机号规范。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>设置数量</strong> — 调整生成数量（1-100条）。</li>
+      <li><strong>选择类型</strong> — 切换「姓名+手机号」「仅姓名」「仅手机号」模式。</li>
+      <li><strong>生成数据</strong> — 点击"🎲 生成数据"按钮，结果实时显示在下方区域。</li>
+      <li><strong>导出使用</strong> — 点击"📋 复制全部"复制到剪贴板，或点击"📥 导出CSV"下载表格文件。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>开发测试</strong> — 为数据库填充测试用户数据，验证注册/登录流程。</li>
+      <li><strong>演示环境</strong> — 快速生成演示系统的用户列表和联系方式数据。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
+  </div>
+
   <script src="../../assets/js/common.js"></script>
   <script>
     const SURNAMES = '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄';

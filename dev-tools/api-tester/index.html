@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <meta name="description" content="API响应时间测试工具 — 在线测试任意API端点的响应时间、状态码和响应体。">
-  <title>API响应测试 · 开发者盒子</title>
+  <meta name="description" content="在线API响应时间测试工具 — 测试任意HTTP端点的响应速度、状态码和响应体内容，支持GET/POST方法，内置GitHub API/httpbin/JSONPlaceholder快捷测试。实时显示延迟毫秒数、数据大小和状态分类标签，适合API调试和性能评估。">
+  <title>API响应时间测试工具 - 在线检测接口状态 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .output-area {
@@ -68,6 +68,31 @@
       <div class="output-area" id="api-result">等待测试...</div>
     </div>
   </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 API响应测试工具说明</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">API响应时间测试工具帮助开发者快速检测HTTP接口的连通性和响应性能。输入API的URL地址，工具会发送HTTP请求并返回状态码、响应耗时（毫秒）、数据大小和响应内容预览。支持GET和POST两种请求方法。内置了GitHub API、httpbin、JSONPlaceholder三个常用测试端点，一键即可体验。注意：由于浏览器同源策略（CORS）限制，部分API可能无法直接测试，此时工具会提示CORS错误。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>输入URL</strong> — 在输入框中粘贴要测试的API端点地址。</li>
+      <li><strong>选择方法</strong> — 选择GET或POST请求方式。</li>
+      <li><strong>发送请求</strong> — 点击"🚀 发送"按钮，工具向目标API发起请求。</li>
+      <li><strong>分析结果</strong> — 查看状态码标签、响应毫秒数和返回数据内容。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>接口调试</strong> — 开发过程中快速验证API是否正常响应。</li>
+      <li><strong>性能评估</strong> — 对比不同网络环境下API的响应速度差异。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
+  </div>
+
   <script src="../../assets/js/common.js"></script>
   <script>
     function setURL(url) {

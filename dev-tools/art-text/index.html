@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
-  <meta name="description" content="艺术字生成器 — 使用CSS特效生成彩虹、霓虹、阴影、描边、浮雕、火焰等风格艺术字。">
-  <title>艺术字生成器 · 开发者盒子</title>
+  <meta name="description" content="在线艺术字生成器 — 6种CSS特效文字风格：彩虹渐变色、霓虹发光、多重3D阴影、描边空心字、浮雕凹凸效果、火焰燃烧特效。输入文字实时切换样式，适合社交媒体封面、海报标题和创意设计。">
+  <title>艺术字生成器 - 在线CSS特效文字制作彩虹霓虹 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .art-text-box {
@@ -50,6 +50,30 @@
       <div class="art-text-box" id="artPreview">精彩世界</div>
     </div>
   </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 艺术字生成器介绍</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">艺术字生成器利用CSS3的文本特效（text-shadow、background-clip等）在浏览器中实时渲染出炫酷的文字效果，无需任何图像编辑软件。内置6种独特的文字风格：彩虹渐变（多色平滑过渡）、霓虹发光（模拟霓虹灯管的辉光效果）、多重阴影（递进式3D立体阴影）、描边空心（白色文字配黑色轮廓）、浮雕效果（模拟石刻般的凹凸质感）和火焰燃烧（橙色到红色的升腾色阶）。输入任意文字即可实时预览，适合制作社交媒体封面、视频标题、海报和创意设计素材。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>输入文字</strong> — 在输入框中输入要转换的文字内容。</li>
+      <li><strong>选择风格</strong> — 从下拉菜单中选择6种艺术字风格之一。</li>
+      <li><strong>实时预览</strong> — 文字效果即时更新，确认满意后可直接截图使用。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>社交媒体</strong> — 制作带特效文字的封面图、短视频标题封面。</li>
+      <li><strong>海报标题</strong> — 为活动海报或演示文稿设计醒目的标题文字。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
+  </div>
+
   <script src="../../assets/js/common.js"></script>
   <script>
     const STYLES = {

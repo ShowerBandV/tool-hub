@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>">
-  <meta name="description" content="CSS渐变生成器 — 可视化生成线性/径向渐变CSS代码，支持多色标。">
-  <title>渐变生成器 · 开发者盒子</title>
+  <meta name="description" content="在线CSS渐变生成器 — 可视化拖拽生成线性/径向渐变背景代码，支持多色标(可添加/删除)、自由调节角度(0-360°)、颜色选取器实时预览，一键复制CSS样式代码。适合前端开发、UI设计和网页背景制作。">
+  <title>CSS渐变生成器 - 在线线性径向渐变代码生成 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .output-area {
@@ -82,6 +82,31 @@
       <button class="btn btn-outline btn-sm" onclick="copyCSS()" style="margin-top:6px;">📋 复制CSS</button>
     </div>
   </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 渐变生成器使用说明</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">CSS渐变（Gradient）是一种在两个或多个颜色之间创建平滑过渡的视觉效果，广泛用于网页背景、按钮、卡片和UI装饰。本工具支持线性渐变（linear-gradient）和径向渐变（radial-gradient）两种类型。线性渐变沿指定角度方向过渡，径向渐变从中心向四周圆形扩散。您可以通过拖拽色标的位置和添加/删除色标来精确控制渐变效果，生成的CSS代码可直接复制到您的项目中使用。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>选择类型</strong> — 切换线性或径向渐变模式。</li>
+      <li><strong>调节角度</strong> — 拖动角度滑杆改变线性渐变的方向（0-360°）。</li>
+      <li><strong>编辑色标</strong> — 点击颜色块选取颜色，拖动滑杆调整色标位置，点击"+ 添加色标"增加颜色节点。</li>
+      <li><strong>复制CSS</strong> — 下方的CSS代码随编辑实时更新，点击"📋 复制CSS"即可使用。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>网页设计</strong> — 为网站头部、按钮和卡片设计渐变背景。</li>
+      <li><strong>UI组件</strong> — 制作渐变色图标和装饰元素。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
+  </div>
+
   <script src="../../assets/js/common.js"></script>
   <script>
     function updateGradient() {

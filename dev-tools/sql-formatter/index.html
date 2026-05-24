@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
-  <meta name="description" content="SQL格式化工具 — 在线美化压缩的SQL语句，支持格式化与压缩互转。">
-  <title>SQL格式化 · 开发者盒子</title>
+  <meta name="description" content="在线SQL格式化工具 — 支持SQL关键字换行缩进(自动识别SELECT/FROM/WHERE/JOIN等)、压缩为单行紧凑格式，一键复制格式化结果。适用于美化复杂查询语句、代码review和SQL教学演示。">
+  <title>SQL格式化工具 - 在线美化压缩SQL语句 · 开发者盒子</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <style>
     .output-area {
@@ -49,6 +49,31 @@
       <button class="btn btn-outline btn-sm" onclick="copyResult()" style="margin-top:6px;">📋 复制结果</button>
     </div>
   </div>
+
+  <div class="card">
+    <h3 class="panel-title">📖 SQL格式化工具介绍</h3>
+    <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">SQL格式化工具用于美化杂乱无章的SQL语句，使其更易阅读和维护。工具自动识别SQL中的关键字（SELECT、FROM、WHERE、JOIN、GROUP BY、ORDER BY等），将每个关键字换行并对齐缩进，子句层级关系一目了然。支持常见SQL方言（MySQL、PostgreSQL、SQLite等）。"压缩SQL"功能可将格式化的SQL还原为单行紧凑格式，方便在代码中嵌入或API参数中传输。格式化完全在浏览器本地完成，SQL语句不会上传至任何服务器。</p>
+    <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+    <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>粘贴SQL</strong> — 将需要格式化的SQL语句粘贴到上方文本框中。</li>
+      <li><strong>格式化</strong> — 点击"🔧 格式化"按钮，语句自动换行缩进排版。</li>
+      <li><strong>压缩（可选）</strong> — 点击"压缩SQL"将美观格式还原为单行紧凑格式。</li>
+      <li><strong>复制结果</strong> — 点击"📋 复制结果"将格式化后的SQL保存到剪贴板。</li>
+    </ol>
+    <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+    <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+      <li><strong>代码审查</strong> — 格式化同事或开源项目中的复杂SQL进行审查。</li>
+      <li><strong>SQL教学</strong> — 展示SQL查询的结构和关键字层级关系。</li>
+    </ul>
+  </div>
+
+  <div class="ad-unit ad-footer"><span>📢 广告位</span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;" id="moreTools"></div>
+  </div>
+
   <script src="../../assets/js/common.js"></script>
   <script>
     const KEYWORDS = ['SELECT','FROM','WHERE','AND','OR','NOT','IN','ON','JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN','CROSS JOIN','GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET','AS','DISTINCT','COUNT','SUM','AVG','MAX','MIN','BETWEEN','LIKE','IS','NULL','EXISTS','CASE','WHEN','THEN','ELSE','END','UNION','ALL','INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE','DROP','ALTER','INDEX','VIEW','UNION ALL','LEFT OUTER JOIN','RIGHT OUTER JOIN','FULL OUTER JOIN'];
