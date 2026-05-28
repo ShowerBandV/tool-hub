@@ -27,10 +27,24 @@
       </div>
     </div>
 
+    <div class="card">
+      <h3 class="panel-title">📖 UUID 生成器说明</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">UUID（Universally Unique Identifier，通用唯一识别码）是一种 128 位的标识符标准（RFC 4122），在分布式系统中用于唯一标识信息。UUID v4 版本基于随机数生成，具有极高的唯一性，碰撞概率极低。本工具支持批量生成 UUID（1-100个），每个 UUID 格式为标准 36 字符字符串（如 550e8400-e29b-41d4-a716-446655440000）。生成的 UUID 可直接用于数据库主键、分布式 ID、会话标识符等场景。所有生成在浏览器本地完成，不涉及网络请求。</p>
+      <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>设置数量</strong> — 调整需要生成的 UUID 数量（1-100个）。</li>
+        <li><strong>生成</strong> — 点击生成按钮，指定数量的 UUID 列表即时显示。</li>
+        <li><strong>复制结果</strong> — 点击"📋 复制全部"将所有 UUID 复制到剪贴板。</li>
+      </ol>
+      <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+      <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>数据库主键</strong> — 为数据表记录生成全局唯一的 ID。</li>
+        <li><strong>分布式系统</strong> — 在微服务间传递请求时生成唯一的追踪标识。</li>
+      </ul>
+    </div>
     <div class="ad-unit ad-leaderboard">
       <span>📢 广告位</span>
     </div>
-
     <div class="card" style="margin-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">

@@ -55,10 +55,24 @@
       <div id="resultArea" style="margin-top:16px;"></div>
     </div>
 
+    <div class="card">
+      <h3 class="panel-title">📖 JWT 解码器说明</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.92rem;">JWT（JSON Web Token）是一种基于 JSON 的开放标准（RFC 7519），用于在网络应用环境间安全地传输声明信息。JWT 由三部分组成：Header（头部，包含令牌类型和签名算法）、Payload（载荷，包含实际数据如用户 ID、过期时间等）和 Signature（签名，用于验证令牌未被篡改）。本工具可解析 JWT Token 的 Header 和 Payload 部分，将其中的 Base64 编码数据解码为可读的 JSON 格式，方便开发者在调试和测试中快速查看令牌内容。</p>
+      <h3 class="panel-title" style="margin-top:16px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>粘贴 Token</strong> — 将完整的 JWT Token 字符串粘贴到输入框。</li>
+        <li><strong>自动解码</strong> — Header 和 Payload 自动解码为可读的 JSON 格式。</li>
+        <li><strong>查看数据</strong> — 检查签发时间、过期时间、用户信息等声明内容。</li>
+      </ol>
+      <h3 class="panel-title" style="margin-top:16px;">💡 适用场景</h3>
+      <ul style="color:var(--text-secondary);line-height:2;font-size:0.92rem;padding-left:20px;">
+        <li><strong>接口调试</strong> — 解析 API 返回的 JWT Token，验证 Payload 数据是否正确。</li>
+        <li><strong>安全审计</strong> — 检查 Token 的过期时间和签名算法设置。</li>
+      </ul>
+    </div>
     <div class="ad-unit ad-leaderboard">
       <span>📢 广告位</span>
     </div>
-
     <div class="card" style="margin-top:20px;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px;">🛠️ 更多开发者工具</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px;">
