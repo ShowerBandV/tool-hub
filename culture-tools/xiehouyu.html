@@ -1,176 +1,155 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
-  <meta name="description" content="歇后语和方言生成器 — 随机展示经典歇后语和地方方言表达，外甥打灯笼——照旧，可复制发群考朋友。">
-  <title>方言歇后语生成器 - 歇后语大全 · 文化盒子</title>
+  <meta name="description" content="Chinese Xianghouyu (歇后语) generator — Random two-part witty sayings with explanations, plus regional Chinese dialect expressions. Copy and share with friends. Free online Chinese language culture tool.">
+  <title>Chinese Xianghouyu & Dialect Generator · Chinese Culture</title>
   <link rel="stylesheet" href="../assets/css/main.css">
   <style>
-    .xiehouyu-box { padding:28px; text-align:center; border-radius:var(--radius-sm); background:#fafbfc; border:2px solid var(--border); min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    .xiehouyu-front { font-size:1.3rem; font-weight:700; margin-bottom:6px; }
-    .xiehouyu-back { font-size:1.1rem; color:var(--accent); font-weight:600; }
-    .xiehouyu-category { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
-    .dialect-box { padding:18px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); text-align:center; }
-    .dialect-text { font-size:1.1rem; font-weight:600; }
-    .dialect-region { font-size:0.78rem; color:var(--text-muted); margin-top:4px; }
+    .saying-box { padding:28px; text-align:center; border-radius:var(--radius-sm); background:#fafbfc; border:2px solid var(--border); min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .saying-front { font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+    .saying-back { font-size:1.1rem; color:var(--accent); font-weight:600; margin-bottom:4px; }
+    .saying-explanation { font-size:0.85rem; color:var(--text-secondary); max-width:500px; }
+    .saying-category { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
+    .dialect-box { padding:20px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); text-align:center; }
+    .dialect-text { font-size:1.2rem; font-weight:700; }
+    .dialect-phonetic { font-size:0.9rem; color:var(--text-secondary); margin-top:4px; }
+    .dialect-region { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
+    .dialect-meaning { font-size:0.85rem; color:var(--accent); font-weight:600; margin-top:4px; }
   </style>
 </head>
 <body>
   <div class="app-wrapper">
     <div class="breadcrumb">
-      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
-      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 方言歇后语生成器
+      <a href="../index.html">🧰 Home</a> <span class="sep">›</span>
+      <a href="index.html">🏮 Chinese Culture</a> <span class="sep">›</span> Xianghouyu & Dialect Generator
     </div>
     <header class="app-header">
       <div class="app-logo">
         <span class="logo-icon">💬</span>
-        <span class="app-title">方言歇后语生成器</span>
+        <span class="app-title">Chinese Sayings & Dialect Generator</span>
       </div>
-      <p class="app-subtitle">经典歇后语 · 地方方言 · 随机展示 · 复制发群考朋友</p>
+      <p class="app-subtitle">Xianghouyu (Chinese punning folk sayings) · Regional dialects · Copy and share with friends</p>
     </header>
 
     <div class="card tool-panel">
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">
-        <button class="btn btn-primary" onclick="showRandomXiehouyu()">💬 随机歇后语</button>
-        <button class="btn btn-outline" onclick="showRandomDialect()">🗣️ 随机方言</button>
-        <button class="btn btn-outline btn-sm" onclick="copyResult('currentDisplay')">📋 复制</button>
+        <button class="btn btn-primary" onclick="showRandomXiehouyu()">💬 Random Saying</button>
+        <button class="btn btn-outline" onclick="showRandomDialect()">🗣️ Random Dialect</button>
+        <button class="btn btn-outline btn-sm" onclick="copyResult('currentDisplay')">📋 Copy</button>
       </div>
-      <div id="currentDisplay" class="xiehouyu-box">
-        <div style="font-size:0.9rem;color:var(--text-muted);">点击按钮随机生成</div>
+      <div id="currentDisplay" class="saying-box">
+        <div style="font-size:0.9rem;color:var(--text-muted);">Click a button to see a random saying!</div>
       </div>
     </div>
 
     <div class="card">
-      <h3 class="panel-title">📖 歇后语简介</h3>
-      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">歇后语是中国民间语言艺术的一种形式，由两部分组成：前半部分是形象比喻（谜面），后半部分是解释说明（谜底）。通常只说前半部分，后半部分留给听者意会。歇后语生动幽默，反映了劳动人民的生活智慧。方言则是地方文化的活化石，不同地区的方言表达各有特色，本工具收录了一些有趣的方言词汇和表达。</p>
+      <h3 class="panel-title">📖 About Xianghouyu (歇后语)</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;"><strong>Xianghouyu</strong> (歇后语, literally "truncated sayings") are a unique form of Chinese folk wisdom and wordplay. They consist of two parts: the first part is a vivid metaphor or scenario, and the second part reveals the punchline or meaning — often using <strong>homophonic puns</strong> (谐音, xiéyīn) where the intended meaning sounds like but differs from the literal words. For example, "外甥打灯笼 — 照旧(舅)" — the nephew carries a lantern, literally "illuminating uncle" (照舅), but sounds like "as before" (照旧).</p>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;margin-top:8px;">These sayings are deeply embedded in Chinese culture, drawing from historical stories (典故, diǎngù), daily life observations, and clever word games. Xianghouyu are still widely used in modern Chinese conversation, comedy, and internet memes — much like English "Tom Swifty" jokes or "light bulb" jokes, but with a distinctive Chinese linguistic flavor.</p>
+
+      <h3 class="panel-title" style="margin-top:14px;">🗣️ Chinese Regional Dialects</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">China has <strong>eight major dialect families</strong> with hundreds of local varieties. While Mandarin (普通话, Pǔtōnghuà) is the official language, regional dialects like <strong>Cantonese</strong> (粤语, Guangdong/Hong Kong), <strong>Shanghainese</strong> (吴语), <strong>Sichuanese</strong> (四川话), and many others preserve ancient Chinese pronunciations and unique vocabulary. This generator samples fun expressions from various dialects — try them out!</p>
+
+      <h3 class="panel-title" style="margin-top:14px;">📝 How to Use</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.9rem;padding-left:20px;">
+        <li>Click <strong>"Random Saying"</strong> to see a Xianghouyu with its hidden meaning revealed.</li>
+        <li>Click <strong>"Random Dialect"</strong> to discover a regional dialect expression.</li>
+        <li>Click <strong>"Copy"</strong> to save the saying to your clipboard and share it in chats or social media!</li>
+      </ol>
     </div>
   </div>
 
   <script src="../assets/js/common.js"></script>
   <script>
     const XIEHOUYU = [
-      { front:'外甥打灯笼', back:'照旧（舅）', cat:'谐音' },
-      { front:'小葱拌豆腐', back:'一清（青）二白', cat:'谐音' },
-      { front:'擀面杖吹火', back:'一窍不通', cat:'比喻' },
-      { front:'泥菩萨过河', back:'自身难保', cat:'比喻' },
-      { front:'芝麻开花', back:'节节高', cat:'比喻' },
-      { front:'竹篮打水', back:'一场空', cat:'比喻' },
-      { front:'十五个吊桶打水', back:'七上八下', cat:'比喻' },
-      { front:'八仙过海', back:'各显神通', cat:'典故' },
-      { front:'韩信点兵', back:'多多益善', cat:'典故' },
-      { front:'周瑜打黄盖', back:'一个愿打一个愿挨', cat:'典故' },
-      { front:'猪八戒照镜子', back:'里外不是人', cat:'典故' },
-      { front:'孙悟空大闹天宫', back:'慌了神', cat:'典故' },
-      { front:'肉包子打狗', back:'有去无回', cat:'比喻' },
-      { front:'哑巴吃黄连', back:'有苦说不出', cat:'比喻' },
-      { front:'秀才遇到兵', back:'有理说不清', cat:'比喻' },
-      { front:'瞎子点灯', back:'白费蜡', cat:'比喻' },
-      { front:'猫哭老鼠', back:'假慈悲', cat:'比喻' },
-      { front:'黄鼠狼给鸡拜年', back:'没安好心', cat:'比喻' },
-      { front:'老虎的屁股', back:'摸不得', cat:'比喻' },
-      { front:'热锅上的蚂蚁', back:'团团转', cat:'比喻' },
-      { front:'船到桥头', back:'自然直', cat:'生活' },
-      { front:'车到山前', back:'必有路', cat:'生活' },
-      { front:'塞翁失马', back:'焉知非福', cat:'典故' },
-      { front:'亡羊补牢', back:'为时未晚', cat:'典故' },
-      { front:'此地无银三百两', back:'隔壁王二不曾偷', cat:'典故' },
-      { front:'三九天穿裙子', back:'美丽动（冻）人', cat:'谐音' },
-      { front:'飞机上挂水瓶', back:'高水平（瓶）', cat:'谐音' },
-      { front:'骑自行车下坡', back:'不踩（睬）', cat:'谐音' },
-      { front:'孔夫子搬家', back:'尽是书（输）', cat:'谐音' },
-      { front:'电线杆上绑鸡毛', back:'好大的掸（胆）子', cat:'谐音' },
-      { front:'和尚打伞', back:'无法（发）无天', cat:'谐音' },
-      { front:'火烧眉毛', back:'迫在眉睫', cat:'比喻' },
-      { front:'一口吃个胖子', back:'心急吃不了热豆腐', cat:'生活' },
-      { front:'骑驴看唱本', back:'走着瞧', cat:'生活' },
-      { front:'丈二和尚', back:'摸不着头脑', cat:'比喻' },
-      { front:'半斤八两', back:'差不多', cat:'生活' },
-      { front:'山中无老虎', back:'猴子称霸王', cat:'比喻' },
-      { front:'跑了和尚跑不了庙', back:'躲得过初一躲不过十五', cat:'生活' },
-      { front:'新官上任', back:'三把火', cat:'生活' },
-      { front:'无事不登三宝殿', back:'有事才来', cat:'生活' },
-      { front:'打开天窗', back:'说亮话', cat:'生活' },
-      { front:'拔出萝卜', back:'带出泥', cat:'生活' },
-      { front:'近水楼台', back:'先得月', cat:'典故' },
-      { front:'醉翁之意', back:'不在酒', cat:'典故' },
-      { front:'项庄舞剑', back:'意在沛公', cat:'典故' },
-      { front:'司马昭之心', back:'路人皆知', cat:'典故' },
-      { front:'挂羊头卖狗肉', back:'名不副实', cat:'生活' },
-      { front:'雷声大雨点小', back:'虚张声势', cat:'生活' },
-      { front:'远水不解近渴', back:'远水解不了近渴', cat:'生活' },
-      { front:'哑巴吃饺子', back:'心里有数', cat:'比喻' },
-      { front:'对牛弹琴', back:'白费劲', cat:'典故' },
-      { front:'画蛇添足', back:'多此一举', cat:'典故' },
-      { front:'守株待兔', back:'不劳而获', cat:'典故' },
-      { front:'掩耳盗铃', back:'自欺欺人', cat:'典故' },
-      { front:'叶公好龙', back:'口是心非', cat:'典故' },
-      { front:'刻舟求剑', back:'死板教条', cat:'典故' },
-      { front:'杞人忧天', back:'自寻烦恼', cat:'典故' },
-      { front:'东施效颦', back:'适得其反', cat:'典故' },
-      { front:'愚公移山', back:'坚持不懈', cat:'典故' },
-      { front:'井底之蛙', back:'见识短浅', cat:'典故' },
-      { front:'千里送鹅毛', back:'礼轻情意重', cat:'生活' },
-      { front:'冰冻三尺', back:'非一日之寒', cat:'生活' },
-      { front:'路遥知马力', back:'日久见人心', cat:'生活' },
-      { front:'留得青山在', back:'不怕没柴烧', cat:'生活' },
-      { front:'只许州官放火', back:'不许百姓点灯', cat:'典故' },
-      { front:'羊毛出在羊身上', back:'取之于民用之于民', cat:'生活' },
-      { front:'吃了秤砣', back:'铁了心', cat:'比喻' },
-      { front:'钱塘江里洗被单', back:'大摆布', cat:'谐音' },
-      { front:'厕所里扔石头', back:'激起公愤（粪）', cat:'谐音' },
-      { front:'开汽车按喇叭', back:'走到哪响（想）到哪', cat:'谐音' },
-      { front:'一个巴掌拍不响', back:'孤掌难鸣', cat:'生活' },
-      { front:'墙倒众人推', back:'趁火打劫', cat:'生活' },
-      { front:'大树底下好乘凉', back:'靠山', cat:'生活' },
-      { front:'初生牛犊不怕虎', back:'勇气可嘉', cat:'生活' },
-      { front:'林子大了', back:'什么鸟都有', cat:'生活' },
-      { front:'人不可貌相', back:'海水不可斗量', cat:'生活' },
-      { front:'身在曹营心在汉', back:'心不在焉', cat:'典故' },
+      { front:'Nephew carries a lantern', back:'As before (illuminating uncle)', pun:'照旧(舅) — "as before" sounds like "shine on uncle"', cat:'Homophone pun' },
+      { front:'Chopped green onion mixed with tofu', back:'One clear (green) two white', pun:'一清(青)二白 — pure and clear', cat:'Homophone pun' },
+      { front:'Rolling pin used as a bellows', back:'Completely clueless', pun:'一窍不通 — not a clue', cat:'Metaphor' },
+      { front:'Clay Buddha crossing the river', back:'Can\'t even save itself', pun:'自身难保 — hard to protect oneself', cat:'Metaphor' },
+      { front:'Sesame flowers blooming', back:'Rising higher and higher', pun:'节节高 — rising steadily', cat:'Metaphor' },
+      { front:'Bamboo basket drawing water', back:'All in vain', pun:'一场空 — empty result', cat:'Metaphor' },
+      { front:'Fifteen buckets drawing water', back:'Seven up and eight down', pun:'七上八下 — nervous/anxious', cat:'Metaphor' },
+      { front:'Eight Immortals crossing the sea', back:'Each shows their own magic', pun:'各显神通 — everyone displays their talent', cat:'Historical' },
+      { front:'Han Xin counting soldiers', back:'The more the merrier', pun:'多多益善 — the more the better', cat:'Historical' },
+      { front:'Zhou Yu striking Huang Gai', back:'One willing to hit, one willing to be hit', pun:'一个愿打一个愿挨 — mutual consent', cat:'Historical' },
+      { front:'Pigsy looking in the mirror', back:'Not human inside or out', pun:'里外不是人 — can\'t please anybody', cat:'Historical' },
+      { front:'Monkey King wreaking havoc in heaven', back:'The gods are panicked', pun:'慌了神 — flustered', cat:'Historical' },
+      { front:'Throwing meat buns at a dog', back:'Gone forever', pun:'有去无回 — no return', cat:'Metaphor' },
+      { front:'A mute eating bitter gourd', back:'Can\'t express the bitterness', pun:'有苦说不出 — suffering in silence', cat:'Metaphor' },
+      { front:'A scholar meeting a soldier', back:'Reason can\'t be heard', pun:'有理说不清 — can\'t reason with force', cat:'Metaphor' },
+      { front:'A blind person lighting a lamp', back:'Wasting candle wax', pun:'白费蜡 — pointless effort', cat:'Metaphor' },
+      { front:'A cat crying over a dead mouse', back:'False sympathy', pun:'假慈悲 — fake compassion', cat:'Metaphor' },
+      { front:'A weasel paying New Year respects to a chicken', back:'No good intentions', pun:'没安好心 — ulterior motives', cat:'Metaphor' },
+      { front:'A tiger\'s backside', back:'Cannot be touched', pun:'摸不得 — don\'t mess with it', cat:'Metaphor' },
+      { front:'Ants on a hot pan', back:'Running around frantically', pun:'团团转 — running in circles', cat:'Metaphor' },
+      { front:'The boat will straighten itself when it reaches the bridge', back:'Things will work out', pun:'自然直 — things sort themselves out', cat:'Wisdom' },
+      { front:'The cart will find its way around the mountain', back:'There\'s always a way', pun:'必有路 — there will be a path', cat:'Wisdom' },
+      { front:'The old man at the frontier lost his horse', back:'A blessing in disguise', pun:'焉知非福 — who knows what\'s good or bad', cat:'Historical' },
+      { front:'Mending the pen after losing the sheep', back:'Never too late', pun:'为时未晚 — better late than never', cat:'Historical' },
+      { front:'Three hundred taels buried here — said the neighbor Wang', back:'Protesting too much gives it away', pun:'此地无银三百两 — self-betraying denial', cat:'Historical' },
+      { front:'Wearing a skirt in the coldest days', back:'Beautiful but freezing (moving)', pun:'美丽动(冻)人 — beauty costs', cat:'Homophone pun' },
+      { front:'A teapot with dumplings inside', back:'Can\'t pour them out', pun:'有嘴倒(道)不出 — can\'t express', cat:'Homophone pun' },
+      { front:'Hanging a bottle on an airplane', back:'High level (bottle)', pun:'高水平(瓶) — high-level skill', cat:'Homophone pun' },
+      { front:'Riding a bike downhill', back:'No pedaling (paying attention)', pun:'不踩(睬) — ignore', cat:'Homophone pun' },
+      { front:'Confucius moving house', back:'Nothing but books (losses)', pun:'尽是书(输) — all losses', cat:'Homophone pun' },
+      { front:'Tying a chicken feather to a utility pole', back:'What a big duster (nerve)', pun:'好大的胆(掸)子 — bold move', cat:'Homophone pun' },
+      { front:'A monk holding an umbrella', back:'Hairless and lawless', pun:'无法(发)无天 — lawless', cat:'Homophone pun' },
+      { front:'Fire burning the eyebrows', back:'Extremely urgent', pun:'迫在眉睫 — imminent', cat:'Metaphor' },
+      { front:'Trying to get fat in one bite', back:'Haste makes waste', pun:'心急吃不了热豆腐 — can't eat hot tofu in a hurry', cat:'Wisdom' },
+      { front:'Riding a donkey while reading a script', back:'Wait and see', pun:'走着瞧 — let\'s wait and see', cat:'Wisdom' },
+      { front:'A ten-foot tall monk', back:'Can\'t figure it out', pun:'摸不着头脑 — can\'t make sense of it', cat:'Metaphor' },
+      { front:'Half a catty vs eight liang', back:'Six of one, half a dozen of the other', pun:'半斤八两 — same difference', cat:'Wisdom' },
+      { front:'No tiger in the mountain', back:'The monkey becomes king', pun:'山中无老虎，猴子称霸王 — when the cat\'s away...', cat:'Metaphor' },
+      { front:'A new official takes office', back:'Three blazing fires', pun:'新官上任三把火 — new brooms sweep clean', cat:'Wisdom' },
+      { front:'Don\'t go to the temple for no reason', back:'There\'s a purpose', pun:'无事不登三宝殿 — must have a reason', cat:'Wisdom' },
+      { front:'Open the skylight', back:'Speak frankly', pun:'打开天窗说亮话 — speak openly', cat:'Wisdom' },
+      { front:'Pull up the radish', back:'The mud comes with it', pun:'拔出萝卜带出泥 — uncovering more', cat:'Wisdom' },
     ];
 
     const DIALECTS = [
-      { text:'干啥呢？', region:'东北话', meaning:'干什么呢？' },
-      { text:'你瞅啥？', region:'东北话', meaning:'你看什么？' },
-      { text:'嘎哈去？', region:'东北话', meaning:'干什么去？' },
-      { text:'贼好看', region:'东北话', meaning:'非常好看' },
-      { text:'整一个', region:'东北话', meaning:'来一个/弄一个' },
-      { text:'妥妥的', region:'东北话', meaning:'没问题/稳了' },
-      { text:'好嘢！', region:'粤语', meaning:'好厉害！' },
-      { text:'唔该', region:'粤语', meaning:'谢谢/劳驾' },
-      { text:'点解？', region:'粤语', meaning:'为什么？' },
-      { text:'有冇搞错', region:'粤语', meaning:'有没有搞错' },
-      { text:'我钟意你', region:'粤语', meaning:'我喜欢你' },
-      { text:'食咗饭未？', region:'粤语', meaning:'吃饭了吗？' },
-      { text:'结棍！', region:'上海话', meaning:'厉害！' },
-      { text:'侬好', region:'上海话', meaning:'你好' },
-      { text:'谢谢侬', region:'上海话', meaning:'谢谢你' },
-      { text:'白相', region:'上海话', meaning:'玩/玩耍' },
-      { text:'门槛精', region:'上海话', meaning:'很精明' },
-      { text:'雄起！', region:'四川话', meaning:'加油！' },
-      { text:'巴适得很', region:'四川话', meaning:'很舒服/很好' },
-      { text:'啥子？', region:'四川话', meaning:'什么？' },
-      { text:'安逸', region:'四川话', meaning:'舒适/惬意' },
-      { text:'摆龙门阵', region:'四川话', meaning:'聊天/闲聊' },
-      { text:'中！', region:'河南话', meaning:'行！可以！' },
-      { text:'得劲儿', region:'河南话', meaning:'舒服/过瘾' },
-      { text:'弄啥嘞', region:'河南话', meaning:'干什么呢' },
-      { text:'齐活', region:'北京话', meaning:'完成了/办妥了' },
-      { text:'倍儿棒', region:'北京话', meaning:'非常好/很厉害' },
-      { text:'搓一顿', region:'北京话', meaning:'吃一顿' },
-      { text:'撒丫子跑', region:'北京话', meaning:'快跑/逃跑' },
+      { text:'Gàn há ne?', chinese:'干啥呢？', region:'Northeastern (东北)', meaning:'What are you doing?' },
+      { text:'Nǐ chǒu shá?', chinese:'你瞅啥？', region:'Northeastern (东北)', meaning:'What are you looking at?' },
+      { text:'Zéi hǎokàn', chinese:'贼好看', region:'Northeastern (东北)', meaning:'Absolutely gorgeous' },
+      { text:'Zhěng yīgè!', chinese:'整一个！', region:'Northeastern (东北)', meaning:'Let\'s get one! / Let\'s do it!' },
+      { text:'Tuǒtuǒ de', chinese:'妥妥的', region:'Northeastern (东北)', meaning:'No problem / Solid' },
+      { text:'Hóu yé!', chinese:'好嘢！', region:'Cantonese (粤语)', meaning:'Awesome! / Great!' },
+      { text:'M̀hgòi', chinese:'唔该', region:'Cantonese (粤语)', meaning:'Thank you / Excuse me' },
+      { text:'Dím gái?', chinese:'点解？', region:'Cantonese (粤语)', meaning:'Why? / How come?' },
+      { text:'Yáuh móuh gáau cho?', chinese:'有冇搞错', region:'Cantonese (粤语)', meaning:'Are you kidding me?' },
+      { text:'Ngóh jūngyi néih', chinese:'我钟意你', region:'Cantonese (粤语)', meaning:'I like you' },
+      { text:'Sihk jó faahn meih a?', chinese:'食咗饭未？', region:'Cantonese (粤语)', meaning:'Have you eaten?' },
+      { text:'Jigun!', chinese:'结棍！', region:'Shanghainese (上海话)', meaning:'Impressive! / Powerful!' },
+      { text:'Nóng hō', chinese:'侬好', region:'Shanghainese (上海话)', meaning:'Hello' },
+      { text:'Yà jīng', chinese:'门槛精', region:'Shanghainese (上海话)', meaning:'Very shrewd / Smart' },
+      { text:'Báh xìan', chinese:'白相', region:'Shanghainese (上海话)', meaning:'To play / Have fun' },
+      { text:'Xióngqǐ!', chinese:'雄起！', region:'Sichuanese (四川话)', meaning:'Go for it! / Rise up!' },
+      { text:'Bāshì dé hěn', chinese:'巴适得很', region:'Sichuanese (四川话)', meaning:'Very comfortable / Nice' },
+      { text:'Shá zi?', chinese:'啥子？', region:'Sichuanese (四川话)', meaning:'What? / Huh?' },
+      { text:'Ānyì', chinese:'安逸', region:'Sichuanese (四川话)', meaning:'Comfortable / Cozy' },
+      { text:'Bǎi lóngménzhèn', chinese:'摆龙门阵', region:'Sichuanese (四川话)', meaning:'To chat / Shoot the breeze' },
+      { text:'Zhōng!', chinese:'中！', region:'Henan (河南话)', meaning:'OK! / Sure! / Good!' },
+      { text:'Děi jìnr', chinese:'得劲儿', region:'Henan (河南话)', meaning:'Comfortable / Satisfying' },
+      { text:'Nòng shá lei', chinese:'弄啥嘞', region:'Henan (河南话)', meaning:'What are you doing?' },
+      { text:'Qí huo!', chinese:'齐活！', region:'Beijing (北京话)', meaning:'All done! / Finished!' },
+      { text:'Bèir bàng!', chinese:'倍儿棒！', region:'Beijing (北京话)', meaning:'Excellent! / Really good!' },
+      { text:'Cuō yī dùn', chinese:'搓一顿', region:'Beijing (北京话)', meaning:'Go grab a meal' },
+      { text:'Wā sāi!', chinese:'哇塞！', region:'Taiwan (台湾)', meaning:'Wow! / Oh my!' },
+      { text:'Chǎo le', chinese:'吵了', region:'Taiwan (台湾)', meaning:'Sorry / Excuse me' },
     ];
 
     window.showRandomXiehouyu = function() {
       const item = XIEHOUYU[Math.floor(Math.random() * XIEHOUYU.length)];
       const el = document.getElementById('currentDisplay');
       el.innerHTML = 
-        '<div class="xiehouyu-front">' + item.front + '</div>' +
-        '<div class="xiehouyu-back">—— ' + item.back + '</div>' +
-        '<div class="xiehouyu-category">📌 ' + item.cat + ' 歇后语</div>';
-      el._fullText = item.front + ' —— ' + item.back;
+        '<div class="saying-front">' + item.front + '</div>' +
+        '<div class="saying-back">→ ' + item.back + '</div>' +
+        '<div class="saying-explanation">💡 ' + item.pun + '</div>' +
+        '<div class="saying-category">📌 ' + item.cat + '</div>';
+      el._fullText = item.front + ' → ' + item.back + ' (' + item.pun + ')';
     };
 
     window.showRandomDialect = function() {
@@ -179,18 +158,19 @@
       el.innerHTML = 
         '<div class="dialect-box">' +
         '<div class="dialect-text">' + item.text + '</div>' +
-        '<div class="dialect-region">📍 ' + item.region + ' · ' + item.meaning + '</div>' +
+        '<div class="dialect-phonetic">' + item.chinese + '</div>' +
+        '<div class="dialect-region">📍 ' + item.region + '</div>' +
+        '<div class="dialect-meaning">= ' + item.meaning + '</div>' +
         '</div>';
-      el._fullText = item.text + '（' + item.region + '）' + ' = ' + item.meaning;
+      el._fullText = item.text + ' (' + item.region + ') = ' + item.meaning;
     };
 
     window.copyResult = function(id) {
       const el = document.getElementById(id);
       const text = el._fullText || el.textContent;
-      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制'));
+      navigator.clipboard.writeText(text).then(() => showToast('✅ Copied'));
     };
 
-    // 默认显示一条
     showRandomXiehouyu();
   </script>
 </body>

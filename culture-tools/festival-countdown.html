@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎊</text></svg>">
-  <meta name="description" content="中国传统节日和二十四节气倒计时 — 距离春节/端午/中秋还有多少天，点击查看节日冷门习俗，二十四节气表。">
-  <title>节日节气倒计时 - 距离春节还有多少天 · 文化盒子</title>
+  <meta name="description" content="Chinese festival countdown — Days until Chinese New Year, Dragon Boat Festival, Mid-Autumn Festival, and more. Click to learn obscure traditional customs and the 24 Solar Terms (节气).">
+  <title>Chinese Festival Countdown & Customs · Chinese Culture</title>
   <link rel="stylesheet" href="../assets/css/main.css">
   <style>
     .fest-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
@@ -16,28 +16,29 @@
     .fest-name { font-size:1rem; font-weight:700; margin-top:4px; }
     .fest-date { font-size:0.78rem; color:var(--text-muted); }
     .fest-countdown { font-size:1.4rem; font-weight:800; color:var(--accent); margin-top:4px; }
-    .custom-card { margin-top:16px; padding:16px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); display:none; text-align:center; }
+    .custom-card { margin-top:16px; padding:20px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); display:none; text-align:center; }
     .custom-card.show { display:block; animation:popIn 0.4s ease; }
     .custom-card .fest-icon-big { font-size:3rem; }
-    .custom-card .custom-title { font-size:1.1rem; font-weight:700; margin-top:4px; }
-    .custom-card .custom-desc { font-size:0.85rem; color:var(--text-secondary); margin-top:6px; line-height:1.6; }
+    .custom-card .custom-title { font-size:1.2rem; font-weight:700; margin-top:6px; }
+    .custom-card .custom-desc { font-size:0.9rem; color:var(--text-secondary); margin-top:8px; line-height:1.8; }
   </style>
 </head>
 <body>
   <div class="app-wrapper">
     <div class="breadcrumb">
-      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
-      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 节日节气倒计时
+      <a href="../index.html">🧰 Home</a> <span class="sep">›</span>
+      <a href="index.html">🏮 Chinese Culture</a> <span class="sep">›</span> Festival Countdown
     </div>
     <header class="app-header">
       <div class="app-logo">
         <span class="logo-icon">🎊</span>
-        <span class="app-title">节日节气倒计时</span>
+        <span class="app-title">Chinese Festival Countdown & Customs</span>
       </div>
-      <p class="app-subtitle">距离春节/端午/中秋还有多少天 · 二十四节气 · 冷门习俗</p>
+      <p class="app-subtitle">Countdown to traditional Chinese festivals · 24 Solar Terms · Click to discover obscure customs</p>
     </header>
 
     <div class="card tool-panel">
+      <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:12px;">Click any festival card to learn a fascinating custom or little-known fact.</p>
       <div class="fest-grid" id="festGrid"></div>
       <div class="custom-card" id="customCard">
         <div class="fest-icon-big" id="customIcon"></div>
@@ -47,25 +48,35 @@
     </div>
 
     <div class="card">
-      <h3 class="panel-title">📖 二十四节气表</h3>
-      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">二十四节气是中国古代农耕文明的智慧结晶，反映了季节变化和气候特征。依次为：立春、雨水、惊蛰、春分、清明、谷雨、立夏、小满、芒种、夏至、小暑、大暑、立秋、处暑、白露、秋分、寒露、霜降、立冬、小雪、大雪、冬至、小寒、大寒。点击上方节气和节日卡片可查看对应的冷门习俗知识。</p>
+      <h3 class="panel-title">📖 About Chinese Festivals & the 24 Solar Terms</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">Chinese traditional festivals are deeply rooted in the agricultural calendar and lunar cycles. Most major festivals follow the <strong>lunar calendar</strong>, which means their dates on the Gregorian calendar shift each year — typically within a range of about 30 days. The <strong>24 Solar Terms</strong> (节气, jiéqì) are a separate system developed in ancient China to guide agricultural activities based on the sun's position.</p>
+
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:14px;">The 24 Solar Terms in Order</h4>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.85rem;">立春 Start of Spring · 雨水 Rain Water · 惊蛰 Awakening of Insects · 春分 Spring Equinox · 清明 Clear and Bright · 谷雨 Grain Rain · 立夏 Start of Summer · 小满 Grain Buds · 芒种 Grain in Ear · 夏至 Summer Solstice · 小暑 Minor Heat · 大暑 Major Heat · 立秋 Start of Autumn · 处暑 End of Heat · 白露 White Dew · 秋分 Autumn Equinox · 寒露 Cold Dew · 霜降 Frost Descent · 立冬 Start of Winter · 小雪 Minor Snow · 大雪 Major Snow · 冬至 Winter Solstice · 小寒 Minor Cold · 大寒 Major Cold</p>
+
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:14px;">📝 How to Use</h4>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.9rem;padding-left:20px;">
+        <li>Browse the festival cards — each shows the countdown in days.</li>
+        <li><strong>Click any card</strong> to reveal an interesting custom or little-known fact about that festival.</li>
+        <li>The countdown auto-updates every time you visit, making it a great page to bookmark for festival reminders.</li>
+      </ol>
     </div>
   </div>
 
   <script src="../assets/js/common.js"></script>
   <script>
     const FESTIVALS = [
-      { name:'春节', icon:'🧧', date:{m:1,d:1}, customs:'春节最早叫"元旦"，直到1914年才被改称为"春节"。除夕夜守岁的习俗源于古人对"年兽"的传说——年兽怕红色、火光和炸响，所以贴春联、放鞭炮成了传统。' },
-      { name:'元宵节', icon:'🏮', date:{m:1,d:15}, customs:'元宵节吃汤圆的习俗始于宋代，当时叫"浮圆子"。古代元宵节也是"情人节"——未婚少女可以出门赏灯，才有了"月上柳梢头，人约黄昏后"的诗句。' },
-      { name:'清明节', icon:'🌿', date:{m:4,d:5}, customs:'清明既是节气又是节日。除了扫墓祭祖，古代清明还有踏青、蹴鞠、荡秋千等习俗。清明前后的"明前茶"是茶叶中的上品。' },
-      { name:'端午节', icon:'🐉', date:{m:5,d:5}, customs:'端午除了吃粽子，还要挂菖蒲和艾草、饮雄黄酒。古人认为五月是"毒月"，挂菖蒲可以驱虫避邪。赛龙舟起源于古越人祭祀水神，后来才和屈原的传说关联。' },
-      { name:'七夕节', icon:'💕', date:{m:7,d:7}, customs:'七夕最早是"乞巧节"，女子向织女星祈求巧手。牛郎织女的故事在汉代已成型。古代七夕的应节食品叫"巧果"，是用油、面、糖蜜制成的各种小点心。' },
-      { name:'中秋节', icon:'🌙', date:{m:8,d:15}, customs:'中秋吃月饼的习俗始于元代，相传朱元璋用月饼夹带起义传单。古代中秋还有"烧塔""树中秋""舞火龙"等地方习俗。月饼最初是军队的干粮，后来才成为节日食品。' },
-      { name:'重阳节', icon:'🏔️', date:{m:9,d:9}, customs:'重阳登高避灾的习俗始于东汉。古人认为九月九日登高可以避灾。插茱萸、饮菊花酒也是传统。王维"每逢佳节倍思亲"写的就是重阳。' },
-      { name:'腊八节', icon:'🍲', date:{m:12,d:8}, customs:'腊八节喝腊八粥的习俗源于佛教，相传释迦牟尼在腊月初八成道。腊八粥的食材各地不同，但通常不少于八种。民间有"腊八腊八，冻掉下巴"的说法。' },
-      { name:'立春', icon:'🌱', date:{m:2,d:4}, customs:'立春是二十四节气之首，古代有"打春牛"的习俗——用泥塑的春牛鞭打，象征春耕开始。立春吃春饼、春卷称为"咬春"。' },
-      { name:'夏至', icon:'☀️', date:{m:6,d:21}, customs:'夏至是白昼最长的一天。古人有"夏至一阴生"的说法。夏至吃面的习俗流传已久，有"冬至饺子夏至面"的民谚。' },
-      { name:'冬至', icon:'❄️', date:{m:12,d:22}, customs:'冬至大如年，古代有"冬至亚岁"之称。北方吃饺子（防冻耳朵），南方吃汤圆（团圆）。冬至开始"数九"，每九天一阶段，共九九八十一天后春天到来。' }
+      { name:'Chinese New Year (Spring Festival)', icon:'🧧', date:{m:1,d:29}, customs:'Chinese New Year was originally called "Yuan Dan" (元旦). The tradition of giving red envelopes (hóngbāo) originated from a legend about a demon called "Suì" that terrorized children — money wrapped in red paper was said to scare it away. The character 福 (fú, fortune) is often displayed upside down because the word for "upside down" (倒, dào) sounds like "arrive" (到), implying "fortune has arrived."' },
+      { name:'Lantern Festival', icon:'🏮', date:{m:2,d:12}, customs:'The Lantern Festival marks the end of Chinese New Year celebrations. Eating sweet glutinous rice balls (元宵, yuánxiāo) symbolizes family togetherness. Historically, this was the only day when unmarried women could go out at night to view lanterns — inspiring the famous poem line "Looking for him among the crowd, a thousand times in vain, suddenly I turn around and there he is, where the lanterns are dim."' },
+      { name:'Qingming (Tomb-Sweeping Day)', icon:'🌿', date:{m:4,d:4}, customs:'Qingming is both a solar term and a festival. Besides sweeping tombs and honoring ancestors, ancient Chinese enjoyed spring outings, played cuju (ancient Chinese football), and flew kites during Qingming. The tea leaves picked just before Qingming — called "Mingqian tea" (明前茶) — are considered the highest quality green tea of the year.' },
+      { name:'Dragon Boat Festival', icon:'🐉', date:{m:5,d:31}, customs:'Besides eating zongzi (sticky rice dumplings wrapped in bamboo leaves), Dragon Boat Festival traditions include hanging mugwort (艾草) and calamus (菖蒲) on doors and drinking realgar wine (雄黄酒). Ancient Chinese believed the fifth lunar month was "poisonous" — hanging mugwort was thought to repel insects and evil spirits. Dragon boat racing originated from ancient Yue tribes worshiping water deities, and was only later associated with the poet Qu Yuan\'s story.' },
+      { name:'Qixi (Chinese Valentine\'s Day)', icon:'💕', date:{m:8,d:29}, customs:'Qixi originally was "Qiqiao Festival" (乞巧节), where women prayed to the Weaver Girl star for sewing skills. The love story of Niulang (Cowherd) and Zhinü (Weaver Girl) was already well-known by the Han Dynasty. The traditional festival food is "qiao guo" (巧果) — small fried pastries made with oil, flour, and honey, shaped like various auspicious objects.' },
+      { name:'Mid-Autumn Festival', icon:'🌙', date:{m:10,d:6}, customs:'The tradition of eating mooncakes dates back to the Yuan Dynasty — legend says rebels used mooncakes to hide secret messages planning the overthrow of Mongol rule. Regional customs include "burning pagodas" (烧塔) in Guangdong, "tree Mid-Autumn" (树中秋) in Guangxi, and "fire dragon dances" (舞火龙) in Hong Kong. Mooncakes were originally military rations before becoming a festive food.' },
+      { name:'Double Ninth Festival', icon:'🏔️', date:{m:10,d:29}, customs:'The Double Ninth Festival (Chongyang) is named after the ninth day of the ninth lunar month — the double yang number. The tradition of ascending heights to avoid disaster began in the Eastern Han Dynasty. People wear cornel (zhūyú, 茱萸) and drink chrysanthemum wine. Wang Wei\'s famous line "I think of my brothers far away on this festival" was written about Chongyang.' },
+      { name:'Laba Festival', icon:'🍲', date:{m:1,d:7}, customs:'Laba Festival (腊八节) is celebrated on the eighth day of the twelfth lunar month. The tradition of eating Laba porridge (腊八粥) originated from Buddhism — it\'s said the Buddha attained enlightenment on this day. Laba porridge contains at least eight ingredients — typically rice, millet, red beans, peanuts, lotus seeds, jujubes, and more. The folk saying goes: "Laba, Laba, your chin will freeze and drop" (腊八腊八，冻掉下巴).' },
+      { name:'Start of Spring (Lichun)', icon:'🌱', date:{m:2,d:3}, customs:'Start of Spring (立春) is the first of the 24 solar terms. The ancient ritual of "beating the spring ox" (打春牛) involved whipping a clay ox to symbolize the start of spring plowing. Eating spring pancakes (春饼) and spring rolls on this day is called "biting the spring" (咬春), symbolizing welcoming the new season.' },
+      { name:'Summer Solstice (Xiazhi)', icon:'☀️', date:{m:6,d:21}, customs:'Summer Solstice (夏至) has the longest daytime of the year. Ancient Chinese believed "yin begins on summer solstice" (夏至一阴生). The tradition of eating noodles on this day is captured in the saying "Winter solstice dumplings, summer solstice noodles" (冬至饺子夏至面). In some regions, people eat bitter foods to beat the summer heat.' },
+      { name:'Winter Solstice (Dongzhi)', icon:'❄️', date:{m:12,d:22}, customs:'Winter Solstice (冬至) was considered more important than Chinese New Year in ancient times — called "the sub-New Year" (亚岁). In northern China, people eat dumplings (饺子) to prevent their ears from freezing; in the south, they eat tangyuan (汤圆) symbolizing reunion. The "Nine Nines" counting (数九) begins on Winter Solstice — 81 days until spring arrives.' }
     ];
 
     function getNextOccurrence(fest) {
@@ -87,13 +98,13 @@
       FESTIVALS.forEach(f => {
         const next = getNextOccurrence(f);
         const days = daysBetween(now, next);
-        const dateStr = (next.getMonth()+1) + '月' + next.getDate() + '日';
+        const dateStr = next.toLocaleDateString('en-US', { month:'long', day:'numeric' });
         const card = document.createElement('div');
         card.className = 'fest-card';
         card.innerHTML = 
           '<div class="fest-icon">' + f.icon + '</div>' +
           '<div class="fest-name">' + f.name + '</div>' +
-          '<div class="fest-countdown">' + days + ' 天</div>' +
+          '<div class="fest-countdown">' + days + ' days</div>' +
           '<div class="fest-date">' + dateStr + '</div>';
         card.addEventListener('click', () => showCustom(f));
         grid.appendChild(card);
@@ -103,7 +114,7 @@
     function showCustom(f) {
       const card = document.getElementById('customCard');
       document.getElementById('customIcon').textContent = f.icon;
-      document.getElementById('customTitle').textContent = f.name + '冷知识';
+      document.getElementById('customTitle').textContent = f.name + ' — Did You Know?';
       document.getElementById('customDesc').textContent = f.customs;
       card.classList.add('show');
       card.scrollIntoView({ behavior:'smooth', block:'nearest' });

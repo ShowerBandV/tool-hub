@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐲</text></svg>">
-  <meta name="description" content="生肖本命年计算器 — 输入出生年份查询属相、五行属性、是否本命年、距离下次本命年还有多久。2026年属什么、本命年要注意什么。">
-  <title>生肖本命年计算 - 2026年属什么 · 文化盒子</title>
+  <meta name="description" content="Chinese Zodiac Calculator — Enter your birth year to find your Chinese zodiac animal sign, element (Wu Xing), whether this year is your Benming Year (本命年), and countdown to your next Benming Year. Free online Chinese astrology tool.">
+  <title>Chinese Zodiac & Benming Year Calculator · Chinese Culture</title>
   <link rel="stylesheet" href="../assets/css/main.css">
   <style>
     .zodiac-result { margin-top:14px; }
@@ -22,73 +22,94 @@
 <body>
   <div class="app-wrapper">
     <div class="breadcrumb">
-      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
-      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 生肖本命年计算
+      <a href="../index.html">🧰 Home</a> <span class="sep">›</span>
+      <a href="index.html">🏮 Chinese Culture</a> <span class="sep">›</span> Zodiac Calculator
     </div>
     <header class="app-header">
       <div class="app-logo">
         <span class="logo-icon">🐲</span>
-        <span class="app-title">生肖/本命年计算器</span>
+        <span class="app-title">Chinese Zodiac & Benming Year Calculator</span>
       </div>
-      <p class="app-subtitle">输入出生年份 · 查属相五行 · 算本命年 · 2026年属什么</p>
+      <p class="app-subtitle">Find your Chinese zodiac animal · Wu Xing element · Benming Year (本命年) · What sign is 2026?</p>
     </header>
 
     <div class="card tool-panel">
       <div class="input-row" style="justify-content:center;">
         <div class="form-group" style="flex:0 1 200px;">
-          <label class="form-label">出生年份</label>
-          <input type="number" class="form-input" id="birthYear" min="1900" max="2030" placeholder="如 1996">
+          <label class="form-label">Your Birth Year</label>
+          <input type="number" class="form-input" id="birthYear" min="1900" max="2030" placeholder="e.g. 1996">
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end;">
-          <button class="btn btn-primary" onclick="calcZodiac()">🐲 查询</button>
+          <button class="btn btn-primary" onclick="calcZodiac()">🐲 Look Up</button>
         </div>
       </div>
       <div class="zodiac-result" id="zodiacResult" style="display:none;">
         <div class="zodiac-big" id="zodiacEmoji"></div>
         <div class="zodiac-name" id="zodiacName"></div>
         <div class="info-grid">
-          <div class="info-card"><div class="label">年份</div><div class="value" id="yearDisplay"></div></div>
-          <div class="info-card"><div class="label">五行</div><div class="value" id="elementDisplay"></div></div>
-          <div class="info-card"><div class="label">年龄</div><div class="value" id="ageDisplay"></div></div>
-          <div class="info-card"><div class="label">本命年</div><div class="value" id="benmingDisplay"></div></div>
+          <div class="info-card"><div class="label">Birth Year</div><div class="value" id="yearDisplay"></div></div>
+          <div class="info-card"><div class="label">Element (Wu Xing)</div><div class="value" id="elementDisplay"></div></div>
+          <div class="info-card"><div class="label">Your Age</div><div class="value" id="ageDisplay"></div></div>
+          <div class="info-card"><div class="label">Benming Year?</div><div class="value" id="benmingDisplay"></div></div>
         </div>
         <div id="benmingAlert" class="benming-alert" style="display:none;"></div>
-        <div id="nextBenming" style="text-align:center;margin-top:8px;font-size:0.85rem;color:var(--text-secondary);"></div>
+        <div id="nextBenming" style="text-align:center;margin-top:8px;font-size:0.9rem;color:var(--text-secondary);"></div>
       </div>
     </div>
 
     <div class="card">
-      <h3 class="panel-title">📖 生肖本命年说明</h3>
-      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">生肖（十二生肖）是中国传统文化中与十二地支相配的十二种动物。本命年指出生年份生肖与当前年份生肖相同的那一年，每 12 年一次。传统习俗认为本命年值太岁，需要穿红色内衣、系红绳来趋吉避凶。五行属性（金木水火土）根据出生年份的天干推算，不同五行属性的人适合的职业和方向有所差异。</p>
+      <h3 class="panel-title">📖 About Chinese Zodiac & Benming Year</h3>
+      
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:10px;">The 12 Chinese Zodiac Animals</h4>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">The Chinese zodiac (生肖, shēngxiào) is a repeating cycle of 12 years, with each year represented by an animal. The animals in order are: <strong>Rat</strong> (鼠), <strong>Ox</strong> (牛), <strong>Tiger</strong> (虎), <strong>Rabbit</strong> (兔), <strong>Dragon</strong> (龙), <strong>Snake</strong> (蛇), <strong>Horse</strong> (马), <strong>Goat</strong> (羊), <strong>Monkey</strong> (猴), <strong>Rooster</strong> (鸡), <strong>Dog</strong> (狗), and <strong>Pig</strong> (猪). Each animal is associated with specific personality traits and fortunes. Unlike Western astrology which is based on months, Chinese zodiac is determined by the lunar birth year.</p>
+
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:14px;">The Five Elements (Wu Xing)</h4>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">Each zodiac year is also associated with one of the <strong>Five Elements</strong> (五行, wǔxíng): <strong>Metal</strong> (金), <strong>Wood</strong> (木), <strong>Water</strong> (水), <strong>Fire</strong> (火), and <strong>Earth</strong> (土). The element cycle rotates every 10 years (each element appears twice per cycle, in yin and yang forms). Your element influences your personality, career suitability, and compatibility with others. For example, a Metal Rat (born 1960) differs from a Water Rat (born 1972).</p>
+
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:14px;">What is Benming Year (本命年)?</h4>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;"><strong>Benming Year</strong> (本命年, literally "origin life year") occurs every 12 years when the current year's zodiac animal matches your birth year's animal. For example, if you were born in the Year of the Dragon, every Dragon year is your Benming Year. Traditional Chinese belief holds that Benming Years are challenging — you are said to "offend the God of Age" (值太岁). To ward off bad luck, it's customary to <strong>wear red underwear</strong>, red socks, and red bracelets throughout the year. Red is considered the most auspicious color in Chinese culture, believed to scare away evil spirits.</p>
+
+      <h4 style="font-size:0.95rem;font-weight:700;margin-top:14px;">📝 How to Use</h4>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.9rem;padding-left:20px;">
+        <li>Enter your birth year (or anyone's birth year) in the input field.</li>
+        <li>Click "Look Up" — the tool displays your zodiac animal, element, and Benming Year status.</li>
+        <li>If this year is your Benming Year, a special alert appears with traditional advice.</li>
+        <li>The countdown to your next Benming Year helps you plan ahead!</li>
+      </ol>
+
+      <div style="margin-top:14px;padding:12px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.82rem;color:#1e40af;">
+        💡 <strong>What's my zodiac if I was born in January?</strong> Chinese zodiac follows the lunar calendar, not the solar calendar. If you were born in January or early February, your sign may differ from the Western zodiac year. Check a lunar calendar for the exact new year date.
+      </div>
     </div>
   </div>
 
   <script src="../assets/js/common.js"></script>
   <script>
     const ZODIAC = [
-      { name:'鼠', emoji:'🐭', element:['水','木','火','金','土'] },
-      { name:'牛', emoji:'🐮', element:['土','木','火','金','水'] },
-      { name:'虎', emoji:'🐯', element:['木','火','金','水','土'] },
-      { name:'兔', emoji:'🐰', element:['木','火','金','水','土'] },
-      { name:'龙', emoji:'🐲', element:['土','火','金','水','木'] },
-      { name:'蛇', emoji:'🐍', element:['火','金','水','土','木'] },
-      { name:'马', emoji:'🐴', element:['火','金','水','土','木'] },
-      { name:'羊', emoji:'🐑', element:['土','金','水','木','火'] },
-      { name:'猴', emoji:'🐵', element:['金','水','土','木','火'] },
-      { name:'鸡', emoji:'🐔', element:['金','水','土','木','火'] },
-      { name:'狗', emoji:'🐶', element:['土','水','木','火','金'] },
-      { name:'猪', emoji:'🐷', element:['水','木','火','金','土'] }
+      { name:'Rat', emoji:'🐭', traits:'Quick-witted, resourceful, versatile, kind' },
+      { name:'Ox', emoji:'🐮', traits:'Diligent, dependable, strong, honest' },
+      { name:'Tiger', emoji:'🐯', traits:'Brave, competitive, confident, charismatic' },
+      { name:'Rabbit', emoji:'🐰', traits:'Gentle, elegant, kind, responsible' },
+      { name:'Dragon', emoji:'🐲', traits:'Confident, intelligent, enthusiastic, ambitious' },
+      { name:'Snake', emoji:'🐍', traits:'Enigmatic, intelligent, wise, elegant' },
+      { name:'Horse', emoji:'🐴', traits:'Energetic, free-spirited, warm, intelligent' },
+      { name:'Goat', emoji:'🐑', traits:'Calm, gentle, sympathetic, creative' },
+      { name:'Monkey', emoji:'🐵', traits:'Witty, curious, versatile, inventive' },
+      { name:'Rooster', emoji:'🐔', traits:'Observant, hardworking, courageous, confident' },
+      { name:'Dog', emoji:'🐶', traits:'Loyal, honest, cautious, responsible' },
+      { name:'Pig', emoji:'🐷', traits:'Compassionate, generous, diligent, peace-loving' }
     ];
-    const ELEMENT_COLORS = { '金':'#f59e0b','木':'#10b981','水':'#3b82f6','火':'#ef4444','土':'#8b5cf6' };
+    const ELEMENT_COLORS = { 'Metal':'#f59e0b','Wood':'#10b981','Water':'#3b82f6','Fire':'#ef4444','Earth':'#8b5cf6' };
+    const ELEMENT_TRAITS = { 'Metal':'Strong, determined, resilient','Wood':'Creative, outgoing, nurturing','Water':'Diplomatic, intuitive, flexible','Fire':'Passionate, energetic, dynamic','Earth':'Stable, reliable, practical' };
 
     function calcZodiac() {
       const year = parseInt(document.getElementById('birthYear').value);
       const currentYear = new Date().getFullYear();
-      if (!year || year < 1900 || year > 2030) { showToast('⚠️ 请输入1900-2030之间的年份'); return; }
+      if (!year || year < 1900 || year > 2030) { showToast('⚠️ Please enter a year between 1900 and 2030'); return; }
 
       const idx = (year - 4) % 12;
       const zodiac = ZODIAC[((idx % 12) + 12) % 12];
-      const elementCycle = ['金','木','水','火','土'];
+      const elementCycle = ['Metal','Wood','Water','Fire','Earth'];
       const element = elementCycle[Math.floor((year - 4) % 10 / 2)];
 
       const age = currentYear - year;
@@ -96,14 +117,15 @@
       const nextBenmingYear = year + (12 - ((currentYear - year) % 12)) + (isBenming ? 12 : 0);
 
       document.getElementById('zodiacEmoji').textContent = zodiac.emoji;
-      document.getElementById('zodiacName').textContent = zodiac.name + ' (' + year + '年出生)';
+      document.getElementById('zodiacName').textContent = 'Year of the ' + zodiac.name + ' (' + year + ')';
       document.getElementById('yearDisplay').textContent = year;
       document.getElementById('elementDisplay').textContent = element;
       document.getElementById('elementDisplay').style.color = ELEMENT_COLORS[element] || '#333';
-      document.getElementById('ageDisplay').textContent = age + '岁';
+      document.getElementById('elementDisplay').title = ELEMENT_TRAITS[element] || '';
+      document.getElementById('ageDisplay').textContent = age + ' years old';
 
       const bmEl = document.getElementById('benmingDisplay');
-      bmEl.textContent = isBenming ? '⚠️ 今年是本命年' : '否';
+      bmEl.textContent = isBenming ? '⚠️ This Year!' : 'No';
       bmEl.style.color = isBenming ? '#ef4444' : '#10b981';
 
       const alertEl = document.getElementById('benmingAlert');
@@ -112,17 +134,17 @@
         alertEl.style.background = '#fef2f2';
         alertEl.style.border = '1px solid #fecaca';
         alertEl.style.color = '#991b1b';
-        alertEl.innerHTML = '🧧 今年是你的本命年！传统习俗建议穿红色内衣、系红绳，趋吉避凶。';
+        alertEl.innerHTML = '🧧 ' + currentYear + ' is your <strong>Benming Year</strong>! In Chinese tradition, it\'s advised to wear red underwear, red socks, and tie a red string around your wrist to ward off bad luck and invite good fortune.';
       } else {
         alertEl.style.display = 'none';
       }
 
-      document.getElementById('nextBenming').textContent = 
-        '距离下次本命年还有 ' + (nextBenmingYear - currentYear) + ' 年（' + nextBenmingYear + ' 年）';
+      document.getElementById('nextBenming').innerHTML = 
+        'Next Benming Year: <strong>' + nextBenmingYear + '</strong> (' + (nextBenmingYear - currentYear) + ' years away)';
       document.getElementById('zodiacResult').style.display = 'block';
     }
 
-    // 默认当前年份
+    // Default to current year
     document.getElementById('birthYear').value = new Date().getFullYear();
     calcZodiac();
   </script>
