@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  <meta name="description" content="黄历宜忌在线查询 — 选择日期查看今日宜忌事项，今天宜摸鱼、宜抢红包、宜出行，搬家吉日查询、开业选日子、结婚吉日。">
+  <title>黄历宜忌查询 - 今天黄历吉日查询 · 文化盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .almanac-result { margin-top:16px; }
+    .almanac-date { font-size:1.2rem; font-weight:700; text-align:center; }
+    .almanac-day { font-size:1.8rem; font-weight:800; text-align:center; margin:4px 0; }
+    .yi-box, .ji-box { margin-top:12px; padding:14px; border-radius:var(--radius-sm); }
+    .yi-box { background:var(--success-light); border:1px solid var(--success-border); }
+    .ji-box { background:var(--danger-light); border:1px solid var(--danger-border); }
+    .yi-box .title { color:#065f46; font-weight:700; font-size:0.95rem; }
+    .ji-box .title { color:#991b1b; font-weight:700; font-size:0.95rem; }
+    .tag-cloud { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .tag-cloud span { padding:4px 12px; border-radius:16px; font-size:0.82rem; font-weight:600; }
+    .yi-tag { background:#d1fae5; color:#065f46; }
+    .ji-tag { background:#fee2e2; color:#991b1b; }
+    .share-msg { margin-top:14px; padding:12px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); text-align:center; font-size:0.9rem; font-weight:600; color:#1e40af; cursor:pointer; }
+    .share-msg:hover { background:#dbeafe; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 黄历宜忌查询
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">📅</span>
+        <span class="app-title">黄历宜忌查询</span>
+      </div>
+      <p class="app-subtitle">每天宜忌早知道 · 今天适合做什么？宜摸鱼、宜抢红包 · 搬家吉日、开业选日子</p>
+    </header>
+
+    <div class="card tool-panel">
+      <div class="input-row" style="justify-content:center;">
+        <div class="form-group" style="flex:0 1 auto;min-width:200px;">
+          <label class="form-label">选择日期</label>
+          <input type="date" class="form-input" id="almanacDate">
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" onclick="queryAlmanac()">📅 查询宜忌</button>
+        </div>
+      </div>
+      <div class="almanac-result" id="almanacResult" style="display:none;">
+        <div class="almanac-date" id="dateDisplay"></div>
+        <div class="almanac-day" id="dayDisplay"></div>
+        <div class="yi-box"><div class="title">✅ 宜</div><div class="tag-cloud" id="yiTags"></div></div>
+        <div class="ji-box"><div class="title">❌ 忌</div><div class="tag-cloud" id="jiTags"></div></div>
+        <div class="share-msg" id="shareMsg" onclick="copyShare()">📋 点击复制分享语</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="panel-title">📖 黄历宜忌说明</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">黄历（又称通书、皇历）是中国传统历法的重要组成部分，包含每日的宜忌事项、吉神凶煞等信息。本工具提供简化的宜忌查询，基于日期特征生成趣味宜忌建议，适合日常娱乐参考。如需精确的传统黄历信息，请咨询专业历法书籍或相关权威来源。</p>
+      <h3 class="panel-title" style="margin-top:14px;">📝 使用步骤</h3>
+      <ol style="color:var(--text-secondary);line-height:2;font-size:0.9rem;padding-left:20px;">
+        <li>点击日期选择器，选择要查询的日期。</li>
+        <li>点击"查询宜忌"按钮，自动显示当天的宜忌事项。</li>
+        <li>点击下方的分享语可一键复制，发到群里分享。</li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    const YI_LIST = ['结婚','搬家','开业','出行','交易','签约','动土','上梁','祈福','求财','入学','嫁娶','纳采','入宅','安床','订婚','祭祀','开市','赴任','沐浴'];
+    const JI_LIST = ['吵架','出行','动土','安葬','伐木','破土','开业','嫁娶','搬家','远行','签约','投资','借贷','诉讼','探病','入宅','装修','交易','订婚','安床'];
+
+    function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+    function getDaySeed(dateStr) {
+      const d = new Date(dateStr);
+      return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+    }
+
+    function pickBySeed(arr, seed, count) {
+      const shuffled = shuffle(arr);
+      const r = seed % arr.length;
+      const result = [];
+      for (let i = 0; i < count; i++) {
+        result.push(shuffled[(r + i * 7) % arr.length]);
+      }
+      return [...new Set(result)];
+    }
+
+    function queryAlmanac() {
+      const dateInput = document.getElementById('almanacDate');
+      const dateStr = dateInput.value;
+      if (!dateStr) { showToast('⚠️ 请选择日期'); return; }
+
+      const d = new Date(dateStr);
+      const weekdays = ['日','一','二','三','四','五','六'];
+      const seed = getDaySeed(dateStr);
+
+      document.getElementById('dateDisplay').textContent = 
+        d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+      document.getElementById('dayDisplay').textContent = '星期' + weekdays[d.getDay()];
+
+      // 根据种子确定宜/忌数量 (3-6)
+      const yiCount = 3 + (seed % 4);
+      const jiCount = 3 + ((seed * 7 + 3) % 4);
+
+      const yiItems = pickBySeed(YI_LIST, seed, yiCount);
+      const jiItems = pickBySeed(JI_LIST, seed + 999, jiCount);
+
+      const yiContainer = document.getElementById('yiTags');
+      const jiContainer = document.getElementById('jiTags');
+      yiContainer.innerHTML = yiItems.map(t => '<span class="yi-tag">' + t + '</span>').join('');
+      jiContainer.innerHTML = jiItems.map(t => '<span class="ji-tag">' + t + '</span>').join('');
+
+      // 生成分享语
+      const shareList = yiItems.slice(0,2).join('、');
+      const msg = '📅 ' + document.getElementById('dateDisplay').textContent + ' 宜' + shareList + '！';
+      document.getElementById('shareMsg').textContent = '📋 复制分享：「' + msg + '」';
+      document.getElementById('shareMsg')._shareText = msg;
+
+      document.getElementById('almanacResult').style.display = 'block';
+    }
+
+    window.copyShare = function() {
+      const el = document.getElementById('shareMsg');
+      const text = el._shareText || '今天宜摸鱼！';
+      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制：' + text));
+    };
+
+    // 默认设置为今天
+    (function() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth()+1).padStart(2,'0');
+      const d = String(today.getDate()).padStart(2,'0');
+      document.getElementById('almanacDate').value = y + '-' + m + '-' + d;
+      queryAlmanac();
+    })();
+  </script>
+</body>
+</html>

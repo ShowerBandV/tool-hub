@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+  <meta name="description" content="歇后语和方言生成器 — 随机展示经典歇后语和地方方言表达，外甥打灯笼——照旧，可复制发群考朋友。">
+  <title>方言歇后语生成器 - 歇后语大全 · 文化盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .xiehouyu-box { padding:28px; text-align:center; border-radius:var(--radius-sm); background:#fafbfc; border:2px solid var(--border); min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .xiehouyu-front { font-size:1.3rem; font-weight:700; margin-bottom:6px; }
+    .xiehouyu-back { font-size:1.1rem; color:var(--accent); font-weight:600; }
+    .xiehouyu-category { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
+    .dialect-box { padding:18px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); text-align:center; }
+    .dialect-text { font-size:1.1rem; font-weight:600; }
+    .dialect-region { font-size:0.78rem; color:var(--text-muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 方言歇后语生成器
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">💬</span>
+        <span class="app-title">方言歇后语生成器</span>
+      </div>
+      <p class="app-subtitle">经典歇后语 · 地方方言 · 随机展示 · 复制发群考朋友</p>
+    </header>
+
+    <div class="card tool-panel">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">
+        <button class="btn btn-primary" onclick="showRandomXiehouyu()">💬 随机歇后语</button>
+        <button class="btn btn-outline" onclick="showRandomDialect()">🗣️ 随机方言</button>
+        <button class="btn btn-outline btn-sm" onclick="copyResult('currentDisplay')">📋 复制</button>
+      </div>
+      <div id="currentDisplay" class="xiehouyu-box">
+        <div style="font-size:0.9rem;color:var(--text-muted);">点击按钮随机生成</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="panel-title">📖 歇后语简介</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">歇后语是中国民间语言艺术的一种形式，由两部分组成：前半部分是形象比喻（谜面），后半部分是解释说明（谜底）。通常只说前半部分，后半部分留给听者意会。歇后语生动幽默，反映了劳动人民的生活智慧。方言则是地方文化的活化石，不同地区的方言表达各有特色，本工具收录了一些有趣的方言词汇和表达。</p>
+    </div>
+  </div>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    const XIEHOUYU = [
+      { front:'外甥打灯笼', back:'照旧（舅）', cat:'谐音' },
+      { front:'小葱拌豆腐', back:'一清（青）二白', cat:'谐音' },
+      { front:'擀面杖吹火', back:'一窍不通', cat:'比喻' },
+      { front:'泥菩萨过河', back:'自身难保', cat:'比喻' },
+      { front:'芝麻开花', back:'节节高', cat:'比喻' },
+      { front:'竹篮打水', back:'一场空', cat:'比喻' },
+      { front:'十五个吊桶打水', back:'七上八下', cat:'比喻' },
+      { front:'八仙过海', back:'各显神通', cat:'典故' },
+      { front:'韩信点兵', back:'多多益善', cat:'典故' },
+      { front:'周瑜打黄盖', back:'一个愿打一个愿挨', cat:'典故' },
+      { front:'猪八戒照镜子', back:'里外不是人', cat:'典故' },
+      { front:'孙悟空大闹天宫', back:'慌了神', cat:'典故' },
+      { front:'肉包子打狗', back:'有去无回', cat:'比喻' },
+      { front:'哑巴吃黄连', back:'有苦说不出', cat:'比喻' },
+      { front:'秀才遇到兵', back:'有理说不清', cat:'比喻' },
+      { front:'瞎子点灯', back:'白费蜡', cat:'比喻' },
+      { front:'猫哭老鼠', back:'假慈悲', cat:'比喻' },
+      { front:'黄鼠狼给鸡拜年', back:'没安好心', cat:'比喻' },
+      { front:'老虎的屁股', back:'摸不得', cat:'比喻' },
+      { front:'热锅上的蚂蚁', back:'团团转', cat:'比喻' },
+      { front:'船到桥头', back:'自然直', cat:'生活' },
+      { front:'车到山前', back:'必有路', cat:'生活' },
+      { front:'塞翁失马', back:'焉知非福', cat:'典故' },
+      { front:'亡羊补牢', back:'为时未晚', cat:'典故' },
+      { front:'此地无银三百两', back:'隔壁王二不曾偷', cat:'典故' },
+      { front:'三九天穿裙子', back:'美丽动（冻）人', cat:'谐音' },
+      { front:'飞机上挂水瓶', back:'高水平（瓶）', cat:'谐音' },
+      { front:'骑自行车下坡', back:'不踩（睬）', cat:'谐音' },
+      { front:'孔夫子搬家', back:'尽是书（输）', cat:'谐音' },
+      { front:'电线杆上绑鸡毛', back:'好大的掸（胆）子', cat:'谐音' },
+      { front:'和尚打伞', back:'无法（发）无天', cat:'谐音' },
+      { front:'火烧眉毛', back:'迫在眉睫', cat:'比喻' },
+      { front:'一口吃个胖子', back:'心急吃不了热豆腐', cat:'生活' },
+      { front:'骑驴看唱本', back:'走着瞧', cat:'生活' },
+      { front:'丈二和尚', back:'摸不着头脑', cat:'比喻' },
+      { front:'半斤八两', back:'差不多', cat:'生活' },
+      { front:'山中无老虎', back:'猴子称霸王', cat:'比喻' },
+      { front:'跑了和尚跑不了庙', back:'躲得过初一躲不过十五', cat:'生活' },
+      { front:'新官上任', back:'三把火', cat:'生活' },
+      { front:'无事不登三宝殿', back:'有事才来', cat:'生活' },
+      { front:'打开天窗', back:'说亮话', cat:'生活' },
+      { front:'拔出萝卜', back:'带出泥', cat:'生活' },
+      { front:'近水楼台', back:'先得月', cat:'典故' },
+      { front:'醉翁之意', back:'不在酒', cat:'典故' },
+      { front:'项庄舞剑', back:'意在沛公', cat:'典故' },
+      { front:'司马昭之心', back:'路人皆知', cat:'典故' },
+      { front:'挂羊头卖狗肉', back:'名不副实', cat:'生活' },
+      { front:'雷声大雨点小', back:'虚张声势', cat:'生活' },
+      { front:'远水不解近渴', back:'远水解不了近渴', cat:'生活' },
+      { front:'哑巴吃饺子', back:'心里有数', cat:'比喻' },
+      { front:'对牛弹琴', back:'白费劲', cat:'典故' },
+      { front:'画蛇添足', back:'多此一举', cat:'典故' },
+      { front:'守株待兔', back:'不劳而获', cat:'典故' },
+      { front:'掩耳盗铃', back:'自欺欺人', cat:'典故' },
+      { front:'叶公好龙', back:'口是心非', cat:'典故' },
+      { front:'刻舟求剑', back:'死板教条', cat:'典故' },
+      { front:'杞人忧天', back:'自寻烦恼', cat:'典故' },
+      { front:'东施效颦', back:'适得其反', cat:'典故' },
+      { front:'愚公移山', back:'坚持不懈', cat:'典故' },
+      { front:'井底之蛙', back:'见识短浅', cat:'典故' },
+      { front:'千里送鹅毛', back:'礼轻情意重', cat:'生活' },
+      { front:'冰冻三尺', back:'非一日之寒', cat:'生活' },
+      { front:'路遥知马力', back:'日久见人心', cat:'生活' },
+      { front:'留得青山在', back:'不怕没柴烧', cat:'生活' },
+      { front:'只许州官放火', back:'不许百姓点灯', cat:'典故' },
+      { front:'羊毛出在羊身上', back:'取之于民用之于民', cat:'生活' },
+      { front:'吃了秤砣', back:'铁了心', cat:'比喻' },
+      { front:'钱塘江里洗被单', back:'大摆布', cat:'谐音' },
+      { front:'厕所里扔石头', back:'激起公愤（粪）', cat:'谐音' },
+      { front:'开汽车按喇叭', back:'走到哪响（想）到哪', cat:'谐音' },
+      { front:'一个巴掌拍不响', back:'孤掌难鸣', cat:'生活' },
+      { front:'墙倒众人推', back:'趁火打劫', cat:'生活' },
+      { front:'大树底下好乘凉', back:'靠山', cat:'生活' },
+      { front:'初生牛犊不怕虎', back:'勇气可嘉', cat:'生活' },
+      { front:'林子大了', back:'什么鸟都有', cat:'生活' },
+      { front:'人不可貌相', back:'海水不可斗量', cat:'生活' },
+      { front:'身在曹营心在汉', back:'心不在焉', cat:'典故' },
+    ];
+
+    const DIALECTS = [
+      { text:'干啥呢？', region:'东北话', meaning:'干什么呢？' },
+      { text:'你瞅啥？', region:'东北话', meaning:'你看什么？' },
+      { text:'嘎哈去？', region:'东北话', meaning:'干什么去？' },
+      { text:'贼好看', region:'东北话', meaning:'非常好看' },
+      { text:'整一个', region:'东北话', meaning:'来一个/弄一个' },
+      { text:'妥妥的', region:'东北话', meaning:'没问题/稳了' },
+      { text:'好嘢！', region:'粤语', meaning:'好厉害！' },
+      { text:'唔该', region:'粤语', meaning:'谢谢/劳驾' },
+      { text:'点解？', region:'粤语', meaning:'为什么？' },
+      { text:'有冇搞错', region:'粤语', meaning:'有没有搞错' },
+      { text:'我钟意你', region:'粤语', meaning:'我喜欢你' },
+      { text:'食咗饭未？', region:'粤语', meaning:'吃饭了吗？' },
+      { text:'结棍！', region:'上海话', meaning:'厉害！' },
+      { text:'侬好', region:'上海话', meaning:'你好' },
+      { text:'谢谢侬', region:'上海话', meaning:'谢谢你' },
+      { text:'白相', region:'上海话', meaning:'玩/玩耍' },
+      { text:'门槛精', region:'上海话', meaning:'很精明' },
+      { text:'雄起！', region:'四川话', meaning:'加油！' },
+      { text:'巴适得很', region:'四川话', meaning:'很舒服/很好' },
+      { text:'啥子？', region:'四川话', meaning:'什么？' },
+      { text:'安逸', region:'四川话', meaning:'舒适/惬意' },
+      { text:'摆龙门阵', region:'四川话', meaning:'聊天/闲聊' },
+      { text:'中！', region:'河南话', meaning:'行！可以！' },
+      { text:'得劲儿', region:'河南话', meaning:'舒服/过瘾' },
+      { text:'弄啥嘞', region:'河南话', meaning:'干什么呢' },
+      { text:'齐活', region:'北京话', meaning:'完成了/办妥了' },
+      { text:'倍儿棒', region:'北京话', meaning:'非常好/很厉害' },
+      { text:'搓一顿', region:'北京话', meaning:'吃一顿' },
+      { text:'撒丫子跑', region:'北京话', meaning:'快跑/逃跑' },
+    ];
+
+    window.showRandomXiehouyu = function() {
+      const item = XIEHOUYU[Math.floor(Math.random() * XIEHOUYU.length)];
+      const el = document.getElementById('currentDisplay');
+      el.innerHTML = 
+        '<div class="xiehouyu-front">' + item.front + '</div>' +
+        '<div class="xiehouyu-back">—— ' + item.back + '</div>' +
+        '<div class="xiehouyu-category">📌 ' + item.cat + ' 歇后语</div>';
+      el._fullText = item.front + ' —— ' + item.back;
+    };
+
+    window.showRandomDialect = function() {
+      const item = DIALECTS[Math.floor(Math.random() * DIALECTS.length)];
+      const el = document.getElementById('currentDisplay');
+      el.innerHTML = 
+        '<div class="dialect-box">' +
+        '<div class="dialect-text">' + item.text + '</div>' +
+        '<div class="dialect-region">📍 ' + item.region + ' · ' + item.meaning + '</div>' +
+        '</div>';
+      el._fullText = item.text + '（' + item.region + '）' + ' = ' + item.meaning;
+    };
+
+    window.copyResult = function(id) {
+      const el = document.getElementById(id);
+      const text = el._fullText || el.textContent;
+      navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制'));
+    };
+
+    // 默认显示一条
+    showRandomXiehouyu();
+  </script>
+</body>
+</html>

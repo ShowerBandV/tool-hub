@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎊</text></svg>">
+  <meta name="description" content="中国传统节日和二十四节气倒计时 — 距离春节/端午/中秋还有多少天，点击查看节日冷门习俗，二十四节气表。">
+  <title>节日节气倒计时 - 距离春节还有多少天 · 文化盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .fest-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+    .fest-card { padding:16px; border-radius:var(--radius-sm); background:#f8fafc; border:2px solid var(--border); text-align:center; cursor:pointer; transition:var(--transition); }
+    .fest-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .fest-icon { font-size:2rem; }
+    .fest-name { font-size:1rem; font-weight:700; margin-top:4px; }
+    .fest-date { font-size:0.78rem; color:var(--text-muted); }
+    .fest-countdown { font-size:1.4rem; font-weight:800; color:var(--accent); margin-top:4px; }
+    .custom-card { margin-top:16px; padding:16px; border-radius:var(--radius-sm); background:var(--info-light); border:1px solid var(--info-border); display:none; text-align:center; }
+    .custom-card.show { display:block; animation:popIn 0.4s ease; }
+    .custom-card .fest-icon-big { font-size:3rem; }
+    .custom-card .custom-title { font-size:1.1rem; font-weight:700; margin-top:4px; }
+    .custom-card .custom-desc { font-size:0.85rem; color:var(--text-secondary); margin-top:6px; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 节日节气倒计时
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🎊</span>
+        <span class="app-title">节日节气倒计时</span>
+      </div>
+      <p class="app-subtitle">距离春节/端午/中秋还有多少天 · 二十四节气 · 冷门习俗</p>
+    </header>
+
+    <div class="card tool-panel">
+      <div class="fest-grid" id="festGrid"></div>
+      <div class="custom-card" id="customCard">
+        <div class="fest-icon-big" id="customIcon"></div>
+        <div class="custom-title" id="customTitle"></div>
+        <div class="custom-desc" id="customDesc"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="panel-title">📖 二十四节气表</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">二十四节气是中国古代农耕文明的智慧结晶，反映了季节变化和气候特征。依次为：立春、雨水、惊蛰、春分、清明、谷雨、立夏、小满、芒种、夏至、小暑、大暑、立秋、处暑、白露、秋分、寒露、霜降、立冬、小雪、大雪、冬至、小寒、大寒。点击上方节气和节日卡片可查看对应的冷门习俗知识。</p>
+    </div>
+  </div>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    const FESTIVALS = [
+      { name:'春节', icon:'🧧', date:{m:1,d:1}, customs:'春节最早叫"元旦"，直到1914年才被改称为"春节"。除夕夜守岁的习俗源于古人对"年兽"的传说——年兽怕红色、火光和炸响，所以贴春联、放鞭炮成了传统。' },
+      { name:'元宵节', icon:'🏮', date:{m:1,d:15}, customs:'元宵节吃汤圆的习俗始于宋代，当时叫"浮圆子"。古代元宵节也是"情人节"——未婚少女可以出门赏灯，才有了"月上柳梢头，人约黄昏后"的诗句。' },
+      { name:'清明节', icon:'🌿', date:{m:4,d:5}, customs:'清明既是节气又是节日。除了扫墓祭祖，古代清明还有踏青、蹴鞠、荡秋千等习俗。清明前后的"明前茶"是茶叶中的上品。' },
+      { name:'端午节', icon:'🐉', date:{m:5,d:5}, customs:'端午除了吃粽子，还要挂菖蒲和艾草、饮雄黄酒。古人认为五月是"毒月"，挂菖蒲可以驱虫避邪。赛龙舟起源于古越人祭祀水神，后来才和屈原的传说关联。' },
+      { name:'七夕节', icon:'💕', date:{m:7,d:7}, customs:'七夕最早是"乞巧节"，女子向织女星祈求巧手。牛郎织女的故事在汉代已成型。古代七夕的应节食品叫"巧果"，是用油、面、糖蜜制成的各种小点心。' },
+      { name:'中秋节', icon:'🌙', date:{m:8,d:15}, customs:'中秋吃月饼的习俗始于元代，相传朱元璋用月饼夹带起义传单。古代中秋还有"烧塔""树中秋""舞火龙"等地方习俗。月饼最初是军队的干粮，后来才成为节日食品。' },
+      { name:'重阳节', icon:'🏔️', date:{m:9,d:9}, customs:'重阳登高避灾的习俗始于东汉。古人认为九月九日登高可以避灾。插茱萸、饮菊花酒也是传统。王维"每逢佳节倍思亲"写的就是重阳。' },
+      { name:'腊八节', icon:'🍲', date:{m:12,d:8}, customs:'腊八节喝腊八粥的习俗源于佛教，相传释迦牟尼在腊月初八成道。腊八粥的食材各地不同，但通常不少于八种。民间有"腊八腊八，冻掉下巴"的说法。' },
+      { name:'立春', icon:'🌱', date:{m:2,d:4}, customs:'立春是二十四节气之首，古代有"打春牛"的习俗——用泥塑的春牛鞭打，象征春耕开始。立春吃春饼、春卷称为"咬春"。' },
+      { name:'夏至', icon:'☀️', date:{m:6,d:21}, customs:'夏至是白昼最长的一天。古人有"夏至一阴生"的说法。夏至吃面的习俗流传已久，有"冬至饺子夏至面"的民谚。' },
+      { name:'冬至', icon:'❄️', date:{m:12,d:22}, customs:'冬至大如年，古代有"冬至亚岁"之称。北方吃饺子（防冻耳朵），南方吃汤圆（团圆）。冬至开始"数九"，每九天一阶段，共九九八十一天后春天到来。' }
+    ];
+
+    function getNextOccurrence(fest) {
+      const now = new Date();
+      const year = now.getFullYear();
+      let d = new Date(year, fest.date.m - 1, fest.date.d);
+      if (d < now) d = new Date(year + 1, fest.date.m - 1, fest.date.d);
+      return d;
+    }
+
+    function daysBetween(a, b) {
+      return Math.round((b - a) / (1000 * 60 * 60 * 24));
+    }
+
+    function renderFestivals() {
+      const grid = document.getElementById('festGrid');
+      const now = new Date();
+      grid.innerHTML = '';
+      FESTIVALS.forEach(f => {
+        const next = getNextOccurrence(f);
+        const days = daysBetween(now, next);
+        const dateStr = (next.getMonth()+1) + '月' + next.getDate() + '日';
+        const card = document.createElement('div');
+        card.className = 'fest-card';
+        card.innerHTML = 
+          '<div class="fest-icon">' + f.icon + '</div>' +
+          '<div class="fest-name">' + f.name + '</div>' +
+          '<div class="fest-countdown">' + days + ' 天</div>' +
+          '<div class="fest-date">' + dateStr + '</div>';
+        card.addEventListener('click', () => showCustom(f));
+        grid.appendChild(card);
+      });
+    }
+
+    function showCustom(f) {
+      const card = document.getElementById('customCard');
+      document.getElementById('customIcon').textContent = f.icon;
+      document.getElementById('customTitle').textContent = f.name + '冷知识';
+      document.getElementById('customDesc').textContent = f.customs;
+      card.classList.add('show');
+      card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    renderFestivals();
+  </script>
+</body>
+</html>

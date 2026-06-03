@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐲</text></svg>">
+  <meta name="description" content="生肖本命年计算器 — 输入出生年份查询属相、五行属性、是否本命年、距离下次本命年还有多久。2026年属什么、本命年要注意什么。">
+  <title>生肖本命年计算 - 2026年属什么 · 文化盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .zodiac-result { margin-top:14px; }
+    .zodiac-big { font-size:4rem; text-align:center; }
+    .zodiac-name { font-size:1.6rem; font-weight:800; text-align:center; }
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+    .info-card { padding:12px; border-radius:var(--radius-sm); background:#f8fafc; border:1px solid var(--border); text-align:center; }
+    .info-card .label { font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; }
+    .info-card .value { font-size:1.1rem; font-weight:700; margin-top:2px; }
+    .benming-alert { margin-top:12px; padding:14px; border-radius:var(--radius-sm); text-align:center; font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">🧰 首页</a> <span class="sep">›</span>
+      <a href="index.html">🏮 文化盒子</a> <span class="sep">›</span> 生肖本命年计算
+    </div>
+    <header class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">🐲</span>
+        <span class="app-title">生肖/本命年计算器</span>
+      </div>
+      <p class="app-subtitle">输入出生年份 · 查属相五行 · 算本命年 · 2026年属什么</p>
+    </header>
+
+    <div class="card tool-panel">
+      <div class="input-row" style="justify-content:center;">
+        <div class="form-group" style="flex:0 1 200px;">
+          <label class="form-label">出生年份</label>
+          <input type="number" class="form-input" id="birthYear" min="1900" max="2030" placeholder="如 1996">
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" onclick="calcZodiac()">🐲 查询</button>
+        </div>
+      </div>
+      <div class="zodiac-result" id="zodiacResult" style="display:none;">
+        <div class="zodiac-big" id="zodiacEmoji"></div>
+        <div class="zodiac-name" id="zodiacName"></div>
+        <div class="info-grid">
+          <div class="info-card"><div class="label">年份</div><div class="value" id="yearDisplay"></div></div>
+          <div class="info-card"><div class="label">五行</div><div class="value" id="elementDisplay"></div></div>
+          <div class="info-card"><div class="label">年龄</div><div class="value" id="ageDisplay"></div></div>
+          <div class="info-card"><div class="label">本命年</div><div class="value" id="benmingDisplay"></div></div>
+        </div>
+        <div id="benmingAlert" class="benming-alert" style="display:none;"></div>
+        <div id="nextBenming" style="text-align:center;margin-top:8px;font-size:0.85rem;color:var(--text-secondary);"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="panel-title">📖 生肖本命年说明</h3>
+      <p style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem;">生肖（十二生肖）是中国传统文化中与十二地支相配的十二种动物。本命年指出生年份生肖与当前年份生肖相同的那一年，每 12 年一次。传统习俗认为本命年值太岁，需要穿红色内衣、系红绳来趋吉避凶。五行属性（金木水火土）根据出生年份的天干推算，不同五行属性的人适合的职业和方向有所差异。</p>
+    </div>
+  </div>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    const ZODIAC = [
+      { name:'鼠', emoji:'🐭', element:['水','木','火','金','土'] },
+      { name:'牛', emoji:'🐮', element:['土','木','火','金','水'] },
+      { name:'虎', emoji:'🐯', element:['木','火','金','水','土'] },
+      { name:'兔', emoji:'🐰', element:['木','火','金','水','土'] },
+      { name:'龙', emoji:'🐲', element:['土','火','金','水','木'] },
+      { name:'蛇', emoji:'🐍', element:['火','金','水','土','木'] },
+      { name:'马', emoji:'🐴', element:['火','金','水','土','木'] },
+      { name:'羊', emoji:'🐑', element:['土','金','水','木','火'] },
+      { name:'猴', emoji:'🐵', element:['金','水','土','木','火'] },
+      { name:'鸡', emoji:'🐔', element:['金','水','土','木','火'] },
+      { name:'狗', emoji:'🐶', element:['土','水','木','火','金'] },
+      { name:'猪', emoji:'🐷', element:['水','木','火','金','土'] }
+    ];
+    const ELEMENT_COLORS = { '金':'#f59e0b','木':'#10b981','水':'#3b82f6','火':'#ef4444','土':'#8b5cf6' };
+
+    function calcZodiac() {
+      const year = parseInt(document.getElementById('birthYear').value);
+      const currentYear = new Date().getFullYear();
+      if (!year || year < 1900 || year > 2030) { showToast('⚠️ 请输入1900-2030之间的年份'); return; }
+
+      const idx = (year - 4) % 12;
+      const zodiac = ZODIAC[((idx % 12) + 12) % 12];
+      const elementCycle = ['金','木','水','火','土'];
+      const element = elementCycle[Math.floor((year - 4) % 10 / 2)];
+
+      const age = currentYear - year;
+      const isBenming = (currentYear - 4) % 12 === idx;
+      const nextBenmingYear = year + (12 - ((currentYear - year) % 12)) + (isBenming ? 12 : 0);
+
+      document.getElementById('zodiacEmoji').textContent = zodiac.emoji;
+      document.getElementById('zodiacName').textContent = zodiac.name + ' (' + year + '年出生)';
+      document.getElementById('yearDisplay').textContent = year;
+      document.getElementById('elementDisplay').textContent = element;
+      document.getElementById('elementDisplay').style.color = ELEMENT_COLORS[element] || '#333';
+      document.getElementById('ageDisplay').textContent = age + '岁';
+
+      const bmEl = document.getElementById('benmingDisplay');
+      bmEl.textContent = isBenming ? '⚠️ 今年是本命年' : '否';
+      bmEl.style.color = isBenming ? '#ef4444' : '#10b981';
+
+      const alertEl = document.getElementById('benmingAlert');
+      if (isBenming) {
+        alertEl.style.display = 'block';
+        alertEl.style.background = '#fef2f2';
+        alertEl.style.border = '1px solid #fecaca';
+        alertEl.style.color = '#991b1b';
+        alertEl.innerHTML = '🧧 今年是你的本命年！传统习俗建议穿红色内衣、系红绳，趋吉避凶。';
+      } else {
+        alertEl.style.display = 'none';
+      }
+
+      document.getElementById('nextBenming').textContent = 
+        '距离下次本命年还有 ' + (nextBenmingYear - currentYear) + ' 年（' + nextBenmingYear + ' 年）';
+      document.getElementById('zodiacResult').style.display = 'block';
+    }
+
+    // 默认当前年份
+    document.getElementById('birthYear').value = new Date().getFullYear();
+    calcZodiac();
+  </script>
+</body>
+</html>
