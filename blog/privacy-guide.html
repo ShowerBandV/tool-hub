@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="在线工具隐私安全指南——为什么本地处理比服务器处理更安全？浏览器端哈希、编解码、图片编辑如何保护你的数据不上传？">
+  <title>在线工具隐私安全指南——你的数据真的安全吗？ · 工具盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>.article{line-height:1.9;color:var(--text-secondary);font-size:0.95rem;}.article h2{font-size:1.15rem;font-weight:700;margin-top:24px;color:var(--text);}.article h3{font-size:1rem;font-weight:700;margin-top:16px;color:var(--text);}.article p{margin-bottom:12px;}.article ul{padding-left:20px;margin-bottom:12px;}.article li{margin-bottom:4px;}.article .danger{padding:12px;border-radius:var(--radius-sm);background:var(--danger-light);border:1px solid var(--danger-border);font-size:0.85rem;margin:8px 0;}.article .safe{padding:12px;border-radius:var(--radius-sm);background:var(--success-light);border:1px solid var(--success-border);font-size:0.85rem;margin:8px 0;}</style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb"><a href="../index.html">🧰 首页</a><span class="sep">›</span><a href="index.html">📝 博客</a><span class="sep">›</span>在线工具隐私安全指南</div>
+    <header class="app-header"><div class="app-logo"><span class="logo-icon">🔒</span><span class="app-title">在线工具隐私安全指南</span></div><p class="app-subtitle">你每天使用的在线工具，真的在保护你的数据吗？</p></header>
+    <div class="card"><div class="article">
+      <p>你上次把一个 JSON 文件粘贴到某个"在线格式化工具"的时候，有没有想过这个 JSON 去了哪里？如果你在格式化的是一段包含用户手机号、邮箱地址、身份证号码的 API 响应数据，这些数据现在可能正躺在一个境外服务器上，被网站管理员翻阅——或者更糟，被某个第三方数据分析公司收集了。</p>
+
+      <h2>在线工具的两类架构</h2>
+      <p>在技术层面上，所有在线工具可以分为两类：<strong>服务器端处理</strong>和<strong>浏览器端处理（纯前端）</strong>。它们对隐私的影响截然不同。</p>
+
+      <h3>服务器端处理 —— 你输入的所有数据都会上传</h3>
+      <p>这类工具的做法是：你在页面上输入数据 → 点击"处理"按钮 → 数据被发送到后台服务器 → 服务器处理后返回结果给你看。在这个过程中，你的原始数据已经在网络传输和服务器存储中各暴露了一次。如果你处理的信息包含敏感内容（个人身份、财务数据、商业机密），那你本质上是在把这些信息"送"给了一个你完全不了解的第三方。</p>
+      <div class="danger"><strong>⚠️ 风险：</strong>你无法知道服务器是否会保存你的输入数据、保存多久、以及除了返回结果外还用它做了什么。许多免费在线工具正是靠收集用户的输入数据来盈利——通过分析你粘贴的内容构建用户画像，然后投放精准广告，或者直接转卖数据。</div>
+
+      <h3>浏览器端处理（纯前端）—— 数据从未离开你的设备</h3>
+      <p>这类工具的工作原理完全不同：你在页面上输入数据 → 浏览器里的 JavaScript 代码直接在本地执行处理逻辑 → 结果立即显示。整个过程没有任何数据经过网络传输，没有任何数据被上传到服务器。<strong>你输入的内容只存在于你自己电脑的内存里</strong>。关闭标签页后，所有临时数据被浏览器自动回收，不留下任何痕迹。</p>
+      <div class="safe"><strong>✅ 安全：</strong>即便是工具网站的开发者也无法看到你输入的任何数据——因为数据压根没到过他的服务器。这是一种"零信任"设计：你不需要信任网站，因为技术上它不可能收集你的数据。</div>
+
+      <h2>哪些操作在浏览器端就能完成？</h2>
+      <p>许多开发者对"浏览器能做什么"有误解。实际上，现代浏览器已经发展成一个功能强大的执行环境。以下操作完全可以不依赖服务器，在浏览器里本地完成：</p>
+      <ul>
+        <li><strong>文本格式化和校验</strong> — JSON 格式化、SQL 美化、正则测试等纯文本操作绝对不需要上传服务器。浏览器里的 JavaScript 处理这些完全没有压力。</li>
+        <li><strong>编码和解码</strong> — Base64、URL 编码、HTML 实体编码等。这些是明确的数学规则，JavaScript 原生支持。</li>
+        <li><strong>哈希计算</strong> — SHA-256、MD5 等哈希算法可以通过浏览器的 SubtleCrypto API 直接调用硬件加速执行。</li>
+        <li><strong>图片处理</strong> — 裁剪、缩放、水印、格式转换等，浏览器中的 Canvas API 能完成完整的像素级图片操作。</li>
+        <li><strong>密码生成</strong> — 浏览器内置的 Crypto.getRandomValues() 可以生成密码学级别的真随机数。</li>
+        <li><strong>视频处理</strong> — 视频解码、帧提取、甚至 GIF 生成都可以用 Canvas + JavaScript 本地完成。</li>
+      </ul>
+
+      <h2>实际使用的判断方法</h2>
+      <p>在使用任何在线工具前，做一个简单的检查：<strong>打开浏览器开发者工具（F12），切到 Network（网络）面板，然后使用工具</strong>。如果在你输入数据和点击处理时没有出现新的网络请求，说明数据没有上传——它在你的浏览器本地完成的。如果在输入过程中能看到数据被发送到某个服务器（通常以 POST 请求的形式），那你的数据已经泄露了。</p>
+      <p>另一个更简单的方法：<strong>断开网络连接（开飞行模式），再试试这个工具</strong>。如果工具还能正常工作，说明它是纯前端处理的。如果提示网络错误或无法使用，那它依赖了服务器。</p>
+
+      <h2>工具盒子的隐私承诺</h2>
+      <p>我们在设计工具盒子的每一个工具时，都遵循"纯前端优先"的原则。JSON 格式化、Base64 编解码、正则测试、哈希计算、图片裁剪、密码生成——这些操作的代码直接在页面里执行，你的数据不会经过任何服务器。即使我们想看到你的数据，技术上也不可能做到。</p>
+      <p>这并不是因为我们特别高尚——而是因为"不上传数据"从技术上来讲比"上传数据"简单得多。不需要服务器意味着不需要运维、不需要数据库、不需要带宽费用。这对我们来说成本更低，对你来说隐私更安全——一个真正的双赢方案。</p>
+
+      <p style="margin-top:20px;padding:16px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;">使用工具盒子中的纯前端在线工具，你的数据始终在你自己的设备上。访问 <a href="../index.html">工具盒子</a> 了解更多。</p>
+    </div></div>
+    <div class="ad-unit"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8209732730894875" data-ad-slot="auto" data-ad-format="auto"></ins></div>
+  </div>
+  <script src="../assets/js/common.js"></script>
+</body>
+</html>

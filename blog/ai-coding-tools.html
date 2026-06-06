@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="用AI辅助编程之后，这些在线工具能帮你效率翻倍——正则验证、JWT解码、JSON格式化、SQL美化、时间戳转换。AI写代码，你负责验证和调试。">
+  <title>AI辅助编程时代，这些在线工具让你效率翻倍 · 工具盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>.article{line-height:1.9;color:var(--text-secondary);font-size:0.95rem;}.article h2{font-size:1.15rem;font-weight:700;margin-top:24px;color:var(--text);}.article h3{font-size:1rem;font-weight:700;margin-top:16px;color:var(--text);}.article p{margin-bottom:12px;}.article ul{padding-left:20px;margin-bottom:12px;}.article li{margin-bottom:4px;}.article .tip{padding:12px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;margin:8px 0;}</style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb"><a href="../index.html">🧰 首页</a><span class="sep">›</span><a href="index.html">📝 博客</a><span class="sep">›</span>AI辅助编程+在线工具</div>
+    <header class="app-header"><div class="app-logo"><span class="logo-icon">🤖</span><span class="app-title">AI辅助编程时代，这些在线工具让你效率翻倍</span></div><p class="app-subtitle">AI帮你写代码，你负责验证——这7个在线工具是AI编程的最佳搭档</p></header>
+    <div class="card"><div class="article">
+      <p>2025年以来，Cursor、Copilot、Claude Code 等 AI 编程助手已经深度融入开发者的日常工作流。AI 可以在几秒内生成整个函数、写单元测试、甚至完成整个模块。但这种"AI写代码、人类审核"的新模式也带来了一个挑战：<strong>AI生成的代码不一定正确，你需要快速验证</strong>。比如 AI 写了一段正则表达式——你需要在几十个测试用例上跑一下看看对不对。AI 拼了一个 JWT Token——你需要解析一下看里面的数据是否正确。这篇指南介绍 7 个让 AI 编程流程更顺畅的在线工具。</p>
+
+      <h2>1. 正则表达式测试器</h2>
+      <p>AI 擅长写正则。你只需要说"给我写一个验证中国大陆手机号的正则"，AI 就能生成。但这段正则真的对吗？它会不会把座机号也匹配进去？边界情况处理了吗？<a href="../dev-tools/regex-tester/index.html">在线正则测试器</a> 输入正则和测试文本，实时高亮匹配内容，显示分组捕获结果。你把 20 个测试用例粘贴进去，一眼就能看出 AI 写的正则是否靠谱。</p>
+      <div class="tip"><strong>💡 工作流：</strong>让 AI 生成正则 → 粘贴到测试器中 → 用真实数据验证 → 确认无误后粘贴回代码。全程 30 秒，比写单元测试快 10 倍。</div>
+
+      <h2>2. JSON 格式化 + 校验</h2>
+      <p>AI 生成 JSON 配置文件时经常犯低级错误：多了一个逗号、引号没配对、或者嵌套层级不对。<a href="../dev-tools/json-formatter/index.html">JSON 格式化工具</a> 输入 AI 生成的 JSON，不仅格式化整洁，还能语法检查和错误定位——告诉你第几行第几个字符出了问题。比起你肉眼排查几百行 JSON，工具一秒定位。</p>
+
+      <h2>3. JWT Token 解码</h2>
+      <p>AI 帮你写了一个登录接口，返回一段 JWT Token。你怎么确认 Token 里的用户信息、过期时间、权限设置是对的？<a href="../dev-tools/jwt-decoder/index.html">JWT 解码器</a> 粘贴 Token 自动解码 Header 和 Payload，三部分（Header/Payload/Signature）分块展示。不用写代码、不用安装库，浏览器里直接看。</p>
+
+      <h2>4. SQL 格式化</h2>
+      <p>AI 写的 SQL 语句往往挤在一行，可读性差。<a href="../dev-tools/sql-formatter/index.html">SQL 格式化工具</a> 自动识别关键字（SELECT、FROM、WHERE、JOIN……换行缩进排版，一眼看清查询结构。你还可以把格式化后的 SQL 压缩回单行用于嵌入代码。适合 Code Review 前快速美化 AI 的"作品"。</p>
+
+      <h2>5. Base64 编解码</h2>
+      <p>AI 生成了一段 Base64 字符串说"这是文件内容"，你信吗？<a href="../dev-tools/base64/index.html">Base64 编解码工具</a> 还原 Base64 内容——如果是文本，直接看到原文；如果是图片，工具自动显示。也支持把图片转为 Base64 嵌入 CSS 或 HTML。</p>
+
+      <h2>6. 时间戳转换</h2>
+      <p>AI 返回"请使用 timestamp 1700000000"，你知道这对应哪天吗？<a href="../dev-tools/timestamp/index.html">时间戳转换工具</a> 秒级和毫秒级互转，同时显示本地时间和 UTC 时间。AI 给你时间戳，你用它验证是否符合预期。</p>
+
+      <h2>7. 哈希计算</h2>
+      <p>AI 生成了一个文件哈希值说"这是下载文件的校验值"，你需要验证。把文件拖进 <a href="../dev-tools/hash/index.html">哈希计算工具</a>，自动计算 SHA-256/MD5/SHA-1 哈希值。所有计算在浏览器本地完成，不会因为把文件发给服务器而产生安全风险。</p>
+
+      <h2>为什么选择在线工具而不是下载软件？</h2>
+      <p>AI 时代的编程节奏极快——你从"想到一个需求"到"AI 生成代码"可能只需要 5 分钟。在这个节奏下，每件事"下载安装一个软件"太慢了。在线工具三秒打开、用完即走、不需要卸载。而且上面这 7 个工具全部是<strong>纯前端处理</strong>——你输入的所有数据、上传的所有文件都在浏览器本地处理，不会上传到任何服务器。这一点在处理包含敏感信息的测试数据时尤为重要。</p>
+
+      <p style="margin-top:20px;padding:16px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;">以上工具全部可在 <a href="../index.html">工具盒子</a> 免费使用，无需注册登录，纯前端隐私保护。</p>
+    </div></div>
+    <div class="ad-unit"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8209732730894875" data-ad-slot="auto" data-ad-format="auto"></ins></div>
+  </div>
+  <script src="../assets/js/common.js"></script>
+</body>
+</html>
