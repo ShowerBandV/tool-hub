@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="程序员必备的在线开发工具推荐——JSON、Base64、正则、时间戳、哈希、JWT、Cron，这些在线工具让你告别下载安装。">
+  <title>程序员必备的在线开发工具 · 工具盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>.article{line-height:1.9;color:var(--text-secondary);font-size:0.95rem;}.article h2{font-size:1.15rem;font-weight:700;margin-top:24px;color:var(--text);}.article h3{font-size:1rem;font-weight:700;margin-top:16px;color:var(--text);}.article p{margin-bottom:12px;}.article ul{padding-left:20px;margin-bottom:12px;}.article li{margin-bottom:4px;}.article table{width:100%;border-collapse:collapse;font-size:0.85rem;margin:10px 0;}.article th,.article td{padding:8px 12px;border:1px solid var(--border);text-align:left;}.article th{background:#f8fafd;font-weight:700;}</style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb"><a href="../index.html">🧰 首页</a><span class="sep">›</span><a href="index.html">📝 博客</a><span class="sep">›</span>程序员必备在线工具</div>
+    <header class="app-header"><div class="app-logo"><span class="logo-icon">💻</span><span class="app-title">程序员必备的 15 个在线开发工具</span></div><p class="app-subtitle">告别下载安装，浏览器就能搞定日常开发需求</p></header>
+    <div class="card"><div class="article">
+      <p>作为程序员，我们经常遇到一些"临时工"式需求：格式化一段 JSON 数据、编码一串 Base64、测试一个正则表达式、或者转换一个时间戳。下载一个专用软件太麻烦，使用命令行又不够直观。其实，浏览器里就有全套解决方案。以下是 15 个真正实用的在线开发工具，每一个都能在 30 秒内解决你的问题。</p>
+
+      <h2>1. JSON 格式化</h2>
+      <p>API 返回的 JSON 往往是压缩在一行里的"面条数据"，读起来极其痛苦。<a href="../dev-tools/json-formatter/index.html">JSON 格式化工具</a> 将这些面条数据美化为层级清晰、缩进对齐的格式，同时还能校验语法错误——如果 JSON 格式不对，它会告诉你错在第几行、第几个字符。对于日常调试 API 的人来说，这是一个每天都要用的工具。</p>
+
+      <h2>2. Base64 编解码</h2>
+      <p>在前端开发中，将小图标转成 Base64 可以减少 HTTP 请求次数。在 JWT 认证中，Payload 就是用 Base64 编码的。<a href="../dev-tools/base64/index.html">Base64 编解码工具</a> 不仅能处理文本，还能把图片拖进去直接转成 data:image/png;base64 格式的字符串，也能反过来从 Base64 还原图片。</p>
+
+      <h2>3. 正则表达式测试器</h2>
+      <p>正则太难写也太难调试。写一个邮箱验证的正则后，需要在几十个测试用例上验证。<a href="../dev-tools/regex-tester/index.html">正则测试器</a> 支持 g/i/m 修饰符，实时高亮匹配到的内容，还能显示分组捕获的结果。适合表单验证、日志解析、数据清洗等场景。</p>
+
+      <h2>4. 时间戳转换</h2>
+      <p>Unix 时间戳（1700000000）和人类可读的时间（2024年11月15日 06:13）之间的转换是后端同学最频繁的操作之一。<a href="../dev-tools/timestamp/index.html">时间戳转换工具</a> 支持秒级和毫秒级，同时显示本地时间和 UTC 时间，避免时区混淆。</p>
+
+      <h2>5. 哈希计算</h2>
+      <p>下载文件后如何确认完整性？官方通常会提供 SHA-256 或 MD5 值供校验。<a href="../dev-tools/hash/index.html">哈希计算工具</a> 输入文本实时计算三种算法的哈希值，还支持拖拽文件计算文件的哈希指纹。所有计算在浏览器本地完成，文件不会上传到服务器——这点对安全敏感的场景尤其重要。</p>
+
+      <h2>6. URL 编解码</h2>
+      <p>encodeURI 和 encodeURIComponent 的区别是什么？哪个会编码 & 和 =？<a href="../dev-tools/url-encode/index.html">URL 编解码工具</a> 支持四种模式的实时转换，让你直观看到不同编码函数的效果。处理 URL 参数时再也不用猜应该用哪个编码函数了。</p>
+
+      <h2>7. JWT 解码器</h2>
+      <p>JWT Token 中的 Header 和 Payload 是 Base64 编码的 JSON。开发者经常需要快速查看 Token 中携带的用户 ID、过期时间等声明。<a href="../dev-tools/jwt-decoder/index.html">JWT 解码器</a> 粘贴 Token 自动解码，三部分（Header/Payload/Signature）分块展示，便于验证 Token 内容和有效期。</p>
+
+      <h2>8. Cron 表达式解析</h2>
+      <p>写一个"每天凌晨3点执行"的 Cron —— 答案是 `0 3 * * *`。但"每周一到周五上午9:30"怎么写？<a href="../dev-tools/cron-parser/index.html">Cron 表达式工具</a> 输入表达式自动生成人类可读的中文描述，还列出未来 10 次执行时间，帮你确认表达式是否正确。</p>
+
+      <h2>9. 密码生成器</h2>
+      <p>密码 123456 或者 password 已经被破解了几亿次。<a href="../dev-tools/password-generator/index.html">密码生成器</a> 使用浏览器的加密随机数生成器（Crypto.getRandomValues）产生真正随机的高强度密码，支持自定义长度（4-64位）和字符类型组合，生成的密码不会通过网络传输。</p>
+
+      <h2>10. UUID 生成器</h2>
+      <p>需要生成数据库主键 ID 或者分布式追踪 ID？<a href="../dev-tools/uuid-generator/index.html">UUID 生成器</a> 一键生成符合 RFC 4122 标准的 UUID v4，支持批量生成。前端调用 `crypto.randomUUID()` 更方便？但你还得写代码——有时候打开网页更快。</p>
+
+      <h2>11. 文本批量替换</h2>
+      <p>需要把一段代码中所有的 `userName` 改成 `username`？需要批量删除日志中的时间戳前缀？<a href="../dev-tools/batch-text-replace/index.html">文本批量替换工具</a> 支持同时设置多组查找替换规则，普通匹配和正则匹配各取所需，规则按顺序依次执行。</p>
+
+      <h2>12. API 响应测试</h2>
+      <p>新写的接口上线了，想快速测一下延迟和返回的数据是否正确。<a href="../dev-tools/api-tester/index.html">API 响应时间测试工具</a> 输入 URL 点击发送，自动显示状态码、响应毫秒数、数据包大小和返回内容——比你打开 Postman 快 10 倍。</p>
+
+      <h2>13. 二维码生成与解析</h2>
+      <p>要把一个链接转成二维码放在 PPT 里？或者收到一个二维码图片想知道里面是什么内容？<a href="../dev-tools/qrcode/index.html">二维码工具</a> 生成和解析两不误，支持自定义二维码颜色和尺寸。</p>
+
+      <h2>14. SQL 格式化</h2>
+      <p>接手了一个老项目，数据库查询语句全部挤在一行，完全没法看。<a href="../dev-tools/sql-formatter/index.html">SQL 格式化工具</a> 自动识别 SELECT、FROM、WHERE、JOIN、GROUP BY 等关键字，换行缩进排版，一键还原为可读的 SQL 语句。也有压缩模式，把美化的 SQL 打回单行用于传输。</p>
+
+      <h2>15. 随机数据生成</h2>
+      <p>测试用户注册功能需要 100 个"用户"——手打太慢。<a href="../dev-tools/random-data/index.html">随机数据生成器</a> 一键生成中文姓名和手机号，导出为 CSV 直接导入数据库。姓名覆盖百余常见姓氏和常用名，手机号基于真实号段前缀。</p>
+
+      <p style="margin-top:20px;padding:16px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;">以上 15 个工具全部可以在 <a href="../index.html">工具盒子</a> 找到，纯前端实现，数据不上传服务器，永久免费使用。</p>
+    </div></div>
+    <div class="ad-unit"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8209732730894875" data-ad-slot="auto" data-ad-format="auto"></ins></div>
+  </div>
+  <script src="../assets/js/common.js"></script>
+</body>
+</html>
