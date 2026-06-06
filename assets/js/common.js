@@ -97,3 +97,15 @@ function percentToLetter(p) {
 }
 
 function percentToGPA(p) { return LETTER_TO_GPA[percentToLetter(p)] || 0; }
+
+// Add last-updated date to all pages (Google freshness signal)
+(function() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth() + 1;
+  var el = document.createElement('p');
+  el.style.cssText = 'text-align:center;font-size:0.68rem;color:var(--text-muted);margin-top:10px;opacity:0.6;';
+  el.textContent = '📅 Updated ' + y + '-' + (m < 10 ? '0' : '') + m + ' · Tool Hub';
+  var wrapper = document.querySelector('.app-wrapper');
+  if (wrapper) wrapper.appendChild(el);
+})();
