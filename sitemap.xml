@@ -2,14 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.xkitbox.xyz/</loc><priority>1.0</priority></url>
   <url><loc>https://www.xkitbox.xyz/about/</loc><priority>0.7</priority></url>
+  <url><loc>https://www.xkitbox.xyz/blog/</loc><priority>0.7</priority></url>
+  <url><loc>https://www.xkitbox.xyz/blog/online-tools-guide.html</loc><priority>0.5</priority></url>
+  <url><loc>https://www.xkitbox.xyz/blog/gpa-guide.html</loc><priority>0.5</priority></url>
+
+  <!-- 文化盒子 -->
+  <url><loc>https://www.xkitbox.xyz/culture-tools/</loc><priority>0.8</priority></url>
+  <url><loc>https://www.xkitbox.xyz/culture-tools/almanac.html</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/culture-tools/zodiac-calc.html</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/culture-tools/festival-countdown.html</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/culture-tools/xiehouyu.html</loc><priority>0.6</priority></url>
 
   <!-- 游戏盒子 -->
   <url><loc>https://www.xkitbox.xyz/games/</loc><priority>0.8</priority></url>
   <url><loc>https://www.xkitbox.xyz/games/doodle-jump/</loc><priority>0.6</priority></url>
-  <url><loc>https://www.xkitbox.xyz/games/tetris/</loc><priority>0.6</priority></url>
-  <url><loc>https://www.xkitbox.xyz/games/survivor/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/games/reaction-test/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/games/color-blind-test/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/games/dice-lottery/</loc><priority>0.6</priority></url>
 
   <!-- 计算器盒子 -->
   <url><loc>https://www.xkitbox.xyz/calculators/</loc><priority>0.8</priority></url>
@@ -17,6 +26,7 @@
   <url><loc>https://www.xkitbox.xyz/calculators/final-grade/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/calculators/gpa-cgpa/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/calculators/ap-score/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/calculators/bmi-calculator/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/calculators/data-convert/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/calculators/scientific-calc/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/calculators/graph-calc/</loc><priority>0.6</priority></url>
@@ -52,9 +62,7 @@
   <url><loc>https://www.xkitbox.xyz/dev-tools/random-number/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/random-picker/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/marquee/</loc><priority>0.6</priority></url>
-  <url><loc>https://www.xkitbox.xyz/dev-tools/http-status/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/color-convert/</loc><priority>0.6</priority></url>
-  <url><loc>https://www.xkitbox.xyz/dev-tools/html-symbols/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/batch-text-replace/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/color-picker/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/cron-parser/</loc><priority>0.6</priority></url>
@@ -72,13 +80,26 @@
   <url><loc>https://www.xkitbox.xyz/dev-tools/svg-tool/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/random-group/</loc><priority>0.6</priority></url>
   <url><loc>https://www.xkitbox.xyz/dev-tools/world-capitals/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/http-status/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/html-symbols/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/sprite-splitter/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/watermark-removal/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/api-tester/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/art-text/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/gradient-generator/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/random-data/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/dev-tools/sql-formatter/</loc><priority>0.6</priority></url>
 
   <!-- 速查盒子 -->
   <url><loc>https://www.xkitbox.xyz/reference/</loc><priority>0.8</priority></url>
+  <url><loc>https://www.xkitbox.xyz/reference/font-preview/</loc><priority>0.6</priority></url>
 
   <!-- 图片盒子 -->
   <url><loc>https://www.xkitbox.xyz/image-tools/</loc><priority>0.8</priority></url>
-  <url><loc>https://www.xkitbox.xyz/dev-tools/sprite-splitter/</loc><priority>0.6</priority></url>
+  <url><loc>https://www.xkitbox.xyz/image-tools/frame-packer/</loc><priority>0.6</priority></url>
+
+  <!-- 办公盒子 -->
+  <url><loc>https://www.xkitbox.xyz/office-tools/</loc><priority>0.8</priority></url>
 
   <!-- 文件盒子 -->
   <url><loc>https://www.xkitbox.xyz/file-tools/</loc><priority>0.8</priority></url>
