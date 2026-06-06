@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src https://googleads.g.doubleclick.net;">
+  <meta name="description" content="在线图片处理完全指南——水印添加去除、裁剪缩放、SVG转换、Sprite切割、视频帧打包。图片编辑不必安装Photoshop，浏览器里全能搞定。">
+  <title>在线图片处理完全指南 · 工具盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>.article{line-height:1.9;color:var(--text-secondary);font-size:0.95rem;}.article h2{font-size:1.15rem;font-weight:700;margin-top:24px;color:var(--text);}.article h3{font-size:1rem;font-weight:700;margin-top:16px;color:var(--text);}.article p{margin-bottom:12px;}.article ul{padding-left:20px;margin-bottom:12px;}.article li{margin-bottom:4px;}.article .tip{padding:12px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;margin:8px 0;}.article .tip strong{color:#1e40af;}</style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb"><a href="../index.html">🧰 首页</a><span class="sep">›</span><a href="index.html">📝 博客</a><span class="sep">›</span>在线图片处理完全指南</div>
+    <header class="app-header"><div class="app-logo"><span class="logo-icon">🖼️</span><span class="app-title">在线图片处理完全指南</span></div><p class="app-subtitle">不必安装Photoshop，浏览器里就能完成日常图片编辑需求</p></header>
+    <div class="card"><div class="article">
+      <p>很多人认为图片编辑是一件需要专业软件和技术的事——打开 Photoshop、导入图片、找到正确的工具、导出——这一套流程对于不需要发朋友圈九宫格以外的"普通人"来说确实太复杂了。其实，对于绝大多数日常图片处理需求，浏览器里的在线工具已经足够好用。以下是使用在线工具完成常见图片编辑任务的完整指南。</p>
+
+      <h2>1. 图片裁剪与缩放</h2>
+      <p>最常用的图片编辑操作就是裁剪掉多余部分，或者把图片调整到需要的尺寸。比如你拍了一张照片，想把左下角那个乱入的路人裁掉——<a href="../dev-tools/image-crop/index.html">在线图片裁剪工具</a> 上传图片后拖拽框选保留区域，一键下载。缩放模式支持按百分比或指定像素大小调整，比如把一张 4000×3000 的照片缩小到 800×600 用于网页展示。</p>
+      <div class="tip"><strong>💡 小贴士：</strong>上传前确认图片尺寸——如果只是微调裁剪，图片质量不会损失。如果大幅缩放（比如从 4000px 缩到 800px），建议保留原图作为备份。</div>
+
+      <h2>2. 图片水印添加</h2>
+      <p>摄影师、设计师和电商卖家最头疼的就是作品被无授权使用。给图片打水印是最简单有效的防护措施。<a href="../dev-tools/image-watermark/index.html">在线水印平铺工具</a> 支持两种水印模式：文字水印和图片水印。文字模式可以输入你的名字或品牌名，设置透明度、颜色和旋转角度。图片水印可以上传自己的 Logo，同样以平铺方式覆盖原图。水印密度可以调整——密一点防护更强但影响观感，疏一点图片更好看但保护弱一点，看你的使用场景。</p>
+
+      <h2>3. 水印去除</h2>
+      <p>反过来，你有没有遇到过这样的情况：找到一张好的素材图，但上面有个碍眼的水印？<a href="../dev-tools/watermark-removal/index.html">在线水印去除工具</a> 提供两种去除模式：手动涂抹模式（像橡皮擦一样涂掉水印，工具自动用周围像素填充）和 AI 模板模式（框选水印区域一键去除）。尤其适合去除简单背景上的小面积水印或日期戳。</p>
+
+      <h2>4. SVG 预览与转换</h2>
+      <p>SVG 是矢量图形格式，无限缩放不失真，广泛用于网页图标和插画。但很多场景下我们需要把 SVG 转为 PNG 或 JPG——比如发到不支持 SVG 的社交平台。在左侧粘贴 SVG 代码，<a href="../dev-tools/svg-tool/index.html">在线 SVG 预览转换工具</a> 右侧实时预览效果，设置导出尺寸后一键下载为 PNG、JPG 或 WebP 格式。</p>
+
+      <h2>5. 颜色拾取与转换</h2>
+      <p>看到一张参考图，想知道上面某个颜色具体的色值（RGB 或 HEX 代码）？<a href="../dev-tools/color-picker/index.html">在线颜色拾取工具</a> 上传图片后将鼠标移到任意像素上，实时显示该点的 RGB、HEX 和 HSL 值。单击即可锁定颜色值并复制。常用于前端开发中从设计稿取色、或者品牌设计时参考某张图片的配色方案。配套的颜色转换工具可在 HEX/RGB/HSL 三种格式之间互转。</p>
+
+      <h2>6. 多图拼接长图</h2>
+      <p>聊天记录截图怎么发才不刷屏？把多张截图拼成一张长图。<a href="../dev-tools/image-stitch/index.html">在线图片拼长图工具</a> 选择要拼接的图片（支持调整顺序），选择横向并排或纵向堆叠模式，一键生成拼接长图。适合制作产品展示长图、社交媒体内容、以及聊天记录分享。</p>
+
+      <h2>7. Sprite Sheet 切割</h2>
+      <p>游戏开发和网页优化中常见的精灵图（Sprite Sheet）将多帧动画合并在一张大图里。当你需要从已有的精灵图中提取独立帧时，<a href="../dev-tools/sprite-splitter/index.html">Sprite 切割工具</a> 上传大图，设置行列数量（比如 4×4），工具自动按网格切开所有小图，打包为 ZIP 下载。</p>
+
+      <h2>8. 视频帧打包</h2>
+      <p>这个功能稍微进阶一点——从视频中按时间间隔抽取帧画面，可选进行绿幕背景替换、相似帧去重，最后导出 PNG 序列帧或 GIF 动画。主要用于游戏素材制作（从视频中提取角色动画帧）、GIF 表情包制作、以及教学视频的关键帧提取。<a href="../image-tools/frame-packer/index.html">帧打包工具</a> 使用感知哈希算法判断帧之间是否相似。</p>
+
+      <h2>隐私安全说明</h2>
+      <p>以上所有工具的一个共同特点是：<strong>图片处理完全在浏览器本地完成</strong>。你上传的图片不会被发送到任何服务器——裁剪、水印、转换、切割等操作全部在你自己电脑上完成。处理完的图片直接下载到本地，关闭页面后所有临时数据自动清除。这对于处理包含人脸、证件、商业机密等敏感内容的图片尤为重要。</p>
+
+      <p style="margin-top:20px;padding:16px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;">本文中提到的所有图片处理工具均可免费使用，访问 <a href="../index.html">工具盒子</a> 找到全部工具。</p>
+    </div></div>
+    <div class="ad-unit"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8209732730894875" data-ad-slot="auto" data-ad-format="auto"></ins></div>
+  </div>
+  <script src="../assets/js/common.js"></script>
+</body>
+</html>
