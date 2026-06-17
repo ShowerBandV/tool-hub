@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.seekin.ai https://corsproxy.io; frame-src https://googleads.g.doubleclick.net;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.seekin.ai; frame-src https://googleads.g.doubleclick.net;">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
   <meta name="description" content="抖音视频下载工具 — 粘贴抖音分享链接，在线解析获取无水印视频下载链接，支持多种画质选择。">
   <title>抖音视频下载 - 在线解析抖音无水印视频 · 开发者盒子</title>
@@ -48,11 +48,7 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary" id="parseBtn" onclick="parseVideo()">🔍 解析视频</button>
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('douyinUrl').value='';document.getElementById('resultArea').className='result-card';document.getElementById('resultArea').innerHTML='';">清空</button>
-        <select class="form-select" id="proxyMode" style="width:auto;min-width:120px;font-size:0.78rem;padding:6px 10px;">
-          <option value="local">本站转发（推荐）</option>
-          <option value="corsproxy">CORS代理</option>
-          <option value="direct">直连</option>
-        </select>
+        <input type="hidden" id="proxyMode" value="direct">
       </div>
 
       <div class="result-card" id="resultArea"></div>
@@ -127,14 +123,7 @@
 
       const proxyMode = document.getElementById('proxyMode').value;
       const targetUrl = 'https://api.seekin.ai/ikool/media/download';
-      let apiUrl;
-      if (proxyMode === 'direct') {
-        apiUrl = targetUrl;
-      } else if (proxyMode === 'corsproxy') {
-        apiUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-      } else {
-        apiUrl = '/api/sekin-proxy.php';
-      }
+      const apiUrl = targetUrl;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
