@@ -49,9 +49,9 @@
         <button class="btn btn-primary" id="parseBtn" onclick="parseVideo()">🔍 解析视频</button>
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('douyinUrl').value='';document.getElementById('resultArea').className='result-card';document.getElementById('resultArea').innerHTML='';">清空</button>
         <select class="form-select" id="proxyMode" style="width:auto;min-width:120px;font-size:0.78rem;padding:6px 10px;">
-          <option value="direct">直连（需后端转发）</option>
+          <option value="local">本站转发（推荐）</option>
           <option value="corsproxy">CORS代理</option>
-          <option value="allorigins">备用代理</option>
+          <option value="direct">直连</option>
         </select>
       </div>
 
@@ -127,14 +127,13 @@
 
       const proxyMode = document.getElementById('proxyMode').value;
       const targetUrl = 'https://api.seekin.ai/ikool/media/download';
-      let apiUrl, proxyHeaders = {};
+      let apiUrl;
       if (proxyMode === 'direct') {
         apiUrl = targetUrl;
       } else if (proxyMode === 'corsproxy') {
         apiUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-      } else if (proxyMode === 'allorigins') {
-        // allorigins supports POST via a specific format
-        apiUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+      } else {
+        apiUrl = '/api/sekin-proxy.php';
       }
 
       const response = await fetch(apiUrl, {
