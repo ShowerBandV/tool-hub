@@ -48,9 +48,11 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary" id="parseBtn" onclick="parseVideo()">🔍 解析视频</button>
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('douyinUrl').value='';document.getElementById('resultArea').className='result-card';document.getElementById('resultArea').innerHTML='';">清空</button>
-        <label style="font-size:0.78rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;cursor:pointer;">
-          <input type="checkbox" id="useProxy" checked> 使用 CORS 代理（推荐）
-        </label>
+        <select class="form-select" id="proxyMode" style="width:auto;min-width:120px;font-size:0.78rem;padding:6px 10px;">
+          <option value="direct">直连（需后端转发）</option>
+          <option value="corsproxy">CORS代理</option>
+          <option value="allorigins">备用代理</option>
+        </select>
       </div>
 
       <div class="result-card" id="resultArea"></div>
@@ -123,10 +125,17 @@
       const timestamp = Date.now().toString();
       const sign = await generateSign(url, timestamp);
 
-      const useProxy = document.getElementById('useProxy').checked;
-      const apiUrl = useProxy
-        ? 'https://corsproxy.io/?' + encodeURIComponent('https://api.seekin.ai/ikool/media/download')
-        : 'https://api.seekin.ai/ikool/media/download';
+      const proxyMode = document.getElementById('proxyMode').value;
+      const targetUrl = 'https://api.seekin.ai/ikool/media/download';
+      let apiUrl, proxyHeaders = {};
+      if (proxyMode === 'direct') {
+        apiUrl = targetUrl;
+      } else if (proxyMode === 'corsproxy') {
+        apiUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+      } else if (proxyMode === 'allorigins') {
+        // allorigins supports POST via a specific format
+        apiUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+      }
 
       const response = await fetch(apiUrl, {
         method: 'POST',
