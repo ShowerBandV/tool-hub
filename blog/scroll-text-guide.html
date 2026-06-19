@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>">
+  <meta name="description" content="滚屏文字提取教程——用OpenCV+PaddleOCR从短视频中提取滚动小说文字，支持纯色底和复杂背景两种模式，跨帧去重+LLM修正。">
+  <title>滚屏文字提取教程 - 从短视频提取滚动小说文字 · 工具盒子</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>.article{line-height:1.9;color:var(--text-secondary);font-size:0.95rem}.article h2{font-size:1.15rem;font-weight:700;margin-top:28px;margin-bottom:8px;color:var(--text)}.article h3{font-size:1rem;font-weight:700;margin-top:20px;margin-bottom:6px;color:var(--text)}.article p{margin-bottom:12px}.article ul,.article ol{padding-left:20px;margin-bottom:12px}.article li{margin-bottom:4px}.article pre{background:#1a1a2e;color:#e2e8f0;padding:14px;border-radius:var(--radius-sm);font-size:0.82rem;overflow-x:auto;line-height:1.6;margin:8px 0}.article pre code{background:transparent;color:inherit}.article .tip{padding:12px 14px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;margin:10px 0}.article .warning{padding:12px 14px;border-radius:var(--radius-sm);background:var(--warning-light);border:1px solid var(--warning-border);font-size:0.85rem;margin:10px 0}.article table{width:100%;border-collapse:collapse;font-size:0.85rem;margin:10px 0}.article th,.article td{padding:8px 12px;border:1px solid var(--border);text-align:left}.article th{background:#f8fafd;font-weight:700}</style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="breadcrumb"><a href="../index.html">🧰 首页</a><span class="sep">›</span><a href="index.html">📝 博客</a><span class="sep">›</span>滚屏文字提取教程</div>
+    <header class="app-header">
+      <div class="app-logo"><span class="logo-icon">📜</span><span class="app-title">滚屏文字提取完全教程</span></div>
+      <p class="app-subtitle">用 OpenCV + PaddleOCR 从短视频中提取滚动小说文字，支持纯色底和复杂背景两种模式</p>
+    </header>
+
+    <div class="card"><div class="article">
+      <p>短视频平台上活跃着大量"滚动小说"类型的内容——画面是纯色或图片背景，文字从下往上缓慢滚动，观众像读电子书一样"读"视频。这类视频的观看体验很好，但如果你想把这些文字保存下来（做笔记、翻译、或者重新整理），就需要从视频中提取文字。</p>
+      <p>本教程介绍的方案专门针对这种<strong>滚屏文字</strong>场景，使用 OpenCV 做背景建模、PaddleOCR 做中文字识别，配合跨帧去重和 LLM 通顺性修正，最终输出干净完整的文本。</p>
+
+      <h2>和普通字幕提取的区别</h2>
+      <p>这也是 OCR 视频提取，但它处理的场景和之前介绍的<a href="video-caption-guide.html">视频字幕提取</a>不同：</p>
+      <table><tr><th></th><th>普通字幕提取</th><th>滚屏文字提取</th></tr>
+      <tr><td>文字位置</td><td>固定在画面底部或中间</td><td>从下往上持续滚动</td></tr>
+      <tr><td>背景</td><td>通常是半透明黑底</td><td>纯色底或复杂图片</td></tr>
+      <tr><td>帧间变化</td><td>字幕切换时才变</td><td>每帧都在移动</td></tr>
+      <tr><td>核心挑战</td><td>检测字幕区域</td><td>去重 + 排序（滚屏文字在帧间可能交错）</td></tr></table>
+
+      <h2>技术流程</h2>
+      <p>整个提取流程分为 4 步：</p>
+      <ol>
+        <li><strong>抽帧</strong> — ffmpeg 按指定帧率从视频中提取关键帧（默认每 5 秒 1 帧）</li>
+        <li><strong>预处理</strong> — 根据背景类型选择模式：
+          <ul>
+            <li><strong>raw 模式</strong>：直接用原图做 OCR，适合白底、米色底、橙红底等纯色背景</li>
+            <li><strong>diff 模式</strong>：多帧构建背景模型（取最大值），原图减去背景后再 OCR，适合照片、水印等复杂背景</li>
+          </ul>
+        </li>
+        <li><strong>OCR 识别</strong> — PaddleOCR 逐帧识别中文字符，边缘安全区校准（排除顶部标题栏、底部进度条等非正文区域）</li>
+        <li><strong>跨帧去重 + LLM 修正</strong> — 消除连续帧中重复的文字，对字符误识别做通顺性修正</li>
+      </ol>
+
+      <h2>安装依赖</h2>
+      <p>需要 Python 3.9+、ffmpeg、以及几个 Python 包。</p>
+
+      <h3>macOS</h3>
+      <pre><code>brew install ffmpeg
+pip install opencv-python numpy paddleocr paddlepaddle
+
+# 验证
+python3 -c "import cv2, paddle; from paddleocr import PaddleOCR; print('OK')"</code></pre>
+
+      <h3>Windows</h3>
+      <p>推荐 Miniconda 独立环境，版本需锁定（PaddlePaddle 3.x 在 Windows 上有兼容问题）。</p>
+      <pre><code># 创建 conda 环境
+conda create -n ocr python=3.10 -y
+conda activate ocr
+
+# 关键：版本必须锁定
+pip install "paddlepaddle==2.6.2" "paddleocr==2.9.1" opencv-python "numpy<2"
+
+# 安装 ffmpeg（通过 winget）
+winget install Gyan.FFmpeg
+winget install Microsoft.VCRedist.2015+.x64</code></pre>
+
+      <h3>Linux</h3>
+      <pre><code>sudo apt install ffmpeg
+pip install opencv-python numpy paddleocr paddlepaddle</code></pre>
+
+      <div class="tip">💡 PaddleOCR 首次运行会自动下载 OCR 模型（约 200MB），耗时 1-3 分钟，属正常现象。之后运行不需要重新下载。</div>
+
+      <h2>选择抽帧间隔</h2>
+      <p>抽帧间隔是影响提取质量的最关键参数。原则是：观察视频中一屏文字从出现到完全滚出大约需要几秒。</p>
+      <table><tr><th>文字停留时长</th><th>选择间隔</th><th>命令参数</th><th>说明</th></tr>
+      <tr><td>8 秒以上</td><td>5 秒（默认）</td><td><code>--fps 0.2</code></td><td>适合大多数视频，处理最快</td></tr>
+      <tr><td>5-8 秒</td><td>3 秒</td><td><code>--fps 0.333</code></td><td>滚动稍快时使用</td></tr>
+      <tr><td>不确定</td><td>先用 5 秒</td><td><code>--fps 0.2</code></td><td>发现漏字再改短</td></tr>
+      <tr><td>漏字明显</td><td>1 秒</td><td><code>--fps 1</code></td><td>间隔越小越完整，但耗时更长</td></tr></table>
+
+      <div class="tip">💡 换算公式：<code>--fps = 1 / 间隔秒数</code>。例如你想每 3 秒抽一帧 → `--fps 0.333`。</div>
+
+      <h2>选择背景模式</h2>
+      <table><tr><th>模式</th><th>适用场景</th><th>速度</th><th>原理</th></tr>
+      <tr><td><code>--mode raw</code></td><td>白底、米色底、橙红底等纯色背景</td><td>快</td><td>直接用原图 OCR</td></tr>
+      <tr><td><code>--mode diff</code></td><td>照片、水印、渐变背景等复杂画面</td><td>慢</td><td>背景减除后 OCR</td></tr></table>
+
+      <h2>运行命令</h2>
+
+      <h3>纯色底视频</h3>
+      <pre><code>python3 scripts/extract.py video.mp4 -o output.txt -y --mode raw</code></pre>
+
+      <h3>复杂背景视频</h3>
+      <pre><code>python3 scripts/extract.py video.mp4 -o output.txt -y --mode diff</code></pre>
+
+      <h3>自定义抽帧频率</h3>
+      <pre><code># 每 1 秒 1 帧（滚动较快或漏字时）
+python3 scripts/extract.py video.mp4 -y --mode raw --fps 1
+
+# 每 10 秒 1 帧（滚动较慢，节省时间）
+python3 scripts/extract.py video.mp4 -y --mode raw --fps 0.1</code></pre>
+
+      <p>参数说明：</p>
+      <ul>
+        <li><code>-o output.txt</code> — 输出文件路径</li>
+        <li><code>-y</code> — 跳过交互确认（所有参数已在命令行指定时使用）</li>
+        <li><code>--mode raw/diff</code> — 背景处理模式</li>
+        <li><code>--fps N</code> — 抽帧率</li>
+        <li><code>--crop-top N</code> — 手动裁剪顶部 N 行（排除标题栏，可选）</li>
+        <li><code>--crop-bottom N</code> — 手动裁剪底部 N 行（排除进度条，可选）</li>
+      </ul>
+
+      <h2>结果处理</h2>
+      <p>脚本输出原始文本后，还需要以下步骤让文本更干净：</p>
+      <ol>
+        <li><strong>标点规范化</strong> — 将英文标点替换为中文标点（<code>,</code> → <code>，</code>、<code>"</code> → <code>" "</code>），注意数字和英文单词中的保留原样</li>
+        <li><strong>行序修正</strong> — 滚屏文字在帧之间可能交错，需要按内容逻辑重新排序</li>
+        <li><strong>字符修正</strong> — 修正 OCR 常见的形近字误识别（如 "己"/"已"、"末"/"未"）</li>
+        <li><strong>引号配对</strong> — 通读全文确保双引号左右数量一致</li>
+      </ol>
+
+      <div class="warning">⚠️ 如果脚本输出中有很多半行碎片（不完整的文字行），说明边缘安全区校准不准。检查 edge-margin 校准日志，或手动调 <code>--crop-top</code>/<code>--crop-bottom</code>。</div>
+
+      <h2>常见问题</h2>
+      <h3>纯色底用 raw 还是 diff？</h3>
+      <p>纯色底（白色、米色、单色）直接用 <code>--mode raw</code>，速度快且效果一样好。<code>diff</code> 模式是为了处理复杂背景的，用在纯色底上没必要。</p>
+
+      <h3>抽帧间隔怎么选？</h3>
+      <p>关键看文字的滚动速度。播放视频，看一屏文字从出现到完全滚出需要几秒。通常 5 秒/帧是一个好的起点，处理完发现漏字再缩短间隔。</p>
+
+      <h3>一行文字被切成两半怎么办？</h3>
+      <p>可能是抽帧时机刚好卡在文字滚动到一半的时候。缩短抽帧间隔（如从 5 秒改为 3 秒）通常能解决。如果持续出现，检查 <code>--edge-margin</code> 参数。</p>
+
+      <p style="margin-top:20px;padding:16px;border-radius:var(--radius-sm);background:var(--info-light);border:1px solid var(--info-border);font-size:0.85rem;">
+        📌 本教程介绍的方法完全在本地运行，视频文件不会上传到任何服务器。适合处理包含敏感内容的视频。如需提取普通字幕（非滚动），可参考 <a href="video-caption-guide.html">视频字幕提取教程</a>。
+      </p>
+    </div></div>
+    <div class="ad-unit"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8209732730894875" data-ad-slot="auto" data-ad-format="auto"></ins></div>
+  </div>
+  <script src="../assets/js/common.js"></script>
+</body>
+</html>
